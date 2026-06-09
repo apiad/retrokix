@@ -19,7 +19,7 @@ from pathlib import Path
 import numpy as np
 
 from gbax.input import Button
-from gbax.libretro import GBA_HEIGHT, GBA_WIDTH, LibretroCore
+from gbax.libretro import LibretroCore
 
 
 class Mode(str, Enum):

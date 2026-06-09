@@ -1,0 +1,47 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: System deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libsdl2-dev libpng-dev libzip-dev libsqlite3-dev cmake build-essential
+
+      - name: Build mgba_libretro.so
+        run: |
+          git clone --depth=1 https://github.com/mgba-emu/mgba.git /tmp/mgba
+          cd /tmp/mgba
+          mkdir build && cd build
+          cmake .. \
+            -DBUILD_QT=OFF -DBUILD_SDL=OFF -DBUILD_LIBRETRO=ON \
+            -DBUILD_SHARED=OFF -DBUILD_STATIC=OFF \
+            -DUSE_LUA=OFF -DUSE_FREETYPE=OFF -DUSE_DISCORD_RPC=OFF \
+            -DBUILD_LTO=OFF -DCMAKE_BUILD_TYPE=Release
+          make mgba_libretro -j$(nproc)
+          mkdir -p $GITHUB_WORKSPACE/tests/cores
+          cp mgba_libretro.so $GITHUB_WORKSPACE/tests/cores/
+
+      - name: Install gbax + dev deps
+        run: pip install -e ".[dev]"
+
+      - name: Lint
+        run: ruff check src tests
+
+      - name: Test
+        run: pytest -v
+        env:
+          SDL_VIDEODRIVER: dummy

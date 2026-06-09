@@ -14,7 +14,6 @@ References:
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Callable
 
 import numpy as np
 from cffi import FFI
