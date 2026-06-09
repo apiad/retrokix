@@ -61,6 +61,10 @@ packages = ["src/gbax"]
 [tool.hatch.build.targets.wheel.force-include]
 "src/gbax/data/no_intro_gba.json" = "gbax/data/no_intro_gba.json"
 "src/gbax/data/libretro_cheats_gba.json" = "gbax/data/libretro_cheats_gba.json"
+"src/gbax/data/bots/__init__.py" = "gbax/data/bots/__init__.py"
+"src/gbax/data/bots/press_a.py" = "gbax/data/bots/press_a.py"
+"src/gbax/data/bots/random.py" = "gbax/data/bots/random.py"
+"src/gbax/data/scenarios/__init__.py" = "gbax/data/scenarios/__init__.py"
 
 [tool.ruff]
 line-length = 100
