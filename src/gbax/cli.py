@@ -13,6 +13,23 @@ def version() -> None:
 
 
 @app.command()
+def play(
+    rom: Path = typer.Argument(..., exists=True, file_okay=True, dir_okay=False, readable=True),
+    scale: int = typer.Option(3, "--scale", help="Window scale factor."),
+    core_path: Path | None = typer.Option(None, "--core", help="Path to libretro core .so."),
+) -> None:
+    """Boot ROM in free-run mode with an SDL window."""
+    from gbax.render import play_loop
+    from gbax.runtime import EmulatorRuntime, Mode
+
+    runtime = EmulatorRuntime(rom, core_path=core_path, mode=Mode.FREE)
+    try:
+        play_loop(runtime, scale=scale)
+    finally:
+        runtime.close()
+
+
+@app.command()
 def serve(
     rom: Path = typer.Argument(..., exists=True, file_okay=True, dir_okay=False, readable=True),
     host: str = typer.Option("127.0.0.1", "--host"),

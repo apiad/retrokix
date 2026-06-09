@@ -23,13 +23,6 @@ def core(mgba_core, test_rom):
     c.deinit()
 
 
-def test_system_info_reports_mgba(mgba_core):
-    """Core path is a real libretro core (sanity check by dlopen)."""
-    c = LibretroCore(mgba_core)
-    c.init()
-    c.deinit()
-
-
 def test_run_advances_without_error(core):
     for _ in range(60):
         core.run()
