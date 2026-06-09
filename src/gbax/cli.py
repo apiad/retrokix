@@ -242,3 +242,139 @@ def serve(
         uvicorn.run(application, host=host, port=port, log_level="warning")
     finally:
         runtime.close()
+
+
+scenario_app = typer.Typer(help="Manage scenarios for `gbax train` / `gbax tournament`.")
+app.add_typer(scenario_app, name="scenario")
+
+
+_SCENARIO_TEMPLATE = '''"""Auto-scaffolded by `gbax scenario create`. Fill in the TODOs."""
+
+from gbax.scenario import Scenario
+from gbax.controller import Controller
+
+
+class {class_name}(Scenario):
+    name = "{slug}"
+    rom_sha1 = "{rom_sha1}"
+    decision_period = 1
+    max_frames = 60 * 60 * 3                    # 3 minutes at 60 fps
+
+    def setup(self, ctl: Controller) -> None:
+        # TODO: drive past the title screen / menu / save load until the
+        # player is in control. Use ctl.press / ctl.wait / ctl.read_*.
+        return None
+
+    def observe(self, ctl: Controller, frame: int) -> dict:
+        # TODO: decode useful game state from memory.
+        return {{"frame": frame}}
+
+    def score(self, ctl: Controller, frame: int) -> dict:
+        # TODO: compute score + structured result. Higher score = better.
+        return {{"score": -float(frame), "frame": frame}}
+
+    def done(self, ctl: Controller, frame: int) -> bool:
+        # TODO: end-of-match predicate.
+        return False
+'''
+
+
+def _slugify(text: str) -> str:
+    import re
+    s = re.sub(r"[^a-zA-Z0-9]+", "-", text.lower()).strip("-")
+    return s or "scenario"
+
+
+def _classify(text: str) -> str:
+    import re
+    parts = re.split(r"[^a-zA-Z0-9]+", text)
+    return "".join(p.capitalize() for p in parts if p) or "Scenario"
+
+
+@scenario_app.command("create")
+def scenario_create(
+    rom: str = typer.Argument(..., help="Path to a .gba or fuzzy query against ~/.gbax/roms/."),
+    name: str = typer.Option("default", "--name", help="Scenario slug (kebab-case)."),
+    out_dir: Path | None = typer.Option(None, "--out", help="Where to write (default ~/.gbax/scenarios/)."),
+) -> None:
+    """Scaffold a scenario file for the given ROM."""
+    import hashlib
+
+    from gbax.library import resolve_rom
+
+    try:
+        rom_path = resolve_rom(rom)
+    except (FileNotFoundError, RuntimeError) as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=1) from exc
+
+    slug = _slugify(name)
+    rom_slug = _slugify(rom_path.stem)
+    class_name = _classify(name)
+    rom_sha1 = hashlib.sha1(rom_path.read_bytes()).hexdigest()
+
+    target_dir = Path(out_dir) if out_dir else (Path.home() / ".gbax" / "scenarios")
+    target_dir.mkdir(parents=True, exist_ok=True)
+    out_file = target_dir / f"{rom_slug}__{slug}.py"
+    if out_file.exists():
+        typer.echo(f"refusing to overwrite {out_file}", err=True)
+        raise typer.Exit(code=1)
+
+    out_file.write_text(_SCENARIO_TEMPLATE.format(
+        class_name=class_name, slug=slug, rom_sha1=rom_sha1,
+    ))
+    typer.echo(f"wrote {out_file}")
+
+
+@scenario_app.command("list")
+def scenario_list() -> None:
+    """List installed scenarios (bundled + ~/.gbax/scenarios/)."""
+    from gbax.scenario import list_installed_scenarios
+
+    entries = list_installed_scenarios()
+    if not entries:
+        typer.echo("no scenarios installed")
+        return
+    for e in entries:
+        typer.echo(f"  {e['name']:35s}  {e['class']:25s}  {e['file']}")
+
+
+@scenario_app.command("validate")
+def scenario_validate(
+    path: Path = typer.Argument(..., exists=True, file_okay=True, dir_okay=False),
+) -> None:
+    """Load a scenario file, instantiate its classes, report success/failure."""
+    from gbax.scenario import (
+        ScenarioValidationError,
+        instantiate_scenario,
+    )
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(f"_gbax_validate_{path.stem}", path)
+    if spec is None or spec.loader is None:
+        typer.echo(f"could not import {path}", err=True)
+        raise typer.Exit(code=1)
+    mod = importlib.util.module_from_spec(spec)
+    try:
+        spec.loader.exec_module(mod)
+    except Exception as exc:
+        typer.echo(f"import error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+
+    from gbax.scenario import Scenario
+
+    found = False
+    for attr in dir(mod):
+        obj = getattr(mod, attr)
+        if isinstance(obj, type) and issubclass(obj, Scenario) and obj is not Scenario:
+            found = True
+            try:
+                instantiate_scenario(obj)
+                typer.echo(f"  OK    {obj.__name__}  (name={obj.name})")
+            except ScenarioValidationError as exc:
+                typer.echo(f"  FAIL  {obj.__name__}  ({exc})", err=True)
+                raise typer.Exit(code=1) from exc
+
+    if not found:
+        typer.echo(f"no Scenario subclasses found in {path}", err=True)
+        raise typer.Exit(code=1)
