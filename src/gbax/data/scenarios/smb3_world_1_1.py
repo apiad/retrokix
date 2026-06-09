@@ -11,7 +11,7 @@ The cheat DB does not expose level-completion or x-position markers for
 SMB3 GBA, so this scenario rewards in-game score and penalizes time spent.
 A real World 1-1 completion bonus would need additional RE work.
 
-TODO: rom_sha1 placeholder. Replace with `sha1sum <your-sma4-rom>`.
+ROM: Super Mario Advance 4 (USA, Rev 1), sha1 82fa5a6cf09415c2e262931488841b78a524e2c3.
 """
 
 from gbax.scenario import Scenario
@@ -24,9 +24,12 @@ ADDR_SCORE_LO = 0x02003854
 
 class SMB3World1_1(Scenario):
     name = "smb3-world-1-1"
-    rom_sha1 = "0000000000000000000000000000000000000000"
+    rom_sha1 = "82fa5a6cf09415c2e262931488841b78a524e2c3"
     decision_period = 2
     max_frames = 60 * 60 * 3  # 3 minutes
+
+    def __init__(self) -> None:
+        self._game_started = False
 
     def setup(self, ctl: Controller) -> None:
         ctl.wait(240)
@@ -59,4 +62,9 @@ class SMB3World1_1(Scenario):
         }
 
     def done(self, ctl: Controller, frame: int) -> bool:
-        return ctl.read_u8(ADDR_MARIO_LIVES) == 0
+        lives = ctl.read_u8(ADDR_MARIO_LIVES)
+        if not self._game_started:
+            if lives > 0:
+                self._game_started = True
+            return False
+        return lives == 0

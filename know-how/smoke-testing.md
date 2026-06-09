@@ -65,3 +65,39 @@ gbax play tests/fixtures/test.gba
 
 Investigate before merging if any of the above doesn't behave as
 documented.
+
+## Player + scenario + tournament smoke
+
+ROMs are not vendored; download once into `~/.gbax/roms/`.
+
+```bash
+gbax download "mortal kombat advance"
+gbax download "super mario advance 4"
+```
+
+Single-player train (random bot, no time budget):
+
+```bash
+gbax train --rom "mortal kombat" \
+  --scenario mk-arcade-easy \
+  --player "python -m gbax.data.bots.random"
+```
+
+Expected: one `[scored]` or `[timeout]` line. A `score=0` across the entire
+run usually means the scenario's RAM addresses are wrong — fix the
+`src/gbax/data/scenarios/<name>.py` constants and re-run.
+
+Two-player tournament (60 fps, lag-forfeit enabled):
+
+```bash
+gbax tournament --rom "mortal kombat" \
+  --scenario mk-arcade-easy \
+  --player "python -m gbax.data.bots.press_a" \
+  --player "python -m gbax.data.bots.random" \
+  --output /tmp/mk-tournament/
+```
+
+Expected: leaderboard table with two rows and `results.json` written. The
+match should complete in under 30s wall-clock per round at 60fps. If the
+leaderboard is blank or scores are flat, the scenario addresses are wrong
+— see `src/gbax/data/scenarios/`.
