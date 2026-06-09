@@ -112,6 +112,13 @@ def play_loop(
                     sym = event.key.keysym.sym
                     mod = event.key.keysym.mod
 
+                    # Ctrl+1..9 — save slot (modifier required so it's not fumbled)
+                    if (sdl2.SDLK_1 <= sym <= sdl2.SDLK_9) and (mod & sdl2.KMOD_CTRL):
+                        slot = sym - sdl2.SDLK_0
+                        runtime.save_state_to_slot(slot)
+                        print(f"saved slot {slot}")
+                        continue
+
                     # Shift+1..9 — load slot
                     if (sdl2.SDLK_1 <= sym <= sdl2.SDLK_9) and (mod & sdl2.KMOD_SHIFT):
                         slot = sym - sdl2.SDLK_0
@@ -120,13 +127,6 @@ def play_loop(
                             print(f"loaded slot {slot}")
                         except KeyError:
                             print(f"slot {slot} is empty")
-                        continue
-
-                    # 1..9 — save slot
-                    if (sdl2.SDLK_1 <= sym <= sdl2.SDLK_9) and not (mod & sdl2.KMOD_CTRL):
-                        slot = sym - sdl2.SDLK_0
-                        runtime.save_state_to_slot(slot)
-                        print(f"saved slot {slot}")
                         continue
 
                     # F12 — screenshot
