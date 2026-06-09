@@ -13,6 +13,7 @@ References:
 
 from __future__ import annotations
 
+import struct
 from pathlib import Path
 
 import numpy as np
@@ -192,6 +193,9 @@ class LibretroCore:
         # Memory map populated by SET_MEMORY_MAPS callback. List of dicts:
         # {'start': uint32, 'len': uint32, 'select': uint32, 'flags': int, 'ptr': cdata}
         self._mem_descriptors: list[dict] = []
+        # Audio sink — set by callers wanting samples. Receives bytes of
+        # interleaved 16-bit stereo PCM at retro_system_av_info().timing.sample_rate.
+        self.on_audio: object | None = None  # callable(bytes) -> None | None
 
         # Keep callback refs alive — cffi callbacks die if their Python wrappers are GC'd
         self._cb_env    = self._ffi.callback("retro_environment_t", self._on_environment)
@@ -399,9 +403,12 @@ class LibretroCore:
         self._framebuffer = fb
 
     def _on_audio_sample(self, left: int, right: int) -> None:
-        pass
+        if self.on_audio is not None:
+            self.on_audio(struct.pack("<hh", left, right))
 
     def _on_audio_sample_batch(self, data, frames: int) -> int:
+        if self.on_audio is not None and frames > 0:
+            self.on_audio(bytes(self._ffi.buffer(data, frames * 4)))
         return frames
 
     def _on_input_poll(self) -> None:

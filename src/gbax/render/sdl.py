@@ -2,6 +2,7 @@
 
 Single event-loop client of EmulatorRuntime:
   - blits the framebuffer to a window at fixed-factor upscale
+  - emits audio samples to an SDL audio device
   - keyboard → GBA buttons
   - hotkeys for save state slots 1-9, fast-forward (Tab), screenshot (F12)
   - persistence with Ctrl+S
@@ -25,6 +26,7 @@ from gbax.runtime import EmulatorRuntime
 DEFAULT_SCALE = 3
 TARGET_FRAME_TIME = 1.0 / 60.0
 FAST_FORWARD_MULTIPLIER = 8
+AUDIO_SAMPLE_RATE = 32768  # libretro tells us — mGBA uses 32768 by default
 
 
 def default_keymap() -> dict[int, Button]:
@@ -60,6 +62,7 @@ def play_loop(
     fast_forward = False
 
     sdl2.ext.init()
+    sdl2.SDL_InitSubSystem(sdl2.SDL_INIT_AUDIO)
     try:
         window = sdl2.ext.Window(
             f"gbax — {runtime.rom_path.name}",
@@ -74,6 +77,26 @@ def play_loop(
             GBA_WIDTH,
             GBA_HEIGHT,
         )
+
+        # Open a stereo S16 audio device matching the core's sample rate.
+        wanted = sdl2.SDL_AudioSpec(
+            AUDIO_SAMPLE_RATE,
+            sdl2.AUDIO_S16SYS,
+            2,        # channels
+            2048,     # samples per buffer
+        )
+        obtained = sdl2.SDL_AudioSpec(0, 0, 0, 0)
+        audio_dev = sdl2.SDL_OpenAudioDevice(None, 0, wanted, obtained, 0)
+        if audio_dev == 0:
+            print(f"warning: SDL_OpenAudioDevice failed ({sdl2.SDL_GetError().decode()}); audio off")
+        else:
+            sdl2.SDL_PauseAudioDevice(audio_dev, 0)  # 0 = unpause/play
+
+            def _on_audio(buf: bytes) -> None:
+                sdl2.SDL_QueueAudio(audio_dev, buf, len(buf))
+
+            # Hook the libretro core's audio callback. `runtime._core` is gbax-internal.
+            runtime._core.on_audio = _on_audio
 
         running = True
         event = sdl2.SDL_Event()
@@ -167,5 +190,8 @@ def play_loop(
             last_frame = time.monotonic()
 
         sdl2.SDL_DestroyTexture(texture)
+        if audio_dev:
+            sdl2.SDL_CloseAudioDevice(audio_dev)
     finally:
+        runtime._core.on_audio = None
         sdl2.ext.quit()
