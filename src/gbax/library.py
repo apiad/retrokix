@@ -5,6 +5,11 @@ archive.org hosts mirrors of the No-Intro sets; we currently point at
 `ef_gba_no-intro_2024-02-21` (curated snapshot, ~all officially released
 GBA games).
 
+The metadata (filename / size / SHA-1 for every entry) is **vendored**
+as JSON at `gbax/data/no_intro_gba.json` — the set is frozen, so search
+is an in-process lookup with zero network. `gbax download` still hits
+archive.org to fetch the actual .zip.
+
 `gbax download <query>` resolves a fuzzy query to the matching ZIP entry,
 fetches it, extracts the .gba inside, and saves to `~/.gbax/roms/`. ZIPs
 are deleted after extraction (we keep only the .gba).
@@ -15,6 +20,7 @@ from __future__ import annotations
 import hashlib
 import json
 import shutil
+import sys
 import tempfile
 import urllib.parse
 import urllib.request
@@ -29,6 +35,12 @@ DOWNLOAD_URL = "https://archive.org/download/{item}/{filename}"
 DEFAULT_ROMS_DIR = Path.home() / ".gbax" / "roms"
 
 
+if sys.version_info >= (3, 11):
+    from importlib.resources import files as _resource_files
+else:  # pragma: no cover — minimum supported is 3.11
+    from importlib_resources import files as _resource_files  # type: ignore
+
+
 @dataclass
 class RomEntry:
     name: str          # filename inside the archive item (e.g. "Pokemon - Emerald Version (USA, Europe).zip")
@@ -40,15 +52,42 @@ class RomEntry:
         return self.name.lower().endswith(".zip")
 
 
-class RomLibrary:
-    """Wraps an archive.org item containing GBA ROM ZIPs."""
+def _load_bundled_metadata() -> tuple[str, list[RomEntry]]:
+    """Read the vendored archive.org metadata snapshot."""
+    blob = _resource_files("gbax.data").joinpath("no_intro_gba.json").read_text()
+    data = json.loads(blob)
+    entries = [
+        RomEntry(name=e["name"], size=int(e["size"]), sha1=e.get("sha1"))
+        for e in data["entries"]
+    ]
+    return data["item"], entries
 
-    def __init__(self, item: str = DEFAULT_ARCHIVE_ITEM, roms_dir: Path | None = None):
+
+class RomLibrary:
+    """Wraps an archive.org item containing GBA ROM ZIPs.
+
+    Defaults to the bundled metadata snapshot (instant search, zero network).
+    Pass `refresh=True` to fetch a fresh copy from archive.org (rare — the
+    No-Intro set we track is frozen).
+    """
+
+    def __init__(
+        self,
+        item: str = DEFAULT_ARCHIVE_ITEM,
+        roms_dir: Path | None = None,
+        refresh: bool = False,
+    ):
         self.item = item
         self.roms_dir = Path(roms_dir) if roms_dir else DEFAULT_ROMS_DIR
+        self._refresh = refresh
         self._cached_entries: list[RomEntry] | None = None
 
     def _fetch_metadata(self) -> list[RomEntry]:
+        if not self._refresh:
+            bundled_item, entries = _load_bundled_metadata()
+            if bundled_item == self.item:
+                return entries
+            # Asked for an item the bundle doesn't cover — fall through to network.
         url = METADATA_URL.format(item=self.item)
         with urllib.request.urlopen(url, timeout=30) as resp:
             data = json.load(resp)

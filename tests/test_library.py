@@ -53,6 +53,24 @@ def test_entries_cached(stub_lib):
     assert a is b  # same list object, not refetched
 
 
+def test_bundled_metadata_loads():
+    """The vendored snapshot ships in the wheel and parses cleanly."""
+    from gbax.library import _load_bundled_metadata
+
+    item, entries = _load_bundled_metadata()
+    assert item.startswith("ef_gba_no-intro")
+    assert len(entries) > 1000  # No-Intro GBA set has thousands of entries
+    # Sanity: Pokemon Emerald is in there.
+    assert any("Pokemon" in e.name and "Emerald" in e.name for e in entries)
+
+
+def test_default_library_uses_bundled_snapshot():
+    """No network when refresh=False — entries come from the bundled file."""
+    lib = RomLibrary()
+    hits = lib.search("pokemon emerald")
+    assert any("Emerald" in h.name and "(USA" in h.name for h in hits)
+
+
 def test_list_local_roms_empty(tmp_path):
     assert list_local_roms(tmp_path) == []
 

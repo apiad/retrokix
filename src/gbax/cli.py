@@ -13,11 +13,14 @@ def version() -> None:
 
 
 @app.command()
-def search(query: str = typer.Argument(..., help="Fuzzy match — all tokens must appear in the ROM name.")) -> None:
+def search(
+    query: str = typer.Argument(..., help="Fuzzy match — all tokens must appear in the ROM name."),
+    refresh: bool = typer.Option(False, "--refresh", help="Force-fetch the latest metadata from archive.org (default uses bundled snapshot)."),
+) -> None:
     """Search the configured ROM archive (currently archive.org's No-Intro GBA mirror)."""
     from gbax.library import RomLibrary
 
-    matches = RomLibrary().search(query)
+    matches = RomLibrary(refresh=refresh).search(query)
     if not matches:
         typer.echo(f"no matches for {query!r}")
         raise typer.Exit(code=1)
@@ -31,11 +34,12 @@ def download(
     query: str = typer.Argument(..., help="Fuzzy match — all tokens must appear in the ROM name."),
     region: str | None = typer.Option(None, "--region", help="Prefer USA|Europe|Japan|World when multiple match."),
     roms_dir: Path | None = typer.Option(None, "--dest", help="Where to save the .gba (default ~/.gbax/roms/)."),
+    refresh: bool = typer.Option(False, "--refresh", help="Force-fetch the latest metadata from archive.org."),
 ) -> None:
     """Download a ROM. Auto-picks the best match; prints the final .gba path."""
     from gbax.library import RomLibrary
 
-    lib = RomLibrary(roms_dir=roms_dir) if roms_dir else RomLibrary()
+    lib = RomLibrary(roms_dir=roms_dir, refresh=refresh) if roms_dir else RomLibrary(refresh=refresh)
     matches = lib.search(query)
     if not matches:
         typer.echo(f"no matches for {query!r}")
