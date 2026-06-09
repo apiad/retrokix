@@ -14,6 +14,7 @@ from pathlib import Path
 
 import numpy as np
 
+from gbax.input import Button
 from gbax.libretro import GBA_HEIGHT, GBA_WIDTH, LibretroCore
 
 
@@ -45,6 +46,7 @@ class EmulatorRuntime:
         self._core.load_rom(self._rom_path)
         self._core.reset()
         self._frame_count = 0
+        self._buttons_held: set[Button] = set()
 
     @property
     def rom_path(self) -> Path:
@@ -68,6 +70,13 @@ class EmulatorRuntime:
     def reset(self) -> None:
         self._core.reset()
         self._frame_count = 0
+
+    def buttons_held(self) -> set[Button]:
+        return set(self._buttons_held)
+
+    def set_buttons(self, buttons: set[Button]) -> None:
+        self._buttons_held = set(buttons)
+        self._core.set_buttons({int(b) for b in buttons})
 
     def framebuffer(self) -> np.ndarray:
         """(H, W, 3) uint8 RGB array. Updated by the most recent step()."""
