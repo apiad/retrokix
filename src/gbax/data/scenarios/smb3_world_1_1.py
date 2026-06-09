@@ -33,10 +33,14 @@ class SMB3World1_1(Scenario):
 
     def setup(self, ctl: Controller) -> None:
         ctl.wait(240)
-        ctl.press(["start"], frames=2); ctl.wait(60)
-        ctl.press(["start"], frames=2); ctl.wait(60)
-        ctl.press(["a"], frames=2);     ctl.wait(120)
-        ctl.press(["a"], frames=2);     ctl.wait(120)
+        ctl.press(["start"], frames=2)
+        ctl.wait(60)
+        ctl.press(["start"], frames=2)
+        ctl.wait(60)
+        ctl.press(["a"], frames=2)
+        ctl.wait(120)
+        ctl.press(["a"], frames=2)
+        ctl.wait(120)
 
     def _score_raw(self, ctl: Controller) -> int:
         lo = ctl.read_u8(ADDR_SCORE_LO)

@@ -456,12 +456,14 @@ def tournament(
     try:
         rom_path = resolve_rom(rom)
     except (FileNotFoundError, RuntimeError) as exc:
-        typer.echo(str(exc), err=True); raise typer.Exit(code=1) from exc
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=1) from exc
 
     try:
         scenario_cls = resolve_scenario(scenario)
     except Exception as exc:
-        typer.echo(str(exc), err=True); raise typer.Exit(code=1) from exc
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=1) from exc
 
     driver = RealtimeDriver(
         rom_path=rom_path,

@@ -30,9 +30,12 @@ class MKArcadeEasy(Scenario):
 
     def setup(self, ctl: Controller) -> None:
         ctl.wait(180)
-        ctl.press(["start"], frames=2); ctl.wait(60)
-        ctl.press(["a"], frames=2);     ctl.wait(60)
-        ctl.press(["a"], frames=2);     ctl.wait(120)
+        ctl.press(["start"], frames=2)
+        ctl.wait(60)
+        ctl.press(["a"], frames=2)
+        ctl.wait(60)
+        ctl.press(["a"], frames=2)
+        ctl.wait(120)
 
     def observe(self, ctl: Controller, frame: int) -> dict:
         return {

@@ -1,6 +1,6 @@
 [project]
 name = "gbax"
-version = "0.1.1"
+version = "0.2.0"
 description = "Hacker-first, scriptable GBA emulator with HTTP API"
 readme = "README.md"
 license = { text = "MPL-2.0" }

@@ -6,6 +6,7 @@ HELLO/READY handshake. They differ in the decision-loop pacing.
 
 from __future__ import annotations
 
+import select
 import shlex
 import subprocess
 import time
@@ -181,9 +182,6 @@ class StepDriver:
         finally:
             player.close()
             ctl.close()
-
-
-import select
 
 
 FRAME_TIME_S = 1.0 / 60.0

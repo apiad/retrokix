@@ -4,6 +4,9 @@ from __future__ import annotations
 
 import io
 import json
+import subprocess
+import sys
+from pathlib import Path
 
 import pytest
 
@@ -47,11 +50,6 @@ def test_iter_messages_invalid_json_raises():
 
 def test_schema_version_is_one():
     assert SCHEMA_VERSION == 1
-
-
-import subprocess
-import sys
-from pathlib import Path
 
 
 FIXTURES = Path(__file__).parent / "fixtures"

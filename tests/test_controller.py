@@ -6,8 +6,10 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+from PIL import Image
 
 from gbax.controller import Controller
+from gbax.input import Button
 
 
 @pytest.fixture
@@ -25,9 +27,6 @@ def test_framebuffer_initially_present(controller):
     fb = controller.framebuffer
     assert fb.shape == (160, 240, 3)
     assert fb.dtype == np.uint8
-
-
-from gbax.input import Button
 
 
 def test_press_advances_frames(controller):
@@ -61,9 +60,6 @@ def test_wait_advances_with_current_held(controller):
 def test_press_unknown_button_raises(controller):
     with pytest.raises(ValueError):
         controller.press(["turbo"], frames=1)
-
-
-from PIL import Image
 
 
 def test_memory_roundtrip_u8(controller):
