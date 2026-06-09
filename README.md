@@ -65,7 +65,24 @@ cheat ON: Max Money
 cheat ON: Walk Through Walls [Press L+R]
 ```
 
-Toggle with `F1`–`F9` during play (in the order they were enabled).
+**Pin cheats to keys** so the same hotkey toggles the same cheat across
+sessions:
+
+```
+$ gbax pin emerald F1 max-money
+$ gbax pin emerald F2 walk-through-walls-l-r
+$ gbax pin emerald F7 complete-pokedex
+$ gbax pins emerald
+  F1  →  max-money
+  F2  →  walk-through-walls-l-r
+  F7  →  complete-pokedex
+```
+
+Pins persist to `~/.gbax/pins/<rom-sha1>.json`. In `play`, pressing `F1`
+toggles the pinned cheat directly — autoloading it from the catalog if
+needed. Unpinned F-keys fall back to "toggle the Nth currently-active
+cheat."
+
 Over the API: `POST /cheats/<slug>/enable`, `POST /cheats/<slug>/disable`,
 `POST /cheats/custom` for ad-hoc codes, `DELETE /cheats` to clear.
 

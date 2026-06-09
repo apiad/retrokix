@@ -18,6 +18,7 @@ from pathlib import Path
 
 import numpy as np
 
+from gbax import pins as pins_module
 from gbax.cheats import Cheat, cheats_for_rom
 from gbax.input import Button
 from gbax.libretro import LibretroCore
@@ -73,6 +74,8 @@ class EmulatorRuntime:
         # Cheat layer — known catalog from libretro-database + currently-active set.
         self._cheat_catalog: list[Cheat] = cheats_for_rom(self._rom_path.name)
         self._active_cheats: dict[str, Cheat] = {}  # slug → Cheat (active = installed + enabled)
+        # Per-ROM hotkey pins (F1..F9 → cheat slug), loaded from ~/.gbax/pins/<sha1>.json
+        self._pins: dict[str, str] = pins_module.load(self._rom_sha1)
         # Concurrency: ticker thread (Mode.FREE) + API callers both touch the core
         self._lock = threading.Lock()
         self._tick_thread: threading.Thread | None = None
@@ -302,6 +305,19 @@ class EmulatorRuntime:
         with self._lock:
             self._active_cheats.clear()
             self._core.cheat_reset()
+
+    def cheat_pins(self) -> dict[str, str]:
+        """Return the loaded F-key → cheat-slug map for this ROM (shallow copy)."""
+        return dict(self._pins)
+
+    def set_cheat_pin(self, key: str, slug: str) -> None:
+        """Persist a pin and update the in-memory map."""
+        pins_module.set_pin(self._rom_sha1, key, slug)
+        self._pins[key] = slug
+
+    def unset_cheat_pin(self, key: str) -> None:
+        pins_module.unset_pin(self._rom_sha1, key)
+        self._pins.pop(key, None)
 
     def _reinstall_cheats_locked(self) -> None:
         """Reset and reinstall every active cheat. Lock-held."""

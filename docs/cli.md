@@ -95,6 +95,27 @@ $ gbax cheats emerald | head -3
   walk-through-walls-l-r               Walk Through Walls [Press L+R]
 ```
 
+## `gbax pin <rom> <key> <slug>` / `gbax unpin` / `gbax pins`
+
+Bind a cheat to an F-key for a specific ROM. Persists to
+`~/.gbax/pins/<rom-sha1>.json` and applies in `gbax play` automatically on
+the next boot.
+
+```
+$ gbax pin emerald F1 max-money
+pinned F1 → max-money  (/home/<you>/.gbax/pins/f3ae08...json)
+
+$ gbax pins emerald
+  F1  →  max-money
+
+$ gbax unpin emerald F1
+unpinned F1
+```
+
+In `play`, pinned F-keys toggle the specific cheat (autoloading it from the
+catalog if needed). Unpinned F-keys fall back to "toggle the Nth currently
+active cheat" — handy if you just `--cheats foo,bar` without setting pins.
+
 ## `gbax serve <rom>`
 
 Same boot, but no window. Exposes a FastAPI controller API on

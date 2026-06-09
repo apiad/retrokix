@@ -92,6 +92,76 @@ def cheats(
         typer.echo(f"  {c.slug():35s}  {c.name}")
 
 
+def _resolve_rom_sha1(rom: str) -> tuple[Path, str]:
+    """Resolve a ROM query to (path, sha1) without booting the emulator."""
+    import hashlib
+
+    from gbax.library import resolve_rom
+
+    try:
+        path = resolve_rom(rom)
+    except (FileNotFoundError, RuntimeError) as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=1) from exc
+    return path, hashlib.sha1(path.read_bytes()).hexdigest()
+
+
+@app.command()
+def pin(
+    rom: str = typer.Argument(..., help="ROM path or fuzzy query."),
+    key: str = typer.Argument(..., help="Hotkey to pin (F1..F9)."),
+    slug: str = typer.Argument(..., help="Cheat slug from `gbax cheats <rom>`."),
+) -> None:
+    """Pin a cheat to a hotkey for the given ROM. Persists to ~/.gbax/pins/<sha1>.json."""
+    from gbax import pins as pins_module
+    from gbax.cheats import Cheat, cheats_for_rom
+
+    rom_path, sha1 = _resolve_rom_sha1(rom)
+    catalog = cheats_for_rom(rom_path.name)
+    if catalog and not any(Cheat(c.name, c.code).slug() == slug for c in catalog):
+        typer.echo(f"warning: {slug!r} is not in the catalog for {rom_path.name}", err=True)
+
+    try:
+        path = pins_module.set_pin(sha1, key.upper(), slug)
+    except ValueError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=1) from exc
+    typer.echo(f"pinned {key.upper()} → {slug}  ({path})")
+
+
+@app.command()
+def unpin(
+    rom: str = typer.Argument(..., help="ROM path or fuzzy query."),
+    key: str = typer.Argument(..., help="Hotkey to clear (F1..F9)."),
+) -> None:
+    """Clear the hotkey pin for the given ROM."""
+    from gbax import pins as pins_module
+
+    _, sha1 = _resolve_rom_sha1(rom)
+    try:
+        pins_module.unset_pin(sha1, key.upper())
+    except ValueError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=1) from exc
+    typer.echo(f"unpinned {key.upper()}")
+
+
+@app.command()
+def pins(
+    rom: str = typer.Argument(..., help="ROM path or fuzzy query."),
+) -> None:
+    """List hotkey pins for the given ROM."""
+    from gbax import pins as pins_module
+
+    _, sha1 = _resolve_rom_sha1(rom)
+    current = pins_module.load(sha1)
+    if not current:
+        typer.echo("no pins")
+        return
+    for key in sorted(current):
+        typer.echo(f"  {key}  →  {current[key]}")
+
+
 @app.command()
 def list_roms() -> None:
     """List ROMs in ~/.gbax/roms/."""

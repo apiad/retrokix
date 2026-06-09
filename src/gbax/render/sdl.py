@@ -129,15 +129,25 @@ def play_loop(
                             print(f"slot {slot} is empty")
                         continue
 
-                    # F1..F9 — toggle the Nth active cheat (in current insertion order)
+                    # F1..F9 — toggle the cheat pinned to that key, or fall back
+                    # to "Nth currently-active cheat" if no pin is set.
                     if sdl2.SDLK_F1 <= sym <= sdl2.SDLK_F9:
                         idx = sym - sdl2.SDLK_F1
-                        active = runtime.active_cheats()
-                        if idx < len(active):
-                            cheat, now_on = runtime.toggle_cheat(active[idx].slug())
-                            print(f"cheat {'ON ' if now_on else 'OFF'}: {cheat.name}")
+                        key = f"F{idx + 1}"
+                        pinned = runtime.cheat_pins().get(key)
+                        if pinned:
+                            try:
+                                cheat, now_on = runtime.toggle_cheat(pinned)
+                                print(f"cheat {'ON ' if now_on else 'OFF'}: {cheat.name}")
+                            except KeyError as exc:
+                                print(f"{key} pin error: {exc}")
                         else:
-                            print(f"no cheat in slot F{idx + 1} (preload with --cheats)")
+                            active = runtime.active_cheats()
+                            if idx < len(active):
+                                cheat, now_on = runtime.toggle_cheat(active[idx].slug())
+                                print(f"cheat {'ON ' if now_on else 'OFF'}: {cheat.name}")
+                            else:
+                                print(f"{key} is unpinned (try: gbax pin <rom> {key} <slug>)")
                         continue
 
                     # F12 — screenshot
