@@ -13,6 +13,73 @@ def version() -> None:
 
 
 @app.command()
+def search(query: str = typer.Argument(..., help="Fuzzy match — all tokens must appear in the ROM name.")) -> None:
+    """Search the configured ROM archive (currently archive.org's No-Intro GBA mirror)."""
+    from gbax.library import RomLibrary
+
+    matches = RomLibrary().search(query)
+    if not matches:
+        typer.echo(f"no matches for {query!r}")
+        raise typer.Exit(code=1)
+    for i, e in enumerate(matches, 1):
+        size_mb = e.size / 1_048_576
+        typer.echo(f"  {i:3d}. {e.name}  ({size_mb:.1f} MB)")
+
+
+@app.command()
+def download(
+    query: str = typer.Argument(..., help="Fuzzy match — all tokens must appear in the ROM name."),
+    region: str | None = typer.Option(None, "--region", help="Prefer USA|Europe|Japan|World when multiple match."),
+    roms_dir: Path | None = typer.Option(None, "--dest", help="Where to save the .gba (default ~/.gbax/roms/)."),
+) -> None:
+    """Download a ROM. Auto-picks the best match; prints the final .gba path."""
+    from gbax.library import RomLibrary
+
+    lib = RomLibrary(roms_dir=roms_dir) if roms_dir else RomLibrary()
+    matches = lib.search(query)
+    if not matches:
+        typer.echo(f"no matches for {query!r}")
+        raise typer.Exit(code=1)
+
+    # Prefer the region the user asked for, else USA, else first match.
+    def _score(entry) -> int:
+        name = entry.name.lower()
+        if region and region.lower() in name:
+            return 0
+        if "(usa" in name or "(world" in name:
+            return 1
+        if "(europe" in name:
+            return 2
+        return 3
+
+    matches.sort(key=_score)
+    chosen = matches[0]
+
+    if len(matches) > 1:
+        typer.echo(f"{len(matches)} matches; picked: {chosen.name}")
+        typer.echo("  (use a more specific query or --region to override)")
+    else:
+        typer.echo(f"match: {chosen.name}")
+    typer.echo(f"  size: {chosen.size / 1_048_576:.1f} MB")
+
+    path = lib.download(chosen)
+    typer.echo(f"saved: {path}")
+
+
+@app.command()
+def list_roms() -> None:
+    """List ROMs in ~/.gbax/roms/."""
+    from gbax.library import list_local_roms, sha1
+
+    roms = list_local_roms()
+    if not roms:
+        typer.echo("no ROMs in ~/.gbax/roms/")
+        return
+    for p in roms:
+        typer.echo(f"  {p.name}  ({p.stat().st_size / 1_048_576:.1f} MB)  sha1:{sha1(p)[:10]}")
+
+
+@app.command()
 def play(
     rom: Path = typer.Argument(..., exists=True, file_okay=True, dir_okay=False, readable=True),
     scale: int = typer.Option(3, "--scale", help="Window scale factor."),
