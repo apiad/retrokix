@@ -29,6 +29,10 @@ $ curl localhost:8420/frame -o frame.png
 
 That's the headline: it's an emulator you can pipe.
 
+> 🤫 Pst, that whole "let's do science on GBA games" is the public reason
+> you're here, but we all know you just want to play Pokémon on Linux. Go
+> ahead, that's allowed too.
+
 ## Status
 
 - **Alpha.** v0.0.1. Works on Linux. macOS / Windows are PR-welcome.

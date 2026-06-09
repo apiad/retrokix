@@ -1,0 +1,52 @@
+name: release
+
+# Build the wheel + sdist on every GitHub release, publish to PyPI via
+# trusted publishing (OIDC). No tokens stored anywhere — the publish job
+# requests a short-lived token from PyPI using GitHub's identity claim.
+#
+# Trusted publisher must be configured on PyPI first:
+#   https://pypi.org/manage/project/gbax/settings/publishing/
+#   (or as a "pending publisher" before the project exists)
+# with:
+#   Owner: apiad
+#   Repo:  gbax
+#   Workflow filename: release.yml
+#   Environment name: pypi
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Build sdist + wheel
+        run: |
+          python -m pip install --upgrade pip build
+          python -m build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-24.04
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
