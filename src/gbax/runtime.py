@@ -11,6 +11,8 @@ import hashlib
 import json
 import os
 import struct
+import threading
+import time
 from enum import Enum
 from pathlib import Path
 
@@ -65,6 +67,10 @@ class EmulatorRuntime:
         self._speed_multiplier = 1.0
         # In-memory save state slots: slot_id -> (blob, frame_count)
         self._slots: dict[int, tuple[bytes, int]] = {}
+        # Concurrency: ticker thread (Mode.FREE) + API callers both touch the core
+        self._lock = threading.Lock()
+        self._tick_thread: threading.Thread | None = None
+        self._tick_stop = threading.Event()
 
     @property
     def rom_path(self) -> Path:
@@ -81,30 +87,36 @@ class EmulatorRuntime:
     def step(self, frames: int = 1) -> None:
         if frames < 1:
             raise ValueError(f"frames must be >= 1, got {frames}")
-        for _ in range(frames):
-            self._core.run()
-            self._frame_count += 1
+        with self._lock:
+            for _ in range(frames):
+                self._core.run()
+                self._frame_count += 1
 
     def reset(self) -> None:
-        self._core.reset()
-        self._frame_count = 0
+        with self._lock:
+            self._core.reset()
+            self._frame_count = 0
 
     def buttons_held(self) -> set[Button]:
         return set(self._buttons_held)
 
     def set_buttons(self, buttons: set[Button]) -> None:
-        self._buttons_held = set(buttons)
-        self._core.set_buttons({int(b) for b in buttons})
+        with self._lock:
+            self._buttons_held = set(buttons)
+            self._core.set_buttons({int(b) for b in buttons})
 
     def framebuffer(self) -> np.ndarray:
-        """(H, W, 3) uint8 RGB array. Updated by the most recent step()."""
-        return self._core.framebuffer
+        """(H, W, 3) uint8 RGB array. Copy of the most recent framebuffer."""
+        with self._lock:
+            return self._core.framebuffer.copy()
 
     def read_memory(self, addr: int, length: int) -> bytes:
-        return self._core.read_bus(addr, length)
+        with self._lock:
+            return self._core.read_bus(addr, length)
 
     def write_memory(self, addr: int, data: bytes) -> None:
-        self._core.write_bus(addr, data)
+        with self._lock:
+            self._core.write_bus(addr, data)
 
     def read_u8(self, addr: int) -> int:
         return self.read_memory(addr, 1)[0]
@@ -150,25 +162,29 @@ class EmulatorRuntime:
     def save_state_to_slot(self, slot: int) -> bytes:
         if not 1 <= slot <= 9:
             raise ValueError(f"slot must be 1..9, got {slot}")
-        blob = self._core.serialize()
-        self._slots[slot] = (blob, self._frame_count)
-        return blob
+        with self._lock:
+            blob = self._core.serialize()
+            self._slots[slot] = (blob, self._frame_count)
+            return blob
 
     def load_state_from_slot(self, slot: int) -> None:
         if not 1 <= slot <= 9:
             raise ValueError(f"slot must be 1..9, got {slot}")
         if slot not in self._slots:
             raise KeyError(f"slot {slot} is empty")
-        blob, frame_count = self._slots[slot]
-        self._core.unserialize(blob)
-        self._frame_count = frame_count
+        with self._lock:
+            blob, frame_count = self._slots[slot]
+            self._core.unserialize(blob)
+            self._frame_count = frame_count
 
     def export_state(self) -> bytes:
-        return self._core.serialize()
+        with self._lock:
+            return self._core.serialize()
 
     def import_state(self, blob: bytes, frame_count: int = 0) -> None:
-        self._core.unserialize(blob)
-        self._frame_count = frame_count
+        with self._lock:
+            self._core.unserialize(blob)
+            self._frame_count = frame_count
 
     def _slot_path(self, slot: int) -> Path:
         return self._save_dir / self._rom_sha1 / f"slot-{slot}.state"
@@ -192,7 +208,37 @@ class EmulatorRuntime:
         self._slots[slot] = (blob, meta["frame_count"])
         self.load_state_from_slot(slot)
 
+    # --- free-run ticker ---
+
+    def start_free_run_ticker(self) -> None:
+        if self._tick_thread is not None and self._tick_thread.is_alive():
+            return
+        self._tick_stop.clear()
+        self._tick_thread = threading.Thread(target=self._tick_loop, daemon=True)
+        self._tick_thread.start()
+
+    def stop_free_run_ticker(self) -> None:
+        if self._tick_thread is None:
+            return
+        self._tick_stop.set()
+        self._tick_thread.join(timeout=2.0)
+        self._tick_thread = None
+
+    def _tick_loop(self) -> None:
+        while not self._tick_stop.is_set():
+            target_fps = 60.0 * self._speed_multiplier
+            frame_time = 1.0 / target_fps
+            t0 = time.monotonic()
+            with self._lock:
+                self._core.run()
+                self._frame_count += 1
+            elapsed = time.monotonic() - t0
+            sleep = frame_time - elapsed
+            if sleep > 0:
+                time.sleep(sleep)
+
     def close(self) -> None:
+        self.stop_free_run_ticker()
         self._core.deinit()
 
     def __enter__(self) -> "EmulatorRuntime":

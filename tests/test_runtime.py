@@ -147,3 +147,31 @@ def test_persist_and_reload_state(test_rom, mgba_core, tmp_path):
     with EmulatorRuntime(test_rom, core_path=mgba_core, save_dir=tmp_path) as rt2:
         rt2.load_persistent_slot(1)
         assert rt2.frame_count == 42
+
+
+# --- Free-run ticker ---
+
+
+def test_free_run_ticker_advances(runtime):
+    import time
+    runtime.start_free_run_ticker()
+    try:
+        time.sleep(0.5)
+        fc = runtime.frame_count
+        # 0.5s at 60fps → ~30 frames; allow wide margin for CI jitter
+        assert 10 <= fc <= 60, f"expected ~30 frames in 0.5s, got {fc}"
+    finally:
+        runtime.stop_free_run_ticker()
+
+
+def test_free_run_ticker_speed_multiplier(runtime):
+    import time
+    runtime.speed_multiplier = 4.0
+    runtime.start_free_run_ticker()
+    try:
+        time.sleep(0.5)
+        fc = runtime.frame_count
+        # 0.5s at 240fps → ~120 frames; pad heavily for slow CI
+        assert fc >= 50, f"expected many frames in 0.5s at 4x, got {fc}"
+    finally:
+        runtime.stop_free_run_ticker()
