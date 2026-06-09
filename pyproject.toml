@@ -14,7 +14,7 @@ dependencies = [
   "pillow>=10",
   "pysdl2>=0.9.16",
   "pysdl2-dll>=2.30",
-  # libmgba binding pinned in Task 2 once verified
+  "cffi>=1.17",  # used by gbax.libretro to bind the libretro ABI
 ]
 
 [project.scripts]

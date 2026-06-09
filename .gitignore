@@ -7,7 +7,10 @@ __pycache__/
 .ruff_cache/
 build/
 dist/
+# Don't ignore the cores/ shared libs — those are intentional test fixtures.
+# But ignore other stray .so files:
 *.so
+!tests/cores/*.so
 tests/fixtures/*.sav
 tests/fixtures/*.state
 .coverage
