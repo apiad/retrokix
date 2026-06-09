@@ -1,5 +1,11 @@
 # gbax
 
+[![PyPI](https://img.shields.io/pypi/v/gbax.svg?logo=pypi&logoColor=white)](https://pypi.org/project/gbax/)
+[![Python](https://img.shields.io/pypi/pyversions/gbax.svg?logo=python&logoColor=white)](https://pypi.org/project/gbax/)
+[![CI](https://github.com/apiad/gbax/actions/workflows/ci.yml/badge.svg)](https://github.com/apiad/gbax/actions/workflows/ci.yml)
+[![License: MPL-2.0](https://img.shields.io/badge/License-MPL%202.0-1d2d44.svg)](https://www.mozilla.org/MPL/2.0/)
+![Platform](https://img.shields.io/badge/Linux-only-555555?logo=linux&logoColor=white)
+
 **A hacker-first GBA emulator. Play with your keyboard, drive it from HTTP.**
 
 `gbax` is a pip-installable Game Boy Advance emulator built for people who like
