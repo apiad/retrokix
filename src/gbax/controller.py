@@ -86,6 +86,72 @@ class Controller:
             raise ValueError(f"frames must be >= 1, got {frames}")
         self._runtime.step(frames=frames)
 
+    # --- memory ---
+
+    def read_u8(self, addr: int) -> int:
+        return self._runtime.read_u8(addr)
+
+    def read_u16(self, addr: int) -> int:
+        return self._runtime.read_u16(addr)
+
+    def read_u32(self, addr: int) -> int:
+        return self._runtime.read_u32(addr)
+
+    def read_bytes(self, addr: int, length: int) -> bytes:
+        return self._runtime.read_memory(addr, length)
+
+    def write_u8(self, addr: int, value: int) -> None:
+        self._runtime.write_u8(addr, value)
+
+    def write_u16(self, addr: int, value: int) -> None:
+        self._runtime.write_u16(addr, value)
+
+    def write_u32(self, addr: int, value: int) -> None:
+        self._runtime.write_u32(addr, value)
+
+    def write_bytes(self, addr: int, data: bytes) -> None:
+        self._runtime.write_memory(addr, data)
+
+    # --- screenshot ---
+
+    def screenshot(self, path: str | Path) -> Path:
+        from PIL import Image
+
+        out = Path(path)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        Image.fromarray(self.framebuffer).save(out)
+        return out
+
+    # --- save states ---
+
+    def save_state(self) -> bytes:
+        return self._runtime.export_state()
+
+    def load_state(self, blob: bytes) -> None:
+        self._runtime.import_state(blob, frame_count=self.frame_count)
+
+    def save_slot(self, slot: int) -> bytes:
+        return self._runtime.save_state_to_slot(slot)
+
+    def load_slot(self, slot: int) -> None:
+        self._runtime.load_state_from_slot(slot)
+
+    # --- cheats ---
+
+    def enable_cheat(self, slug_or_name: str) -> None:
+        self._runtime.enable_cheat(slug_or_name)
+
+    def disable_cheat(self, slug_or_name: str) -> None:
+        self._runtime.disable_cheat(slug_or_name)
+
+    def add_custom_cheat(self, name: str, code: str) -> None:
+        self._runtime.add_custom_cheat(name, code)
+
+    # --- lifecycle ---
+
+    def reset(self) -> None:
+        self._runtime.reset()
+
     def close(self) -> None:
         self._runtime.close()
 
