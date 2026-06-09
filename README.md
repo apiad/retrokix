@@ -108,19 +108,39 @@ you want a human at the keyboard *and* a script reading state.
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────────────┐
-│  gbax CLI (Typer)                                       │
-│   play   serve   replay   search   download   …         │
-│         │         │                                     │
-│         └─────────┘                                     │
-│              │                                          │
-│         EmulatorRuntime                                 │
-│              │                                          │
-│       LibretroCore (cffi)                               │
-│              │                                          │
-│         mgba_libretro.so                                │
-└─────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph clients[" "]
+        direction LR
+        kbd([Keyboard])
+        http([HTTP client<br/>script · LLM · shell])
+    end
+
+    subgraph cli["gbax CLI (Typer)"]
+        play["gbax play"]
+        serve["gbax serve"]
+        other["search · download · list-roms · …"]
+    end
+
+    sdl["SDL renderer<br/>window + audio + input"]
+    api["FastAPI server<br/>/mode /step /frame /buttons /memory /speed"]
+    rt["EmulatorRuntime<br/>load · step · framebuffer · memory · save slots · ticker"]
+    lr["LibretroCore<br/>~300 LOC cffi shim over the libretro ABI"]
+    so["mgba_libretro.so"]
+
+    kbd --> sdl
+    http --> api
+    play --> sdl
+    serve --> api
+    sdl --> rt
+    api --> rt
+    rt --> lr
+    lr --> so
+
+    classDef ext fill:#eef,stroke:#33a,stroke-width:1px;
+    classDef core fill:#fef9c3,stroke:#a16207,stroke-width:1px;
+    class kbd,http ext;
+    class so core;
 ```
 
 - `LibretroCore` is a ~300-line cffi wrapper around the libretro ABI. It
@@ -131,6 +151,38 @@ you want a human at the keyboard *and* a script reading state.
   framebuffer, memory, save states, free-run ticker.
 - The SDL window and the FastAPI server are independent clients of the
   runtime. They don't know about each other.
+
+### Step-mode controller loop
+
+When you `gbax serve`, the emulator is paused. A controller drives it:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Ctl as Controller<br/>(script / LLM / RL)
+    participant API as FastAPI
+    participant RT as EmulatorRuntime
+    participant Core as mgba_libretro
+
+    loop every decision
+        Ctl->>API: GET /frame
+        API->>RT: framebuffer()
+        RT-->>API: 240×160×3 RGB
+        API-->>Ctl: PNG
+
+        Ctl->>Ctl: think (any wall-clock time)
+
+        Ctl->>API: POST /buttons {a, right}
+        API->>RT: set_buttons(...)
+        RT->>Core: retro_set_input_state
+        Ctl->>API: POST /step?frames=4
+        API->>RT: step(4)
+        RT->>Core: retro_run() × 4
+    end
+```
+
+The game waits for the controller. That's what makes a 2-second-per-decision
+LLM viable, and what makes RL training reproducible.
 
 Why libretro and not mGBA's Python bindings directly? Because the upstream
 bindings are brittle on modern toolchains and require building libmgba with a
