@@ -8,14 +8,21 @@ the FastAPI server (for `gbax serve`) are clients of this class.
 from __future__ import annotations
 
 import hashlib
+import json
 import os
 import struct
+from enum import Enum
 from pathlib import Path
 
 import numpy as np
 
 from gbax.input import Button
 from gbax.libretro import GBA_HEIGHT, GBA_WIDTH, LibretroCore
+
+
+class Mode(str, Enum):
+    FREE = "free"
+    STEP = "step"
 
 
 def _default_core_path() -> Path:
@@ -31,10 +38,17 @@ def _default_core_path() -> Path:
 
 
 class EmulatorRuntime:
-    def __init__(self, rom_path: Path | str, core_path: Path | str | None = None):
+    def __init__(
+        self,
+        rom_path: Path | str,
+        core_path: Path | str | None = None,
+        save_dir: Path | str | None = None,
+        mode: Mode = Mode.STEP,
+    ):
         self._rom_path = Path(rom_path)
         self._rom_sha1 = hashlib.sha1(self._rom_path.read_bytes()).hexdigest()
         self._core_path = Path(core_path) if core_path else _default_core_path()
+        self._save_dir = Path(save_dir) if save_dir else Path.home() / ".gbax" / "saves"
         if not self._core_path.exists():
             raise FileNotFoundError(
                 f"libretro core not found at {self._core_path}; "
@@ -47,6 +61,10 @@ class EmulatorRuntime:
         self._core.reset()
         self._frame_count = 0
         self._buttons_held: set[Button] = set()
+        self._mode = Mode(mode)
+        self._speed_multiplier = 1.0
+        # In-memory save state slots: slot_id -> (blob, frame_count)
+        self._slots: dict[int, tuple[bytes, int]] = {}
 
     @property
     def rom_path(self) -> Path:
@@ -105,6 +123,74 @@ class EmulatorRuntime:
 
     def write_u32(self, addr: int, value: int) -> None:
         self.write_memory(addr, struct.pack("<I", value & 0xFFFFFFFF))
+
+    # --- mode + speed ---
+
+    @property
+    def mode(self) -> Mode:
+        return self._mode
+
+    @mode.setter
+    def mode(self, value: Mode | str) -> None:
+        self._mode = Mode(value)
+
+    @property
+    def speed_multiplier(self) -> float:
+        return self._speed_multiplier
+
+    @speed_multiplier.setter
+    def speed_multiplier(self, value: float) -> None:
+        v = float(value)
+        if v <= 0:
+            raise ValueError(f"speed_multiplier must be > 0, got {v}")
+        self._speed_multiplier = v
+
+    # --- save state slots ---
+
+    def save_state_to_slot(self, slot: int) -> bytes:
+        if not 1 <= slot <= 9:
+            raise ValueError(f"slot must be 1..9, got {slot}")
+        blob = self._core.serialize()
+        self._slots[slot] = (blob, self._frame_count)
+        return blob
+
+    def load_state_from_slot(self, slot: int) -> None:
+        if not 1 <= slot <= 9:
+            raise ValueError(f"slot must be 1..9, got {slot}")
+        if slot not in self._slots:
+            raise KeyError(f"slot {slot} is empty")
+        blob, frame_count = self._slots[slot]
+        self._core.unserialize(blob)
+        self._frame_count = frame_count
+
+    def export_state(self) -> bytes:
+        return self._core.serialize()
+
+    def import_state(self, blob: bytes, frame_count: int = 0) -> None:
+        self._core.unserialize(blob)
+        self._frame_count = frame_count
+
+    def _slot_path(self, slot: int) -> Path:
+        return self._save_dir / self._rom_sha1 / f"slot-{slot}.state"
+
+    def persist_slot_to_disk(self, slot: int) -> Path:
+        if slot not in self._slots:
+            raise KeyError(f"slot {slot} is empty")
+        blob, frame_count = self._slots[slot]
+        path = self._slot_path(slot)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(blob)
+        path.with_suffix(".json").write_text(json.dumps({"frame_count": frame_count}))
+        return path
+
+    def load_persistent_slot(self, slot: int) -> None:
+        path = self._slot_path(slot)
+        if not path.exists():
+            raise FileNotFoundError(f"no persistent slot {slot} at {path}")
+        blob = path.read_bytes()
+        meta = json.loads(path.with_suffix(".json").read_text())
+        self._slots[slot] = (blob, meta["frame_count"])
+        self.load_state_from_slot(slot)
 
     def close(self) -> None:
         self._core.deinit()

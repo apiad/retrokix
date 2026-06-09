@@ -72,3 +72,78 @@ def test_missing_core_raises(test_rom, tmp_path):
     bogus = tmp_path / "nonexistent.so"
     with pytest.raises(FileNotFoundError):
         EmulatorRuntime(test_rom, core_path=bogus)
+
+
+# --- Mode + speed ---
+
+
+def test_default_mode_is_step(runtime):
+    from gbax.runtime import Mode
+    assert runtime.mode == Mode.STEP
+
+
+def test_mode_setter(runtime):
+    from gbax.runtime import Mode
+    runtime.mode = Mode.FREE
+    assert runtime.mode == Mode.FREE
+    runtime.mode = "step"  # string also accepted
+    assert runtime.mode == Mode.STEP
+
+
+def test_speed_multiplier_default_and_setter(runtime):
+    assert runtime.speed_multiplier == 1.0
+    runtime.speed_multiplier = 4.0
+    assert runtime.speed_multiplier == 4.0
+    with pytest.raises(ValueError):
+        runtime.speed_multiplier = 0.0
+    with pytest.raises(ValueError):
+        runtime.speed_multiplier = -1.0
+
+
+# --- Save state slots ---
+
+
+def test_savestate_roundtrip(runtime):
+    runtime.step(frames=30)
+    runtime.save_state_to_slot(1)
+    runtime.step(frames=30)
+    assert runtime.frame_count == 60
+    runtime.load_state_from_slot(1)
+    assert runtime.frame_count == 30
+
+
+def test_savestate_multiple_slots(runtime):
+    runtime.step(frames=10)
+    runtime.save_state_to_slot(1)
+    runtime.step(frames=10)
+    runtime.save_state_to_slot(2)
+    runtime.step(frames=10)
+    assert runtime.frame_count == 30
+    runtime.load_state_from_slot(1)
+    assert runtime.frame_count == 10
+    runtime.load_state_from_slot(2)
+    assert runtime.frame_count == 20
+
+
+def test_savestate_invalid_slot_raises(runtime):
+    with pytest.raises(ValueError):
+        runtime.save_state_to_slot(0)
+    with pytest.raises(ValueError):
+        runtime.save_state_to_slot(10)
+    with pytest.raises(KeyError):
+        runtime.load_state_from_slot(5)
+
+
+def test_persist_and_reload_state(test_rom, mgba_core, tmp_path):
+    with EmulatorRuntime(test_rom, core_path=mgba_core, save_dir=tmp_path) as rt:
+        rt.step(frames=42)
+        rt.save_state_to_slot(1)
+        path = rt.persist_slot_to_disk(1)
+        assert path.exists()
+        assert path.parent.parent == tmp_path
+        assert path.parent.name == rt.rom_sha1
+
+    # Open a fresh runtime, load the persistent slot
+    with EmulatorRuntime(test_rom, core_path=mgba_core, save_dir=tmp_path) as rt2:
+        rt2.load_persistent_slot(1)
+        assert rt2.frame_count == 42
