@@ -427,3 +427,98 @@ def train(
             "notes":          outcome.notes,
         }, indent=2))
         typer.echo(f"wrote {output / 'result.json'}")
+
+
+@app.command()
+def tournament(
+    rom: str = typer.Option(..., "--rom", help="Path or fuzzy query for the ROM."),
+    scenario: str = typer.Option(..., "--scenario", help="Scenario name or path[:ClassName]."),
+    player: list[str] = typer.Option(..., "--player", help="Player command; repeat for more bots."),
+    core_path: Path | None = typer.Option(None, "--core", help="Libretro core .so."),
+    output: Path | None = typer.Option(None, "--output", help="Directory for results.json."),
+    lag_forfeit: int = typer.Option(60, "--lag-forfeit"),
+    slack_ms: int = typer.Option(1, "--slack-ms"),
+    show: bool = typer.Option(False, "--show", help="Open SDL window for the current match."),
+    record: bool = typer.Option(False, "--record", help="Stubbed — slice 8 will wire this up."),
+) -> None:
+    """Run a real-time tournament. One match per --player, sequential."""
+    import json
+
+    from gbax.driver import RealtimeDriver
+    from gbax.library import resolve_rom
+    from gbax.scenario import resolve_scenario
+
+    if record:
+        typer.echo("warning: --record is a v1 stub; recording lands in a later slice", err=True)
+    if show:
+        typer.echo("warning: --show wiring lands when SDL render is hooked to RealtimeDriver", err=True)
+
+    try:
+        rom_path = resolve_rom(rom)
+    except (FileNotFoundError, RuntimeError) as exc:
+        typer.echo(str(exc), err=True); raise typer.Exit(code=1) from exc
+
+    try:
+        scenario_cls = resolve_scenario(scenario)
+    except Exception as exc:
+        typer.echo(str(exc), err=True); raise typer.Exit(code=1) from exc
+
+    driver = RealtimeDriver(
+        rom_path=rom_path,
+        scenario_cls=scenario_cls,
+        core_path=core_path,
+        lag_forfeit=lag_forfeit,
+        slack_s=slack_ms / 1000.0,
+    )
+
+    outcomes = []
+    for i, cmd in enumerate(player, 1):
+        label = cmd.split()[0]
+        typer.echo(f"[match {i}/{len(player)}] {label}")
+        outcome = driver.run_match(player_cmd=cmd, player_label=label)
+        typer.echo(f"  → {outcome.reason}  score={outcome.result.get('score')}  "
+                   f"frame={outcome.frame_count}  lag={outcome.lag_misses}")
+        outcomes.append(outcome)
+
+    ranked = sorted(outcomes, key=lambda o: o.result.get("score", 0.0), reverse=True)
+
+    typer.echo("")
+    typer.echo("Leaderboard")
+    typer.echo("─" * 70)
+    typer.echo(f"{'rank':<5}{'player':<25}{'score':<12}{'frame':<8}{'reason':<10}")
+    typer.echo("─" * 70)
+    for rank, o in enumerate(ranked, 1):
+        typer.echo(
+            f"{rank:<5}{o.player_label:<25}{o.result.get('score', 0.0):<12.2f}"
+            f"{o.frame_count:<8}{o.reason:<10}"
+        )
+
+    if output:
+        output.mkdir(parents=True, exist_ok=True)
+        results_doc = {
+            "scenario": scenario_cls.name,
+            "matches": [
+                {
+                    "player_label":   o.player_label,
+                    "player_name":    o.player_name,
+                    "result":         o.result,
+                    "reason":         o.reason,
+                    "frame_count":    o.frame_count,
+                    "lag_misses":     o.lag_misses,
+                    "wall_clock_s":   o.wall_clock_seconds,
+                    "notes":          o.notes,
+                }
+                for o in outcomes
+            ],
+            "leaderboard": [
+                {
+                    "rank":   rank,
+                    "player": o.player_label,
+                    "score":  o.result.get("score"),
+                    "reason": o.reason,
+                }
+                for rank, o in enumerate(ranked, 1)
+            ],
+        }
+        (output / "results.json").write_text(json.dumps(results_doc, indent=2))
+        typer.echo(f"wrote {output / 'results.json'}")
