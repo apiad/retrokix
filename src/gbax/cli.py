@@ -378,3 +378,52 @@ def scenario_validate(
     if not found:
         typer.echo(f"no Scenario subclasses found in {path}", err=True)
         raise typer.Exit(code=1)
+
+
+@app.command()
+def train(
+    rom: str = typer.Option(..., "--rom", help="Path or fuzzy query for the ROM."),
+    scenario: str = typer.Option(..., "--scenario", help="Scenario name or path[:ClassName]."),
+    player: str = typer.Option(..., "--player", help="Shell command to spawn the player."),
+    core_path: Path | None = typer.Option(None, "--core", help="Libretro core .so."),
+    output: Path | None = typer.Option(None, "--output", help="Directory for result.json."),
+) -> None:
+    """Run a single, untimed match against the given scenario."""
+    import json
+
+    from gbax.driver import StepDriver
+    from gbax.library import resolve_rom
+    from gbax.scenario import resolve_scenario
+
+    try:
+        rom_path = resolve_rom(rom)
+    except (FileNotFoundError, RuntimeError) as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=1) from exc
+
+    try:
+        scenario_cls = resolve_scenario(scenario)
+    except Exception as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=1) from exc
+
+    driver = StepDriver(rom_path=rom_path, scenario_cls=scenario_cls, core_path=core_path)
+    label = scenario_cls.__name__
+    outcome = driver.run_match(player_cmd=player, player_label=label)
+
+    typer.echo(f"[{outcome.reason}] frame={outcome.frame_count} "
+               f"score={outcome.result.get('score')} "
+               f"({outcome.wall_clock_seconds:.2f}s wall)")
+    if output:
+        output.mkdir(parents=True, exist_ok=True)
+        (output / "result.json").write_text(json.dumps({
+            "player_label":   outcome.player_label,
+            "player_name":    outcome.player_name,
+            "result":         outcome.result,
+            "reason":         outcome.reason,
+            "frame_count":    outcome.frame_count,
+            "lag_misses":     outcome.lag_misses,
+            "wall_clock_s":   outcome.wall_clock_seconds,
+            "notes":          outcome.notes,
+        }, indent=2))
+        typer.echo(f"wrote {output / 'result.json'}")
