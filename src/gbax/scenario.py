@@ -110,3 +110,75 @@ def load_scenario_file(path: str | Path, class_name: str | None = None) -> type[
         f"{p} contains multiple scenarios: {[c.__name__ for c in candidates]}; "
         f"pass --scenario {p}:<ClassName> to disambiguate"
     )
+
+
+def _user_scenarios_dir() -> Path:
+    return Path.home() / ".gbax" / "scenarios"
+
+
+def _bundled_scenarios_dir() -> Path:
+    return Path(__file__).parent / "data" / "scenarios"
+
+
+def list_installed_scenarios() -> list[dict]:
+    """Walk user and bundled scenario dirs, return [{name, file, class}, ...]."""
+    out: list[dict] = []
+    for src_dir in (_user_scenarios_dir(), _bundled_scenarios_dir()):
+        if not src_dir.exists():
+            continue
+        for path in sorted(src_dir.glob("*.py")):
+            if path.name.startswith("_"):
+                continue
+            try:
+                spec = importlib.util.spec_from_file_location(
+                    f"_gbax_scenario_{path.stem}", path
+                )
+                if spec is None or spec.loader is None:
+                    continue
+                mod = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(mod)
+            except Exception:
+                continue
+            for attr in dir(mod):
+                obj = getattr(mod, attr)
+                if (
+                    isinstance(obj, type)
+                    and issubclass(obj, Scenario)
+                    and obj is not Scenario
+                ):
+                    if not getattr(obj, "name", ""):
+                        continue
+                    out.append({
+                        "name": obj.name,
+                        "file": str(path),
+                        "class": obj.__name__,
+                    })
+    return out
+
+
+def resolve_scenario(name_or_path: str) -> type[Scenario]:
+    """Resolve a scenario reference to its class.
+
+    Accepts:
+      - bare scenario name (matches `Scenario.name`)
+      - path to a .py file (single Scenario inside)
+      - path:ClassName for disambiguation
+    """
+    if "/" in name_or_path or name_or_path.endswith(".py") or ":" in name_or_path:
+        path_str, _, class_name = name_or_path.partition(":")
+        return load_scenario_file(path_str, class_name or None)
+
+    matches = []
+    for entry in list_installed_scenarios():
+        if entry["name"] == name_or_path:
+            matches.append(entry)
+    if not matches:
+        raise ScenarioValidationError(
+            f"no scenario named {name_or_path!r}; try `gbax scenario list`"
+        )
+    if len(matches) > 1:
+        files = ", ".join(m["file"] for m in matches)
+        raise ScenarioValidationError(
+            f"scenario name {name_or_path!r} is ambiguous; in {files}"
+        )
+    return load_scenario_file(matches[0]["file"], matches[0]["class"])
