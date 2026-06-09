@@ -71,6 +71,28 @@ def download(
 
 
 @app.command()
+def cheats(
+    rom: str = typer.Argument(..., help="Path to a .gba, or a fuzzy query against ~/.gbax/roms/."),
+) -> None:
+    """List cheats catalogued (libretro-database) for the given ROM."""
+    from gbax.cheats import cheats_for_rom
+    from gbax.library import resolve_rom
+
+    try:
+        rom_path = resolve_rom(rom)
+    except (FileNotFoundError, RuntimeError) as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=1) from exc
+
+    catalog = cheats_for_rom(rom_path.name)
+    if not catalog:
+        typer.echo(f"no cheats catalogued for {rom_path.name}")
+        raise typer.Exit(code=1)
+    for c in catalog:
+        typer.echo(f"  {c.slug():35s}  {c.name}")
+
+
+@app.command()
 def list_roms() -> None:
     """List ROMs in ~/.gbax/roms/."""
     from gbax.library import list_local_roms, sha1
@@ -88,6 +110,7 @@ def play(
     rom: str = typer.Argument(..., help="Path to a .gba, or a fuzzy query against ~/.gbax/roms/."),
     scale: int = typer.Option(3, "--scale", help="Window scale factor."),
     core_path: Path | None = typer.Option(None, "--core", help="Path to libretro core .so."),
+    cheats: str | None = typer.Option(None, "--cheats", help="Comma-separated cheat slugs to enable at boot."),
 ) -> None:
     """Boot ROM in free-run mode with an SDL window."""
     from gbax.library import resolve_rom
@@ -101,6 +124,13 @@ def play(
         raise typer.Exit(code=1) from exc
 
     runtime = EmulatorRuntime(rom_path, core_path=core_path, mode=Mode.FREE)
+    if cheats:
+        for slug in [s.strip() for s in cheats.split(",") if s.strip()]:
+            try:
+                c = runtime.enable_cheat(slug)
+                typer.echo(f"cheat ON: {c.name}")
+            except KeyError as exc:
+                typer.echo(f"warning: {exc}", err=True)
     try:
         play_loop(runtime, scale=scale)
     finally:

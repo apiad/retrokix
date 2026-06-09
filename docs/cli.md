@@ -71,6 +71,7 @@ library — `gbax play emerald` resolves to
 | Load slot N  | `Shift+1` … `Shift+9`              |
 | Fast-forward | `Tab` (hold) — 8×                  |
 | Screenshot   | `F12` — saves to `~/.gbax/screenshots/` |
+| Toggle cheat | `F1` … `F9` — toggle the Nth active cheat |
 
 Save state slots are written immediately to
 `~/.gbax/saves/<rom-sha1>/slot-N.state` and hydrate automatically on next
@@ -80,6 +81,19 @@ Flags:
 - `--scale N` — window upscale factor. Default 3 (720×480).
 - `--core <path>` — path to a libretro core `.so`. Default looks at
   `GBAX_CORE_PATH` env, then `tests/cores/mgba_libretro.so` for in-repo use.
+- `--cheats slug1,slug2,…` — enable cheats at boot (slugs from `gbax cheats <rom>`).
+
+## `gbax cheats <rom>`
+
+List the catalogued cheats (libretro-database) for the given ROM, with their
+slugs (for use with `--cheats` and the API).
+
+```
+$ gbax cheats emerald | head -3
+  1-hit-kill                           1-Hit Kill
+  max-money                            Max Money
+  walk-through-walls-l-r               Walk Through Walls [Press L+R]
+```
 
 ## `gbax serve <rom>`
 

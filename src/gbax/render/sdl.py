@@ -129,6 +129,17 @@ def play_loop(
                             print(f"slot {slot} is empty")
                         continue
 
+                    # F1..F9 — toggle the Nth active cheat (in current insertion order)
+                    if sdl2.SDLK_F1 <= sym <= sdl2.SDLK_F9:
+                        idx = sym - sdl2.SDLK_F1
+                        active = runtime.active_cheats()
+                        if idx < len(active):
+                            cheat, now_on = runtime.toggle_cheat(active[idx].slug())
+                            print(f"cheat {'ON ' if now_on else 'OFF'}: {cheat.name}")
+                        else:
+                            print(f"no cheat in slot F{idx + 1} (preload with --cheats)")
+                        continue
+
                     # F12 — screenshot
                     if sym == sdl2.SDLK_F12:
                         out = _screenshots_dir() / f"{runtime.rom_path.stem}-{int(time.time())}.png"

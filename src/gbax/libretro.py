@@ -288,6 +288,15 @@ class LibretroCore:
         if not ok:
             raise RuntimeError("retro_unserialize failed")
 
+    def cheat_reset(self) -> None:
+        """Clear all installed cheats."""
+        self._lib.retro_cheat_reset()
+
+    def cheat_set(self, index: int, enabled: bool, code: str) -> None:
+        """Install (or update) cheat at `index`. Pass enabled=False to disable in place."""
+        code_c = self._ffi.new("char[]", code.encode("utf-8"))
+        self._lib.retro_cheat_set(index, bool(enabled), code_c)
+
     def set_buttons(self, button_ids: set[int]) -> None:
         """Set the held buttons (libretro retro_device_id_joypad values)."""
         self._buttons_pressed = set(button_ids)

@@ -18,6 +18,7 @@ from pathlib import Path
 
 import numpy as np
 
+from gbax.cheats import Cheat, cheats_for_rom
 from gbax.input import Button
 from gbax.libretro import LibretroCore
 
@@ -69,6 +70,9 @@ class EmulatorRuntime:
         # Hydrated from disk on init so slots persist across restarts of the same ROM.
         self._slots: dict[int, tuple[bytes, int]] = {}
         self._hydrate_slots_from_disk()
+        # Cheat layer — known catalog from libretro-database + currently-active set.
+        self._cheat_catalog: list[Cheat] = cheats_for_rom(self._rom_path.name)
+        self._active_cheats: dict[str, Cheat] = {}  # slug → Cheat (active = installed + enabled)
         # Concurrency: ticker thread (Mode.FREE) + API callers both touch the core
         self._lock = threading.Lock()
         self._tick_thread: threading.Thread | None = None
@@ -233,6 +237,77 @@ class EmulatorRuntime:
         meta = json.loads(path.with_suffix(".json").read_text())
         self._slots[slot] = (blob, meta["frame_count"])
         self.load_state_from_slot(slot)
+
+    # --- cheats ---
+
+    def list_cheats(self) -> list[Cheat]:
+        """All cheats catalogued for the running ROM (libretro-database)."""
+        return list(self._cheat_catalog)
+
+    def active_cheats(self) -> list[Cheat]:
+        """Currently-active (installed + enabled) cheats."""
+        return list(self._active_cheats.values())
+
+    def _find_cheat(self, slug_or_name: str) -> Cheat | None:
+        key = slug_or_name.lower()
+        for c in self._cheat_catalog:
+            if c.slug() == key or c.name.lower() == key:
+                return c
+        return None
+
+    def enable_cheat(self, slug_or_name: str) -> Cheat:
+        """Activate a known cheat by slug or name. Returns the Cheat that was enabled."""
+        cheat = self._find_cheat(slug_or_name)
+        if cheat is None:
+            raise KeyError(f"no cheat named {slug_or_name!r} for this ROM")
+        with self._lock:
+            self._active_cheats[cheat.slug()] = cheat
+            self._reinstall_cheats_locked()
+        return cheat
+
+    def disable_cheat(self, slug_or_name: str) -> Cheat:
+        cheat = self._find_cheat(slug_or_name)
+        if cheat is None:
+            raise KeyError(f"no cheat named {slug_or_name!r} for this ROM")
+        with self._lock:
+            self._active_cheats.pop(cheat.slug(), None)
+            self._reinstall_cheats_locked()
+        return cheat
+
+    def toggle_cheat(self, slug_or_name: str) -> tuple[Cheat, bool]:
+        """Return (cheat, enabled_after)."""
+        cheat = self._find_cheat(slug_or_name)
+        if cheat is None:
+            raise KeyError(f"no cheat named {slug_or_name!r} for this ROM")
+        slug = cheat.slug()
+        with self._lock:
+            if slug in self._active_cheats:
+                self._active_cheats.pop(slug)
+                enabled = False
+            else:
+                self._active_cheats[slug] = cheat
+                enabled = True
+            self._reinstall_cheats_locked()
+        return cheat, enabled
+
+    def add_custom_cheat(self, name: str, code: str) -> Cheat:
+        """Inject an ad-hoc cheat code not in the catalog (unsafe; crashing is your problem)."""
+        cheat = Cheat(name=name, code=code)
+        with self._lock:
+            self._active_cheats[cheat.slug()] = cheat
+            self._reinstall_cheats_locked()
+        return cheat
+
+    def clear_cheats(self) -> None:
+        with self._lock:
+            self._active_cheats.clear()
+            self._core.cheat_reset()
+
+    def _reinstall_cheats_locked(self) -> None:
+        """Reset and reinstall every active cheat. Lock-held."""
+        self._core.cheat_reset()
+        for idx, cheat in enumerate(self._active_cheats.values()):
+            self._core.cheat_set(idx, True, cheat.code)
 
     # --- free-run ticker ---
 

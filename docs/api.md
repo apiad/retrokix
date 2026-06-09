@@ -154,9 +154,60 @@ $ curl -s -X POST localhost:8420/memory -H 'content-type: application/json' \
 
 ROM regions reject writes (`400` with "is in a CONST region").
 
+## Cheats
+
+The libretro-database GBA cheat catalog ships in the wheel; ~6700 named
+codes across 512 games. Slugs are URL-safe lowercase-kebab versions of the
+cheat names (e.g. `Max Money` → `max-money`).
+
+### `GET /cheats`
+
+```
+$ curl -s localhost:8420/cheats | jq '.catalog[0]'
+{
+  "slug": "1-hit-kill",
+  "name": "1-Hit Kill",
+  "code": "...",
+  "active": false
+}
+```
+
+### `GET /cheats/active`
+
+Just the currently-active subset.
+
+### `POST /cheats/<slug>/enable`
+
+```
+$ curl -s -X POST localhost:8420/cheats/max-money/enable
+{"slug":"max-money","name":"Max Money","active":true}
+```
+
+### `POST /cheats/<slug>/disable`
+
+```
+$ curl -s -X POST localhost:8420/cheats/max-money/disable
+{"slug":"max-money","name":"Max Money","active":false}
+```
+
+### `POST /cheats/custom`
+
+Inject an ad-hoc code not in the catalog. No validation — crashing the
+emulator with a bad code is your problem.
+
+```
+$ curl -s -X POST localhost:8420/cheats/custom \
+    -H 'content-type: application/json' \
+    -d '{"name": "My Hack", "code": "DEADBEEF+0001"}'
+{"slug":"my-hack","name":"My Hack","code":"DEADBEEF+0001","active":true}
+```
+
+### `DELETE /cheats`
+
+Clear all active cheats.
+
 ## Coming soon
 
-- `GET/POST /cheats` — toggle libretro cheat codes by ID, inject ad-hoc codes
 - `GET/POST /savestate/<slot>` — slot dump/load over HTTP
 - `GET /state`, `POST /actions/<name>` — per-game plugin layer (Pokémon Emerald first)
 

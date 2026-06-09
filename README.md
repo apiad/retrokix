@@ -51,6 +51,28 @@ That's the headline: it's an emulator you can pipe.
 Slots survive restarts. Open a game, save in slot 3, close the window, open the
 game again, `Shift+3` — you're back.
 
+### Cheats
+
+```
+$ gbax cheats emerald | head -3
+  1-hit-kill                           1-Hit Kill
+  max-money                            Max Money
+  walk-through-walls-l-r               Walk Through Walls [Press L+R]
+…
+
+$ gbax play emerald --cheats max-money,walk-through-walls-l-r
+cheat ON: Max Money
+cheat ON: Walk Through Walls [Press L+R]
+```
+
+Toggle with `F1`–`F9` during play (in the order they were enabled).
+Over the API: `POST /cheats/<slug>/enable`, `POST /cheats/<slug>/disable`,
+`POST /cheats/custom` for ad-hoc codes, `DELETE /cheats` to clear.
+
+The libretro-database snapshot (~6700 GameShark / Action Replay / Code
+Breaker codes covering 512 GBA games) ships in the wheel — no network at
+runtime.
+
 ### Library
 
 ```
@@ -275,8 +297,8 @@ $ curl -s 'localhost:8420/memory?addr=33718916&len=4' | jq -r .data
 | ✅      | `gbax play` — keyboard + audio + save state slots that survive restarts       |
 | ✅      | `gbax serve` — HTTP API for memory / framebuffer / buttons / step / speed     |
 | ✅      | ROM library — `search`, `download`, `list-roms` against archive.org           |
-| ⏳      | Cheat codes — libretro cheat DB + `Ctrl+H` toggle + `/cheats` API             |
-| ⏳      | YAML user scripts — `Ctrl+H runs a sequence of presses + memory pokes`        |
+| ✅      | Cheat codes — vendored libretro DB (~6700 codes), F1–F9 toggle, `/cheats` API |
+| ⏳      | YAML user scripts — `Ctrl+H` runs a sequence of presses + memory pokes        |
 | ⏳      | Recording / replay — deterministic input log + divergence detection           |
 | ⏳      | Per-game plugins — Python plugins expose `/state` and `/actions` for Pokémon, etc. |
 | ⏳      | macOS / Windows wheels                                                        |
