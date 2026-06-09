@@ -64,3 +64,52 @@ def test_list_local_roms_filters_extension(tmp_path):
     (tmp_path / "README.md").touch()
     roms = list_local_roms(tmp_path)
     assert [p.name for p in roms] == ["a.gba", "b.gba"]
+
+
+# --- resolve_rom ---
+
+
+def test_resolve_rom_existing_path(tmp_path):
+    from gbax.library import resolve_rom
+
+    f = tmp_path / "anywhere.gba"
+    f.touch()
+    assert resolve_rom(str(f)) == f
+
+
+def test_resolve_rom_fuzzy_single_match(tmp_path, monkeypatch):
+    from gbax.library import resolve_rom
+
+    (tmp_path / "Pokemon - Emerald Version (USA, Europe).gba").touch()
+    (tmp_path / "Mario Kart - Super Circuit (USA).gba").touch()
+    monkeypatch.setattr("gbax.library.DEFAULT_ROMS_DIR", tmp_path)
+    result = resolve_rom("emerald", roms_dir=tmp_path)
+    assert result.name == "Pokemon - Emerald Version (USA, Europe).gba"
+
+
+def test_resolve_rom_fuzzy_multi_token(tmp_path):
+    from gbax.library import resolve_rom
+
+    (tmp_path / "Pokemon - Emerald Version (USA, Europe).gba").touch()
+    (tmp_path / "Pokemon - Emerald Version (Japan).gba").touch()
+    result = resolve_rom("emerald japan", roms_dir=tmp_path)
+    assert "Japan" in result.name
+
+
+def test_resolve_rom_no_match(tmp_path):
+    import pytest
+    from gbax.library import resolve_rom
+
+    (tmp_path / "Pokemon - Emerald Version (USA, Europe).gba").touch()
+    with pytest.raises(FileNotFoundError):
+        resolve_rom("metroid", roms_dir=tmp_path)
+
+
+def test_resolve_rom_ambiguous(tmp_path):
+    import pytest
+    from gbax.library import resolve_rom
+
+    (tmp_path / "Pokemon - Emerald Version (USA, Europe).gba").touch()
+    (tmp_path / "Pokemon - Emerald Version (Japan).gba").touch()
+    with pytest.raises(RuntimeError, match="ambiguous"):
+        resolve_rom("emerald", roms_dir=tmp_path)

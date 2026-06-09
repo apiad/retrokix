@@ -81,15 +81,22 @@ def list_roms() -> None:
 
 @app.command()
 def play(
-    rom: Path = typer.Argument(..., exists=True, file_okay=True, dir_okay=False, readable=True),
+    rom: str = typer.Argument(..., help="Path to a .gba, or a fuzzy query against ~/.gbax/roms/."),
     scale: int = typer.Option(3, "--scale", help="Window scale factor."),
     core_path: Path | None = typer.Option(None, "--core", help="Path to libretro core .so."),
 ) -> None:
     """Boot ROM in free-run mode with an SDL window."""
+    from gbax.library import resolve_rom
     from gbax.render import play_loop
     from gbax.runtime import EmulatorRuntime, Mode
 
-    runtime = EmulatorRuntime(rom, core_path=core_path, mode=Mode.FREE)
+    try:
+        rom_path = resolve_rom(rom)
+    except (FileNotFoundError, RuntimeError) as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=1) from exc
+
+    runtime = EmulatorRuntime(rom_path, core_path=core_path, mode=Mode.FREE)
     try:
         play_loop(runtime, scale=scale)
     finally:
@@ -98,7 +105,7 @@ def play(
 
 @app.command()
 def serve(
-    rom: Path = typer.Argument(..., exists=True, file_okay=True, dir_okay=False, readable=True),
+    rom: str = typer.Argument(..., help="Path to a .gba, or a fuzzy query against ~/.gbax/roms/."),
     host: str = typer.Option("127.0.0.1", "--host"),
     port: int = typer.Option(8420, "--port"),
     free_run: bool = typer.Option(False, "--free-run", help="Start in free-run mode instead of step."),
@@ -108,16 +115,23 @@ def serve(
     import uvicorn
 
     from gbax.api.server import create_app
+    from gbax.library import resolve_rom
     from gbax.runtime import EmulatorRuntime, Mode
 
+    try:
+        rom_path = resolve_rom(rom)
+    except (FileNotFoundError, RuntimeError) as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=1) from exc
+
     mode = Mode.FREE if free_run else Mode.STEP
-    runtime = EmulatorRuntime(rom, core_path=core_path, mode=mode)
+    runtime = EmulatorRuntime(rom_path, core_path=core_path, mode=mode)
 
     if mode == Mode.FREE:
         runtime.start_free_run_ticker()
 
     application = create_app(runtime)
-    typer.echo(f"gbax serving {rom.name} on http://{host}:{port}")
+    typer.echo(f"gbax serving {rom_path.name} on http://{host}:{port}")
     typer.echo(f"  mode={runtime.mode.value}  rom_sha1={runtime.rom_sha1}")
     typer.echo("  endpoints: /mode /step /speed /frame /buttons /memory /frame_count")
     try:

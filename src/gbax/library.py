@@ -163,3 +163,34 @@ def list_local_roms(roms_dir: Path | None = None) -> list[Path]:
     if not d.exists():
         return []
     return sorted(p for p in d.iterdir() if p.is_file() and p.suffix.lower() == ".gba")
+
+
+def resolve_rom(query_or_path: str, roms_dir: Path | None = None) -> Path:
+    """Accept either a literal filesystem path or a fuzzy query against the local library.
+
+    Resolution order:
+      1. If the value is an existing file, return it as-is.
+      2. Otherwise, fuzzy-match (case-insensitive, all whitespace tokens must appear)
+         against the .gba files in `roms_dir`.
+
+    Raises FileNotFoundError on no match, RuntimeError on ambiguous match.
+    """
+    as_path = Path(query_or_path)
+    if as_path.is_file():
+        return as_path
+
+    roms = list_local_roms(roms_dir)
+    tokens = [t.lower() for t in query_or_path.split() if t]
+    if not tokens:
+        raise FileNotFoundError(f"{query_or_path!r} is not a file and not a query")
+
+    matches = [p for p in roms if all(t in p.name.lower() for t in tokens)]
+    if not matches:
+        raise FileNotFoundError(
+            f"no local ROM matches {query_or_path!r}; "
+            f"local library has {len(roms)} ROM(s) in {DEFAULT_ROMS_DIR}"
+        )
+    if len(matches) > 1:
+        names = "\n  ".join(p.name for p in matches)
+        raise RuntimeError(f"{query_or_path!r} is ambiguous; matches:\n  {names}")
+    return matches[0]
