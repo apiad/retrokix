@@ -65,12 +65,33 @@ class EmulatorRuntime:
         self._buttons_held: set[Button] = set()
         self._mode = Mode(mode)
         self._speed_multiplier = 1.0
-        # In-memory save state slots: slot_id -> (blob, frame_count)
+        # In-memory save state slots: slot_id -> (blob, frame_count).
+        # Hydrated from disk on init so slots persist across restarts of the same ROM.
         self._slots: dict[int, tuple[bytes, int]] = {}
+        self._hydrate_slots_from_disk()
         # Concurrency: ticker thread (Mode.FREE) + API callers both touch the core
         self._lock = threading.Lock()
         self._tick_thread: threading.Thread | None = None
         self._tick_stop = threading.Event()
+
+    def _hydrate_slots_from_disk(self) -> None:
+        """Load every persisted slot from ~/.gbax/saves/<rom-sha1>/ into memory."""
+        rom_save_dir = self._save_dir / self._rom_sha1
+        if not rom_save_dir.exists():
+            return
+        for slot in range(1, 10):
+            state_path = rom_save_dir / f"slot-{slot}.state"
+            meta_path = state_path.with_suffix(".json")
+            if not state_path.exists():
+                continue
+            blob = state_path.read_bytes()
+            frame_count = 0
+            if meta_path.exists():
+                try:
+                    frame_count = int(json.loads(meta_path.read_text())["frame_count"])
+                except (ValueError, KeyError, json.JSONDecodeError):
+                    pass
+            self._slots[slot] = (blob, frame_count)
 
     @property
     def rom_path(self) -> Path:
@@ -165,6 +186,11 @@ class EmulatorRuntime:
         with self._lock:
             blob = self._core.serialize()
             self._slots[slot] = (blob, self._frame_count)
+            # Persist immediately so slots survive restarts.
+            path = self._slot_path(slot)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(blob)
+            path.with_suffix(".json").write_text(json.dumps({"frame_count": self._frame_count}))
             return blob
 
     def load_state_from_slot(self, slot: int) -> None:

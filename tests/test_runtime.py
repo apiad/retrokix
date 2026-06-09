@@ -149,6 +149,28 @@ def test_persist_and_reload_state(test_rom, mgba_core, tmp_path):
         assert rt2.frame_count == 42
 
 
+def test_save_to_slot_auto_persists(test_rom, mgba_core, tmp_path):
+    """Pressing 1-9 in `play` writes to disk immediately, without needing Ctrl+S."""
+    with EmulatorRuntime(test_rom, core_path=mgba_core, save_dir=tmp_path) as rt:
+        rt.step(frames=17)
+        rt.save_state_to_slot(3)
+        # File appeared on disk without persist_slot_to_disk being called
+        slot_file = tmp_path / rt.rom_sha1 / "slot-3.state"
+        assert slot_file.exists()
+
+
+def test_slots_hydrate_on_construction(test_rom, mgba_core, tmp_path):
+    """Slots saved in one session are in-memory on the next, so Shift+1-9 works."""
+    with EmulatorRuntime(test_rom, core_path=mgba_core, save_dir=tmp_path) as rt:
+        rt.step(frames=23)
+        rt.save_state_to_slot(5)
+
+    with EmulatorRuntime(test_rom, core_path=mgba_core, save_dir=tmp_path) as rt2:
+        # Without explicitly calling load_persistent_slot, slot 5 is available
+        rt2.load_state_from_slot(5)
+        assert rt2.frame_count == 23
+
+
 # --- Free-run ticker ---
 
 

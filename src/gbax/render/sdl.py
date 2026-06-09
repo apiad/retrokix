@@ -112,19 +112,6 @@ def play_loop(
                     sym = event.key.keysym.sym
                     mod = event.key.keysym.mod
 
-                    # Ctrl+S — persist most-recently-saved slot
-                    if sym == sdl2.SDLK_s and (mod & sdl2.KMOD_CTRL):
-                        if runtime._slots:  # noqa: SLF001 — internal touch is OK in render layer
-                            last_slot = max(runtime._slots.keys())
-                            try:
-                                path = runtime.persist_slot_to_disk(last_slot)
-                                print(f"persisted slot {last_slot} → {path}")
-                            except Exception as e:
-                                print(f"persist failed: {e}")
-                        else:
-                            print("no slot to persist (save one first with 1-9)")
-                        continue
-
                     # Shift+1..9 — load slot
                     if (sdl2.SDLK_1 <= sym <= sdl2.SDLK_9) and (mod & sdl2.KMOD_SHIFT):
                         slot = sym - sdl2.SDLK_0
