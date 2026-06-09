@@ -47,3 +47,43 @@ def test_iter_messages_invalid_json_raises():
 
 def test_schema_version_is_one():
     assert SCHEMA_VERSION == 1
+
+
+import subprocess
+import sys
+from pathlib import Path
+
+
+FIXTURES = Path(__file__).parent / "fixtures"
+
+
+def test_run_handles_hello_and_one_decision():
+    bot = FIXTURES / "minimal_bot.py"
+    proc = subprocess.Popen(
+        [sys.executable, str(bot)],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+
+    proc.stdin.write(encode_message({
+        "type": HELLO, "scenario": "x", "decision_period": 1, "schema_version": 1,
+    }))
+    proc.stdin.flush()
+
+    msgs = iter_messages(proc.stdout)
+    ready = next(msgs)
+    assert ready["type"] == "ready"
+    assert ready["name"] == "press-a"
+
+    proc.stdin.write(encode_message({"type": OBS, "frame": 0, "data": {}}))
+    proc.stdin.flush()
+    act = next(msgs)
+    assert act == {"type": "act", "buttons": ["a"]}
+
+    proc.stdin.write(encode_message({
+        "type": DONE, "result": {"score": 0.0}, "reason": "scored",
+    }))
+    proc.stdin.close()
+    proc.wait(timeout=5)
+    assert proc.returncode == 0
