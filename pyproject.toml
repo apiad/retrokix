@@ -1,11 +1,28 @@
 [project]
 name = "gbax"
-version = "0.1.0"
+version = "0.1.1"
 description = "Hacker-first, scriptable GBA emulator with HTTP API"
 readme = "README.md"
 license = { text = "MPL-2.0" }
 requires-python = ">=3.11"
 authors = [{ name = "Alejandro Piad" }]
+keywords = ["gba", "emulator", "libretro", "mgba", "fastapi", "cli", "gameboy"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Environment :: X11 Applications",
+  "Intended Audience :: Developers",
+  "Intended Audience :: End Users/Desktop",
+  "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Games/Entertainment",
+  "Topic :: System :: Emulators",
+]
 dependencies = [
   "typer>=0.12",
   "fastapi>=0.110",
@@ -16,6 +33,11 @@ dependencies = [
   "pysdl2-dll>=2.30",
   "cffi>=1.17",  # used by gbax.libretro to bind the libretro ABI
 ]
+
+[project.urls]
+Homepage = "https://github.com/apiad/gbax"
+Source = "https://github.com/apiad/gbax"
+Issues = "https://github.com/apiad/gbax/issues"
 
 [project.scripts]
 gbax = "gbax.cli:app"

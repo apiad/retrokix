@@ -14,7 +14,7 @@ def create_app(runtime: EmulatorRuntime) -> FastAPI:
     from gbax.api.frame import build_router as build_frame_router
     from gbax.api.memory import build_router as build_memory_router
 
-    app = FastAPI(title="gbax", version="0.1.0")
+    app = FastAPI(title="gbax", version="0.1.1")
     app.state.runtime = runtime
     app.include_router(build_control_router())
     app.include_router(build_frame_router())
