@@ -65,6 +65,7 @@ packages = ["src/gbax"]
 "src/gbax/data/bots/press_a.py" = "gbax/data/bots/press_a.py"
 "src/gbax/data/bots/random.py" = "gbax/data/bots/random.py"
 "src/gbax/data/scenarios/__init__.py" = "gbax/data/scenarios/__init__.py"
+"src/gbax/data/scenarios/mk_arcade_easy.py" = "gbax/data/scenarios/mk_arcade_easy.py"
 
 [tool.ruff]
 line-length = 100
