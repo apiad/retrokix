@@ -100,6 +100,40 @@ The libretro-database snapshot (~6700 GameShark / Action Replay / Code
 Breaker codes covering 512 GBA games) ships in the wheel — no network at
 runtime.
 
+### Automation: Controller, Scenarios, Tournaments
+
+In-process Python automation. No HTTP needed.
+
+```python
+import gbax
+
+with gbax.Controller("pokemon emerald") as g:
+    g.press(["start"], frames=2)
+    g.wait(60)
+    g.press(["a"], frames=2)
+    print(g.read_u32(0x02024284))
+    g.screenshot("/tmp/run.png")
+```
+
+For repeatable runs and tournaments, define a **scenario** (a small Python
+file with setup / observe / score / done) and have one or more **players**
+race through it:
+
+```bash
+$ gbax scenario create "pokemon emerald" --name catch-snorlax
+$ gbax train --rom emerald --scenario catch-snorlax --player ./my_bot.py
+$ gbax tournament --rom "mortal kombat" \
+    --scenario mk-arcade-easy \
+    --player "python -m gbax.data.bots.press_a" \
+    --player "python -m gbax.data.bots.random"
+```
+
+Scenarios choose their own observation shape (raw bytes, structured dict,
+framebuffer) and scoring criteria. Two reference scenarios ship in the
+wheel: `mk-arcade-easy` (Mortal Kombat Advance ladder) and `smb3-world-1-1`
+(Super Mario Advance 4, World 1-1). Full design at
+[`docs/automation.md`](docs/automation.md).
+
 ### Library
 
 ```

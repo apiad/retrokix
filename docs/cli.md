@@ -139,3 +139,31 @@ See [`api.md`](api.md) for the full endpoint surface.
 ## `gbax version`
 
 Prints the package version.
+
+## `gbax scenario create / list / validate`
+
+See [`automation.md`](automation.md).
+
+## `gbax train`
+
+```
+gbax train --rom <rom> --scenario <name|path> --player <cmd> [--output dir/]
+```
+
+Single-run StepDriver — emulator waits for the player on each frame, no
+wall-clock deadline. Prints the result to stdout; writes `result.json`
+if `--output` is given.
+
+## `gbax tournament`
+
+```
+gbax tournament --rom <rom> --scenario <name|path> --player <cmd> --player <cmd> [...]
+                [--lag-forfeit N] [--slack-ms N] [--output dir/] [--show] [--record]
+```
+
+Sequential 60 fps real-time bracket — each player faces the scenario in
+turn. Prints a leaderboard at the end; writes `results.json` if
+`--output` is given.
+
+`--show` and `--record` are reserved for follow-up slices (SDL window
+during tournament, deterministic input recording).
