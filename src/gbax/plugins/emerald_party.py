@@ -164,6 +164,38 @@ _live = None
 _render_fn = None
 
 
+def _build_opponent_panel():
+    """Rich Panel for the currently tagged opponent. None if no opponent set."""
+    if _opponent is None:
+        return None
+    from rich.panel import Panel
+    from rich.table import Table
+    from gbax.plugins.emerald_formulas import species_types, weaknesses, resistances
+    from gbax.plugins.emerald_data import load_types
+    sp = _opponent["species"]
+    lv = _opponent["level"]
+    types = species_types(sp) or []
+    type_names = load_types()
+    name = SPECIES_NAMES.get(sp, f"#{sp}")
+    types_str = " / ".join(type_names.get(str(t), f"#{t}") for t in types) or "?"
+    table = Table.grid(padding=(0, 2))
+    table.add_column(style="bold")
+    table.add_column()
+    table.add_row("[red]4×[/red]",
+        ", ".join(type_names.get(str(t), f"#{t}") for t, m in weaknesses(types) if m == 4.0) or "—")
+    table.add_row("[yellow]2×[/yellow]",
+        ", ".join(type_names.get(str(t), f"#{t}") for t, m in weaknesses(types) if m == 2.0) or "—")
+    table.add_row("[green]½×[/green]",
+        ", ".join(type_names.get(str(t), f"#{t}") for t, m in resistances(types) if m == 0.5) or "—")
+    table.add_row("[green]¼×[/green]",
+        ", ".join(type_names.get(str(t), f"#{t}") for t, m in resistances(types) if m == 0.25) or "—")
+    table.add_row("[blue]0×[/blue]",
+        ", ".join(type_names.get(str(t), f"#{t}") for t, m in resistances(types) if m == 0.0) or "—")
+    return Panel(table,
+                 title=f"[bold]opponent — {name} L{lv} ({types_str})[/bold]",
+                 border_style="red")
+
+
 def _build_table(runtime):
     from rich.table import Table
     t = Table(title="party (live)", show_header=True, header_style="bold cyan", expand=False)
@@ -217,14 +249,76 @@ def http_slot(ctx, idx: int):
     return s
 
 
+@p.route("/weaknesses/{species_id}")
+def http_weaknesses(ctx, species_id: int):
+    """Type weaknesses for a species — no party context needed.
+
+    GET /plugins/emerald_party/weaknesses/74  → Geodude.
+    """
+    from gbax.plugins.emerald_formulas import species_types, weaknesses
+    from gbax.plugins.emerald_data import load_species_info, load_types
+    from fastapi import HTTPException
+    info = load_species_info().get(str(species_id))
+    if not info:
+        raise HTTPException(status_code=404, detail=f"unknown species {species_id}")
+    types = species_types(species_id)
+    if not types:
+        raise HTTPException(status_code=500, detail=f"no types for species {species_id}")
+    type_names = load_types()
+    weak = weaknesses(types)
+    return {
+        "species": species_id,
+        "species_name": SPECIES_NAMES.get(species_id, f"#{species_id}"),
+        "types": [type_names.get(str(t), f"#{t}") for t in types],
+        "weaknesses": [
+            {"type": type_names.get(str(t), f"#{t}"), "mul": m} for t, m in weak
+        ],
+    }
+
+
+# --- Opponent tracking (manual until in-battle reader lands in Slice 3+) ---
+
+_opponent: dict | None = None  # {"species": int, "level": int}
+
+
+@p.route("/opponent", methods=["GET"])
+def http_opponent_get(ctx):
+    """Current 'opponent' tag — what the dashboard's matchup panel uses."""
+    return _opponent or {}
+
+
+@p.route("/opponent/{species_id}/{level}", methods=["POST"])
+def http_opponent_set(ctx, species_id: int, level: int):
+    """Tag what you're fighting. Live panel grows a matchup section."""
+    global _opponent
+    from gbax.plugins.emerald_data import load_species_info
+    from fastapi import HTTPException
+    if not load_species_info().get(str(species_id)):
+        raise HTTPException(status_code=404, detail=f"unknown species {species_id}")
+    _opponent = {"species": species_id, "level": level}
+    return {"set": _opponent}
+
+
+@p.route("/opponent/clear", methods=["POST"])
+def http_opponent_clear(ctx):
+    """Drop the opponent tag — panel returns to party-only view."""
+    global _opponent
+    _opponent = None
+    return {"cleared": True}
+
+
 @p.on_setup
 def setup(ctx):
     global _live, _render_fn
-    from rich.console import Console
+    from rich.console import Console, Group
     from rich.live import Live
 
     def render():
-        return _build_table(ctx.runtime)
+        party = _build_table(ctx.runtime)
+        opp = _build_opponent_panel()
+        if opp is None:
+            return party
+        return Group(party, opp)
 
     _render_fn = render
     _live = Live(render(), console=Console(), refresh_per_second=4, transient=False)

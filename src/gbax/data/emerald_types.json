@@ -1,0 +1,27 @@
+{
+  "__source__": "include/constants/pokemon.h (TYPE_*)",
+  "__upstream__": "https://github.com/pret/pokeemerald",
+  "__upstream_sha__": "2c8d1576588e1ed6d56889afb52061176bb319e8",
+  "__description__": "Type ID \u2192 display name.",
+  "__note__": "Data \u00a9 Nintendo / Game Freak / Creatures. This JSON is derived from the pokeemerald community decompilation for informational use only.",
+  "data": {
+    "0": "Normal",
+    "1": "Fighting",
+    "2": "Flying",
+    "3": "Poison",
+    "4": "Ground",
+    "5": "Rock",
+    "6": "Bug",
+    "7": "Ghost",
+    "8": "Steel",
+    "9": "???",
+    "10": "Fire",
+    "11": "Water",
+    "12": "Grass",
+    "13": "Electric",
+    "14": "Psychic",
+    "15": "Ice",
+    "16": "Dragon",
+    "17": "Dark"
+  }
+}

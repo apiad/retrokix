@@ -1,0 +1,1793 @@
+{
+  "__source__": "src/data/items.h",
+  "__upstream__": "https://github.com/pret/pokeemerald",
+  "__upstream_sha__": "2c8d1576588e1ed6d56889afb52061176bb319e8",
+  "__description__": "Item name, price, pocket, hold effect.",
+  "__note__": "Data \u00a9 Nintendo / Game Freak / Creatures. This JSON is derived from the pokeemerald community decompilation for informational use only.",
+  "data": {
+    "0": {
+      "name": "None",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "1": {
+      "name": "Master-Ball",
+      "price": 0,
+      "pocket": "POKE_BALLS"
+    },
+    "2": {
+      "name": "Ultra-Ball",
+      "price": 1200,
+      "pocket": "POKE_BALLS"
+    },
+    "3": {
+      "name": "Great-Ball",
+      "price": 600,
+      "pocket": "POKE_BALLS"
+    },
+    "4": {
+      "name": "Poke-Ball",
+      "price": 200,
+      "pocket": "POKE_BALLS"
+    },
+    "5": {
+      "name": "Safari-Ball",
+      "price": 0,
+      "pocket": "POKE_BALLS"
+    },
+    "6": {
+      "name": "Net-Ball",
+      "price": 1000,
+      "pocket": "POKE_BALLS"
+    },
+    "7": {
+      "name": "Dive-Ball",
+      "price": 1000,
+      "pocket": "POKE_BALLS"
+    },
+    "8": {
+      "name": "Nest-Ball",
+      "price": 1000,
+      "pocket": "POKE_BALLS"
+    },
+    "9": {
+      "name": "Repeat-Ball",
+      "price": 1000,
+      "pocket": "POKE_BALLS"
+    },
+    "10": {
+      "name": "Timer-Ball",
+      "price": 1000,
+      "pocket": "POKE_BALLS"
+    },
+    "11": {
+      "name": "Luxury-Ball",
+      "price": 1000,
+      "pocket": "POKE_BALLS"
+    },
+    "12": {
+      "name": "Premier-Ball",
+      "price": 200,
+      "pocket": "POKE_BALLS"
+    },
+    "13": {
+      "name": "Potion",
+      "price": 300,
+      "holdEffectParam": 20,
+      "pocket": "ITEMS"
+    },
+    "14": {
+      "name": "Antidote",
+      "price": 100,
+      "pocket": "ITEMS"
+    },
+    "15": {
+      "name": "Burn-Heal",
+      "price": 250,
+      "pocket": "ITEMS"
+    },
+    "16": {
+      "name": "Ice-Heal",
+      "price": 250,
+      "pocket": "ITEMS"
+    },
+    "17": {
+      "name": "Awakening",
+      "price": 250,
+      "pocket": "ITEMS"
+    },
+    "18": {
+      "name": "Paralyze-Heal",
+      "price": 200,
+      "pocket": "ITEMS"
+    },
+    "19": {
+      "name": "Full-Restore",
+      "price": 3000,
+      "holdEffectParam": 255,
+      "pocket": "ITEMS"
+    },
+    "20": {
+      "name": "Max-Potion",
+      "price": 2500,
+      "holdEffectParam": 255,
+      "pocket": "ITEMS"
+    },
+    "21": {
+      "name": "Hyper-Potion",
+      "price": 1200,
+      "holdEffectParam": 200,
+      "pocket": "ITEMS"
+    },
+    "22": {
+      "name": "Super-Potion",
+      "price": 700,
+      "holdEffectParam": 50,
+      "pocket": "ITEMS"
+    },
+    "23": {
+      "name": "Full-Heal",
+      "price": 600,
+      "pocket": "ITEMS"
+    },
+    "24": {
+      "name": "Revive",
+      "price": 1500,
+      "pocket": "ITEMS"
+    },
+    "25": {
+      "name": "Max-Revive",
+      "price": 4000,
+      "pocket": "ITEMS"
+    },
+    "26": {
+      "name": "Fresh-Water",
+      "price": 200,
+      "holdEffectParam": 50,
+      "pocket": "ITEMS"
+    },
+    "27": {
+      "name": "Soda-Pop",
+      "price": 300,
+      "holdEffectParam": 60,
+      "pocket": "ITEMS"
+    },
+    "28": {
+      "name": "Lemonade",
+      "price": 350,
+      "holdEffectParam": 80,
+      "pocket": "ITEMS"
+    },
+    "29": {
+      "name": "Moomoo-Milk",
+      "price": 500,
+      "holdEffectParam": 100,
+      "pocket": "ITEMS"
+    },
+    "30": {
+      "name": "Energy-Powder",
+      "price": 500,
+      "pocket": "ITEMS"
+    },
+    "31": {
+      "name": "Energy-Root",
+      "price": 800,
+      "pocket": "ITEMS"
+    },
+    "32": {
+      "name": "Heal-Powder",
+      "price": 450,
+      "pocket": "ITEMS"
+    },
+    "33": {
+      "name": "Revival-Herb",
+      "price": 2800,
+      "pocket": "ITEMS"
+    },
+    "34": {
+      "name": "Ether",
+      "price": 1200,
+      "holdEffectParam": 10,
+      "pocket": "ITEMS"
+    },
+    "35": {
+      "name": "Max-Ether",
+      "price": 2000,
+      "holdEffectParam": 255,
+      "pocket": "ITEMS"
+    },
+    "36": {
+      "name": "Elixir",
+      "price": 3000,
+      "holdEffectParam": 10,
+      "pocket": "ITEMS"
+    },
+    "37": {
+      "name": "Max-Elixir",
+      "price": 4500,
+      "holdEffectParam": 255,
+      "pocket": "ITEMS"
+    },
+    "38": {
+      "name": "Lava-Cookie",
+      "price": 200,
+      "pocket": "ITEMS"
+    },
+    "39": {
+      "name": "Blue-Flute",
+      "price": 100,
+      "pocket": "ITEMS"
+    },
+    "40": {
+      "name": "Yellow-Flute",
+      "price": 200,
+      "pocket": "ITEMS"
+    },
+    "41": {
+      "name": "Red-Flute",
+      "price": 300,
+      "pocket": "ITEMS"
+    },
+    "42": {
+      "name": "Black-Flute",
+      "price": 400,
+      "holdEffectParam": 50,
+      "pocket": "ITEMS"
+    },
+    "43": {
+      "name": "White-Flute",
+      "price": 500,
+      "holdEffectParam": 150,
+      "pocket": "ITEMS"
+    },
+    "44": {
+      "name": "Berry-Juice",
+      "price": 100,
+      "holdEffectParam": 20,
+      "pocket": "ITEMS",
+      "holdEffect": "RESTORE_HP"
+    },
+    "45": {
+      "name": "Sacred-Ash",
+      "price": 200,
+      "pocket": "ITEMS"
+    },
+    "46": {
+      "name": "Shoal-Salt",
+      "price": 20,
+      "pocket": "ITEMS"
+    },
+    "47": {
+      "name": "Shoal-Shell",
+      "price": 20,
+      "pocket": "ITEMS"
+    },
+    "48": {
+      "name": "Red-Shard",
+      "price": 200,
+      "pocket": "ITEMS"
+    },
+    "49": {
+      "name": "Blue-Shard",
+      "price": 200,
+      "pocket": "ITEMS"
+    },
+    "50": {
+      "name": "Yellow-Shard",
+      "price": 200,
+      "pocket": "ITEMS"
+    },
+    "51": {
+      "name": "Green-Shard",
+      "price": 200,
+      "pocket": "ITEMS"
+    },
+    "52": {
+      "name": "034",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "53": {
+      "name": "035",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "54": {
+      "name": "036",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "55": {
+      "name": "037",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "56": {
+      "name": "038",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "57": {
+      "name": "039",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "58": {
+      "name": "03A",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "59": {
+      "name": "03B",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "60": {
+      "name": "03C",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "61": {
+      "name": "03D",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "62": {
+      "name": "03E",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "63": {
+      "name": "Hp-Up",
+      "price": 9800,
+      "pocket": "ITEMS"
+    },
+    "64": {
+      "name": "Protein",
+      "price": 9800,
+      "pocket": "ITEMS"
+    },
+    "65": {
+      "name": "Iron",
+      "price": 9800,
+      "pocket": "ITEMS"
+    },
+    "66": {
+      "name": "Carbos",
+      "price": 9800,
+      "pocket": "ITEMS"
+    },
+    "67": {
+      "name": "Calcium",
+      "price": 9800,
+      "pocket": "ITEMS"
+    },
+    "68": {
+      "name": "Rare-Candy",
+      "price": 4800,
+      "pocket": "ITEMS"
+    },
+    "69": {
+      "name": "Pp-Up",
+      "price": 9800,
+      "pocket": "ITEMS"
+    },
+    "70": {
+      "name": "Zinc",
+      "price": 9800,
+      "pocket": "ITEMS"
+    },
+    "71": {
+      "name": "Pp-Max",
+      "price": 9800,
+      "pocket": "ITEMS"
+    },
+    "72": {
+      "name": "048",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "73": {
+      "name": "Guard-Spec",
+      "price": 700,
+      "pocket": "ITEMS"
+    },
+    "74": {
+      "name": "Dire-Hit",
+      "price": 650,
+      "pocket": "ITEMS"
+    },
+    "75": {
+      "name": "X-Attack",
+      "price": 500,
+      "pocket": "ITEMS"
+    },
+    "76": {
+      "name": "X-Defend",
+      "price": 550,
+      "pocket": "ITEMS"
+    },
+    "77": {
+      "name": "X-Speed",
+      "price": 350,
+      "pocket": "ITEMS"
+    },
+    "78": {
+      "name": "X-Accuracy",
+      "price": 950,
+      "pocket": "ITEMS"
+    },
+    "79": {
+      "name": "X-Special",
+      "price": 350,
+      "pocket": "ITEMS"
+    },
+    "80": {
+      "name": "Poke-Doll",
+      "price": 1000,
+      "pocket": "ITEMS"
+    },
+    "81": {
+      "name": "Fluffy-Tail",
+      "price": 1000,
+      "pocket": "ITEMS"
+    },
+    "82": {
+      "name": "052",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "83": {
+      "name": "Super-Repel",
+      "price": 500,
+      "holdEffectParam": 200,
+      "pocket": "ITEMS"
+    },
+    "84": {
+      "name": "Max-Repel",
+      "price": 700,
+      "holdEffectParam": 250,
+      "pocket": "ITEMS"
+    },
+    "85": {
+      "name": "Escape-Rope",
+      "price": 550,
+      "pocket": "ITEMS"
+    },
+    "86": {
+      "name": "Repel",
+      "price": 350,
+      "holdEffectParam": 100,
+      "pocket": "ITEMS"
+    },
+    "87": {
+      "name": "057",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "88": {
+      "name": "058",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "89": {
+      "name": "059",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "90": {
+      "name": "05A",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "91": {
+      "name": "05B",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "92": {
+      "name": "05C",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "93": {
+      "name": "Sun-Stone",
+      "price": 2100,
+      "pocket": "ITEMS"
+    },
+    "94": {
+      "name": "Moon-Stone",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "95": {
+      "name": "Fire-Stone",
+      "price": 2100,
+      "pocket": "ITEMS"
+    },
+    "96": {
+      "name": "Thunder-Stone",
+      "price": 2100,
+      "pocket": "ITEMS"
+    },
+    "97": {
+      "name": "Water-Stone",
+      "price": 2100,
+      "pocket": "ITEMS"
+    },
+    "98": {
+      "name": "Leaf-Stone",
+      "price": 2100,
+      "pocket": "ITEMS"
+    },
+    "99": {
+      "name": "063",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "100": {
+      "name": "064",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "101": {
+      "name": "065",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "102": {
+      "name": "066",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "103": {
+      "name": "Tiny-Mushroom",
+      "price": 500,
+      "pocket": "ITEMS"
+    },
+    "104": {
+      "name": "Big-Mushroom",
+      "price": 5000,
+      "pocket": "ITEMS"
+    },
+    "105": {
+      "name": "069",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "106": {
+      "name": "Pearl",
+      "price": 1400,
+      "pocket": "ITEMS"
+    },
+    "107": {
+      "name": "Big-Pearl",
+      "price": 7500,
+      "pocket": "ITEMS"
+    },
+    "108": {
+      "name": "Stardust",
+      "price": 2000,
+      "pocket": "ITEMS"
+    },
+    "109": {
+      "name": "Star-Piece",
+      "price": 9800,
+      "pocket": "ITEMS"
+    },
+    "110": {
+      "name": "Nugget",
+      "price": 10000,
+      "pocket": "ITEMS"
+    },
+    "111": {
+      "name": "Heart-Scale",
+      "price": 100,
+      "pocket": "ITEMS"
+    },
+    "112": {
+      "name": "070",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "113": {
+      "name": "071",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "114": {
+      "name": "072",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "115": {
+      "name": "073",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "116": {
+      "name": "074",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "117": {
+      "name": "075",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "118": {
+      "name": "076",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "119": {
+      "name": "077",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "120": {
+      "name": "078",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "121": {
+      "name": "Orange-Mail",
+      "price": 50,
+      "pocket": "ITEMS"
+    },
+    "122": {
+      "name": "Harbor-Mail",
+      "price": 50,
+      "pocket": "ITEMS"
+    },
+    "123": {
+      "name": "Glitter-Mail",
+      "price": 50,
+      "pocket": "ITEMS"
+    },
+    "124": {
+      "name": "Mech-Mail",
+      "price": 50,
+      "pocket": "ITEMS"
+    },
+    "125": {
+      "name": "Wood-Mail",
+      "price": 50,
+      "pocket": "ITEMS"
+    },
+    "126": {
+      "name": "Wave-Mail",
+      "price": 50,
+      "pocket": "ITEMS"
+    },
+    "127": {
+      "name": "Bead-Mail",
+      "price": 50,
+      "pocket": "ITEMS"
+    },
+    "128": {
+      "name": "Shadow-Mail",
+      "price": 50,
+      "pocket": "ITEMS"
+    },
+    "129": {
+      "name": "Tropic-Mail",
+      "price": 50,
+      "pocket": "ITEMS"
+    },
+    "130": {
+      "name": "Dream-Mail",
+      "price": 50,
+      "pocket": "ITEMS"
+    },
+    "131": {
+      "name": "Fab-Mail",
+      "price": 50,
+      "pocket": "ITEMS"
+    },
+    "132": {
+      "name": "Retro-Mail",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "133": {
+      "name": "Cheri-Berry",
+      "price": 20,
+      "pocket": "BERRIES",
+      "holdEffect": "CURE_PAR"
+    },
+    "134": {
+      "name": "Chesto-Berry",
+      "price": 20,
+      "pocket": "BERRIES",
+      "holdEffect": "CURE_SLP"
+    },
+    "135": {
+      "name": "Pecha-Berry",
+      "price": 20,
+      "pocket": "BERRIES",
+      "holdEffect": "CURE_PSN"
+    },
+    "136": {
+      "name": "Rawst-Berry",
+      "price": 20,
+      "pocket": "BERRIES",
+      "holdEffect": "CURE_BRN"
+    },
+    "137": {
+      "name": "Aspear-Berry",
+      "price": 20,
+      "pocket": "BERRIES",
+      "holdEffect": "CURE_FRZ"
+    },
+    "138": {
+      "name": "Leppa-Berry",
+      "price": 20,
+      "holdEffectParam": 10,
+      "pocket": "BERRIES",
+      "holdEffect": "RESTORE_PP"
+    },
+    "139": {
+      "name": "Oran-Berry",
+      "price": 20,
+      "holdEffectParam": 10,
+      "pocket": "BERRIES",
+      "holdEffect": "RESTORE_HP"
+    },
+    "140": {
+      "name": "Persim-Berry",
+      "price": 20,
+      "pocket": "BERRIES",
+      "holdEffect": "CURE_CONFUSION"
+    },
+    "141": {
+      "name": "Lum-Berry",
+      "price": 20,
+      "pocket": "BERRIES",
+      "holdEffect": "CURE_STATUS"
+    },
+    "142": {
+      "name": "Sitrus-Berry",
+      "price": 20,
+      "holdEffectParam": 30,
+      "pocket": "BERRIES",
+      "holdEffect": "RESTORE_HP"
+    },
+    "143": {
+      "name": "Figy-Berry",
+      "price": 20,
+      "holdEffectParam": 8,
+      "pocket": "BERRIES",
+      "holdEffect": "CONFUSE_SPICY"
+    },
+    "144": {
+      "name": "Wiki-Berry",
+      "price": 20,
+      "holdEffectParam": 8,
+      "pocket": "BERRIES",
+      "holdEffect": "CONFUSE_DRY"
+    },
+    "145": {
+      "name": "Mago-Berry",
+      "price": 20,
+      "holdEffectParam": 8,
+      "pocket": "BERRIES",
+      "holdEffect": "CONFUSE_SWEET"
+    },
+    "146": {
+      "name": "Aguav-Berry",
+      "price": 20,
+      "holdEffectParam": 8,
+      "pocket": "BERRIES",
+      "holdEffect": "CONFUSE_BITTER"
+    },
+    "147": {
+      "name": "Iapapa-Berry",
+      "price": 20,
+      "holdEffectParam": 8,
+      "pocket": "BERRIES",
+      "holdEffect": "CONFUSE_SOUR"
+    },
+    "148": {
+      "name": "Razz-Berry",
+      "price": 20,
+      "pocket": "BERRIES"
+    },
+    "149": {
+      "name": "Bluk-Berry",
+      "price": 20,
+      "pocket": "BERRIES"
+    },
+    "150": {
+      "name": "Nanab-Berry",
+      "price": 20,
+      "pocket": "BERRIES"
+    },
+    "151": {
+      "name": "Wepear-Berry",
+      "price": 20,
+      "pocket": "BERRIES"
+    },
+    "152": {
+      "name": "Pinap-Berry",
+      "price": 20,
+      "pocket": "BERRIES"
+    },
+    "153": {
+      "name": "Pomeg-Berry",
+      "price": 20,
+      "pocket": "BERRIES"
+    },
+    "154": {
+      "name": "Kelpsy-Berry",
+      "price": 20,
+      "pocket": "BERRIES"
+    },
+    "155": {
+      "name": "Qualot-Berry",
+      "price": 20,
+      "pocket": "BERRIES"
+    },
+    "156": {
+      "name": "Hondew-Berry",
+      "price": 20,
+      "pocket": "BERRIES"
+    },
+    "157": {
+      "name": "Grepa-Berry",
+      "price": 20,
+      "pocket": "BERRIES"
+    },
+    "158": {
+      "name": "Tamato-Berry",
+      "price": 20,
+      "pocket": "BERRIES"
+    },
+    "159": {
+      "name": "Cornn-Berry",
+      "price": 20,
+      "pocket": "BERRIES"
+    },
+    "160": {
+      "name": "Magost-Berry",
+      "price": 20,
+      "pocket": "BERRIES"
+    },
+    "161": {
+      "name": "Rabuta-Berry",
+      "price": 20,
+      "pocket": "BERRIES"
+    },
+    "162": {
+      "name": "Nomel-Berry",
+      "price": 20,
+      "pocket": "BERRIES"
+    },
+    "163": {
+      "name": "Spelon-Berry",
+      "price": 20,
+      "pocket": "BERRIES"
+    },
+    "164": {
+      "name": "Pamtre-Berry",
+      "price": 20,
+      "pocket": "BERRIES"
+    },
+    "165": {
+      "name": "Watmel-Berry",
+      "price": 20,
+      "pocket": "BERRIES"
+    },
+    "166": {
+      "name": "Durin-Berry",
+      "price": 20,
+      "pocket": "BERRIES"
+    },
+    "167": {
+      "name": "Belue-Berry",
+      "price": 20,
+      "pocket": "BERRIES"
+    },
+    "168": {
+      "name": "Liechi-Berry",
+      "price": 20,
+      "holdEffectParam": 4,
+      "pocket": "BERRIES",
+      "holdEffect": "ATTACK_UP"
+    },
+    "169": {
+      "name": "Ganlon-Berry",
+      "price": 20,
+      "holdEffectParam": 4,
+      "pocket": "BERRIES",
+      "holdEffect": "DEFENSE_UP"
+    },
+    "170": {
+      "name": "Salac-Berry",
+      "price": 20,
+      "holdEffectParam": 4,
+      "pocket": "BERRIES",
+      "holdEffect": "SPEED_UP"
+    },
+    "171": {
+      "name": "Petaya-Berry",
+      "price": 20,
+      "holdEffectParam": 4,
+      "pocket": "BERRIES",
+      "holdEffect": "SP_ATTACK_UP"
+    },
+    "172": {
+      "name": "Apicot-Berry",
+      "price": 20,
+      "holdEffectParam": 4,
+      "pocket": "BERRIES",
+      "holdEffect": "SP_DEFENSE_UP"
+    },
+    "173": {
+      "name": "Lansat-Berry",
+      "price": 20,
+      "holdEffectParam": 4,
+      "pocket": "BERRIES",
+      "holdEffect": "CRITICAL_UP"
+    },
+    "174": {
+      "name": "Starf-Berry",
+      "price": 20,
+      "holdEffectParam": 4,
+      "pocket": "BERRIES",
+      "holdEffect": "RANDOM_STAT_UP"
+    },
+    "175": {
+      "name": "Enigma-Berry",
+      "price": 20,
+      "pocket": "BERRIES"
+    },
+    "176": {
+      "name": "Unused-Berry-1",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "177": {
+      "name": "Unused-Berry-2",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "178": {
+      "name": "Unused-Berry-3",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "179": {
+      "name": "Bright-Powder",
+      "price": 10,
+      "holdEffectParam": 10,
+      "pocket": "ITEMS",
+      "holdEffect": "EVASION_UP"
+    },
+    "180": {
+      "name": "White-Herb",
+      "price": 100,
+      "pocket": "ITEMS",
+      "holdEffect": "RESTORE_STATS"
+    },
+    "181": {
+      "name": "Macho-Brace",
+      "price": 3000,
+      "pocket": "ITEMS",
+      "holdEffect": "MACHO_BRACE"
+    },
+    "182": {
+      "name": "Exp-Share",
+      "price": 3000,
+      "pocket": "ITEMS",
+      "holdEffect": "EXP_SHARE"
+    },
+    "183": {
+      "name": "Quick-Claw",
+      "price": 100,
+      "holdEffectParam": 20,
+      "pocket": "ITEMS",
+      "holdEffect": "QUICK_CLAW"
+    },
+    "184": {
+      "name": "Soothe-Bell",
+      "price": 100,
+      "pocket": "ITEMS",
+      "holdEffect": "FRIENDSHIP_UP"
+    },
+    "185": {
+      "name": "Mental-Herb",
+      "price": 100,
+      "pocket": "ITEMS",
+      "holdEffect": "CURE_ATTRACT"
+    },
+    "186": {
+      "name": "Choice-Band",
+      "price": 100,
+      "pocket": "ITEMS",
+      "holdEffect": "CHOICE_BAND"
+    },
+    "187": {
+      "name": "Kings-Rock",
+      "price": 100,
+      "holdEffectParam": 10,
+      "pocket": "ITEMS",
+      "holdEffect": "FLINCH"
+    },
+    "188": {
+      "name": "Silver-Powder",
+      "price": 100,
+      "holdEffectParam": 10,
+      "pocket": "ITEMS",
+      "holdEffect": "BUG_POWER"
+    },
+    "189": {
+      "name": "Amulet-Coin",
+      "price": 100,
+      "holdEffectParam": 10,
+      "pocket": "ITEMS",
+      "holdEffect": "DOUBLE_PRIZE"
+    },
+    "190": {
+      "name": "Cleanse-Tag",
+      "price": 200,
+      "pocket": "ITEMS",
+      "holdEffect": "REPEL"
+    },
+    "191": {
+      "name": "Soul-Dew",
+      "price": 200,
+      "pocket": "ITEMS",
+      "holdEffect": "SOUL_DEW"
+    },
+    "192": {
+      "name": "Deep-Sea-Tooth",
+      "price": 200,
+      "pocket": "ITEMS",
+      "holdEffect": "DEEP_SEA_TOOTH"
+    },
+    "193": {
+      "name": "Deep-Sea-Scale",
+      "price": 200,
+      "pocket": "ITEMS",
+      "holdEffect": "DEEP_SEA_SCALE"
+    },
+    "194": {
+      "name": "Smoke-Ball",
+      "price": 200,
+      "pocket": "ITEMS",
+      "holdEffect": "CAN_ALWAYS_RUN"
+    },
+    "195": {
+      "name": "Everstone",
+      "price": 200,
+      "pocket": "ITEMS",
+      "holdEffect": "PREVENT_EVOLVE"
+    },
+    "196": {
+      "name": "Focus-Band",
+      "price": 200,
+      "holdEffectParam": 10,
+      "pocket": "ITEMS",
+      "holdEffect": "FOCUS_BAND"
+    },
+    "197": {
+      "name": "Lucky-Egg",
+      "price": 200,
+      "pocket": "ITEMS",
+      "holdEffect": "LUCKY_EGG"
+    },
+    "198": {
+      "name": "Scope-Lens",
+      "price": 200,
+      "pocket": "ITEMS",
+      "holdEffect": "SCOPE_LENS"
+    },
+    "199": {
+      "name": "Metal-Coat",
+      "price": 100,
+      "holdEffectParam": 10,
+      "pocket": "ITEMS",
+      "holdEffect": "STEEL_POWER"
+    },
+    "200": {
+      "name": "Leftovers",
+      "price": 200,
+      "holdEffectParam": 10,
+      "pocket": "ITEMS",
+      "holdEffect": "LEFTOVERS"
+    },
+    "201": {
+      "name": "Dragon-Scale",
+      "price": 2100,
+      "holdEffectParam": 10,
+      "pocket": "ITEMS",
+      "holdEffect": "DRAGON_SCALE"
+    },
+    "202": {
+      "name": "Light-Ball",
+      "price": 100,
+      "pocket": "ITEMS",
+      "holdEffect": "LIGHT_BALL"
+    },
+    "203": {
+      "name": "Soft-Sand",
+      "price": 100,
+      "holdEffectParam": 10,
+      "pocket": "ITEMS",
+      "holdEffect": "GROUND_POWER"
+    },
+    "204": {
+      "name": "Hard-Stone",
+      "price": 100,
+      "holdEffectParam": 10,
+      "pocket": "ITEMS",
+      "holdEffect": "ROCK_POWER"
+    },
+    "205": {
+      "name": "Miracle-Seed",
+      "price": 100,
+      "holdEffectParam": 10,
+      "pocket": "ITEMS",
+      "holdEffect": "GRASS_POWER"
+    },
+    "206": {
+      "name": "Black-Glasses",
+      "price": 100,
+      "holdEffectParam": 10,
+      "pocket": "ITEMS",
+      "holdEffect": "DARK_POWER"
+    },
+    "207": {
+      "name": "Black-Belt",
+      "price": 100,
+      "holdEffectParam": 10,
+      "pocket": "ITEMS",
+      "holdEffect": "FIGHTING_POWER"
+    },
+    "208": {
+      "name": "Magnet",
+      "price": 100,
+      "holdEffectParam": 10,
+      "pocket": "ITEMS",
+      "holdEffect": "ELECTRIC_POWER"
+    },
+    "209": {
+      "name": "Mystic-Water",
+      "price": 100,
+      "holdEffectParam": 10,
+      "pocket": "ITEMS",
+      "holdEffect": "WATER_POWER"
+    },
+    "210": {
+      "name": "Sharp-Beak",
+      "price": 100,
+      "holdEffectParam": 10,
+      "pocket": "ITEMS",
+      "holdEffect": "FLYING_POWER"
+    },
+    "211": {
+      "name": "Poison-Barb",
+      "price": 100,
+      "holdEffectParam": 10,
+      "pocket": "ITEMS",
+      "holdEffect": "POISON_POWER"
+    },
+    "212": {
+      "name": "Never-Melt-Ice",
+      "price": 100,
+      "holdEffectParam": 10,
+      "pocket": "ITEMS",
+      "holdEffect": "ICE_POWER"
+    },
+    "213": {
+      "name": "Spell-Tag",
+      "price": 100,
+      "holdEffectParam": 10,
+      "pocket": "ITEMS",
+      "holdEffect": "GHOST_POWER"
+    },
+    "214": {
+      "name": "Twisted-Spoon",
+      "price": 100,
+      "holdEffectParam": 10,
+      "pocket": "ITEMS",
+      "holdEffect": "PSYCHIC_POWER"
+    },
+    "215": {
+      "name": "Charcoal",
+      "price": 9800,
+      "holdEffectParam": 10,
+      "pocket": "ITEMS",
+      "holdEffect": "FIRE_POWER"
+    },
+    "216": {
+      "name": "Dragon-Fang",
+      "price": 100,
+      "holdEffectParam": 10,
+      "pocket": "ITEMS",
+      "holdEffect": "DRAGON_POWER"
+    },
+    "217": {
+      "name": "Silk-Scarf",
+      "price": 100,
+      "holdEffectParam": 10,
+      "pocket": "ITEMS",
+      "holdEffect": "NORMAL_POWER"
+    },
+    "218": {
+      "name": "Up-Grade",
+      "price": 2100,
+      "pocket": "ITEMS",
+      "holdEffect": "UP_GRADE"
+    },
+    "219": {
+      "name": "Shell-Bell",
+      "price": 200,
+      "holdEffectParam": 8,
+      "pocket": "ITEMS",
+      "holdEffect": "SHELL_BELL"
+    },
+    "220": {
+      "name": "Sea-Incense",
+      "price": 9600,
+      "holdEffectParam": 5,
+      "pocket": "ITEMS",
+      "holdEffect": "WATER_POWER"
+    },
+    "221": {
+      "name": "Lax-Incense",
+      "price": 9600,
+      "holdEffectParam": 5,
+      "pocket": "ITEMS",
+      "holdEffect": "EVASION_UP"
+    },
+    "222": {
+      "name": "Lucky-Punch",
+      "price": 10,
+      "pocket": "ITEMS",
+      "holdEffect": "LUCKY_PUNCH"
+    },
+    "223": {
+      "name": "Metal-Powder",
+      "price": 10,
+      "pocket": "ITEMS",
+      "holdEffect": "METAL_POWDER"
+    },
+    "224": {
+      "name": "Thick-Club",
+      "price": 500,
+      "pocket": "ITEMS",
+      "holdEffect": "THICK_CLUB"
+    },
+    "225": {
+      "name": "Stick",
+      "price": 200,
+      "pocket": "ITEMS",
+      "holdEffect": "STICK"
+    },
+    "226": {
+      "name": "0E2",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "227": {
+      "name": "0E3",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "228": {
+      "name": "0E4",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "229": {
+      "name": "0E5",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "230": {
+      "name": "0E6",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "231": {
+      "name": "0E7",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "232": {
+      "name": "0E8",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "233": {
+      "name": "0E9",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "234": {
+      "name": "0Ea",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "235": {
+      "name": "0Eb",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "236": {
+      "name": "0Ec",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "237": {
+      "name": "0Ed",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "238": {
+      "name": "0Ee",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "239": {
+      "name": "0Ef",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "240": {
+      "name": "0F0",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "241": {
+      "name": "0F1",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "242": {
+      "name": "0F2",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "243": {
+      "name": "0F3",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "244": {
+      "name": "0F4",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "245": {
+      "name": "0F5",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "246": {
+      "name": "0F6",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "247": {
+      "name": "0F7",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "248": {
+      "name": "0F8",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "249": {
+      "name": "0F9",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "250": {
+      "name": "0Fa",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "251": {
+      "name": "0Fb",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "252": {
+      "name": "0Fc",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "253": {
+      "name": "0Fd",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "254": {
+      "name": "Red-Scarf",
+      "price": 100,
+      "pocket": "ITEMS"
+    },
+    "255": {
+      "name": "Blue-Scarf",
+      "price": 100,
+      "pocket": "ITEMS"
+    },
+    "256": {
+      "name": "Pink-Scarf",
+      "price": 100,
+      "pocket": "ITEMS"
+    },
+    "257": {
+      "name": "Green-Scarf",
+      "price": 100,
+      "pocket": "ITEMS"
+    },
+    "258": {
+      "name": "Yellow-Scarf",
+      "price": 100,
+      "pocket": "ITEMS"
+    },
+    "259": {
+      "name": "Mach-Bike",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "260": {
+      "name": "Coin-Case",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "261": {
+      "name": "Itemfinder",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "262": {
+      "name": "Old-Rod",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "263": {
+      "name": "Good-Rod",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "264": {
+      "name": "Super-Rod",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "265": {
+      "name": "Ss-Ticket",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "266": {
+      "name": "Contest-Pass",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "267": {
+      "name": "10B",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "268": {
+      "name": "Wailmer-Pail",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "269": {
+      "name": "Devon-Goods",
+      "price": 0,
+      "importance": 2,
+      "pocket": "KEY_ITEMS"
+    },
+    "270": {
+      "name": "Soot-Sack",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "271": {
+      "name": "Basement-Key",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "272": {
+      "name": "Acro-Bike",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "273": {
+      "name": "Pokeblock-Case",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "274": {
+      "name": "Letter",
+      "price": 0,
+      "importance": 2,
+      "pocket": "KEY_ITEMS"
+    },
+    "275": {
+      "name": "Eon-Ticket",
+      "price": 0,
+      "secondaryId": 1,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "276": {
+      "name": "Red-Orb",
+      "price": 0,
+      "importance": 2,
+      "pocket": "KEY_ITEMS"
+    },
+    "277": {
+      "name": "Blue-Orb",
+      "price": 0,
+      "importance": 2,
+      "pocket": "KEY_ITEMS"
+    },
+    "278": {
+      "name": "Scanner",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "279": {
+      "name": "Go-Goggles",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "280": {
+      "name": "Meteorite",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "281": {
+      "name": "Room-1-Key",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "282": {
+      "name": "Room-2-Key",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "283": {
+      "name": "Room-4-Key",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "284": {
+      "name": "Room-6-Key",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "285": {
+      "name": "Storage-Key",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "286": {
+      "name": "Root-Fossil",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "287": {
+      "name": "Claw-Fossil",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "288": {
+      "name": "Devon-Scope",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "347": {
+      "name": "15B",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "348": {
+      "name": "15C",
+      "price": 0,
+      "pocket": "ITEMS"
+    },
+    "349": {
+      "name": "Oaks-Parcel",
+      "price": 0,
+      "importance": 2,
+      "pocket": "KEY_ITEMS"
+    },
+    "350": {
+      "name": "Poke-Flute",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "351": {
+      "name": "Secret-Key",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "352": {
+      "name": "Bike-Voucher",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "353": {
+      "name": "Gold-Teeth",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "354": {
+      "name": "Old-Amber",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "355": {
+      "name": "Card-Key",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "356": {
+      "name": "Lift-Key",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "357": {
+      "name": "Helix-Fossil",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "358": {
+      "name": "Dome-Fossil",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "359": {
+      "name": "Silph-Scope",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "360": {
+      "name": "Bicycle",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "361": {
+      "name": "Town-Map",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "362": {
+      "name": "Vs-Seeker",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "363": {
+      "name": "Fame-Checker",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "364": {
+      "name": "Tm-Case",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "365": {
+      "name": "Berry-Pouch",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "366": {
+      "name": "Teachy-Tv",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "367": {
+      "name": "Tri-Pass",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "368": {
+      "name": "Rainbow-Pass",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "369": {
+      "name": "Tea",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "370": {
+      "name": "Mystic-Ticket",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "371": {
+      "name": "Aurora-Ticket",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "372": {
+      "name": "Powder-Jar",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "373": {
+      "name": "Ruby",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "374": {
+      "name": "Sapphire",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "375": {
+      "name": "Magma-Emblem",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    },
+    "376": {
+      "name": "Old-Sea-Map",
+      "price": 0,
+      "importance": 1,
+      "pocket": "KEY_ITEMS"
+    }
+  }
+}

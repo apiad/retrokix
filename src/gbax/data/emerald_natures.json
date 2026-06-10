@@ -1,0 +1,259 @@
+{
+  "__source__": "src/pokemon.c::gNatureStatTable",
+  "__upstream__": "https://github.com/pret/pokeemerald",
+  "__upstream_sha__": "2c8d1576588e1ed6d56889afb52061176bb319e8",
+  "__description__": "25 natures with per-stat modifier (-1/0/+1 for \u00d70.9/\u00d71.0/\u00d71.1).",
+  "__note__": "Data \u00a9 Nintendo / Game Freak / Creatures. This JSON is derived from the pokeemerald community decompilation for informational use only.",
+  "data": {
+    "0": {
+      "name": "Hardy",
+      "mods": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "1": {
+      "name": "Lonely",
+      "mods": [
+        1,
+        -1,
+        0,
+        0,
+        0
+      ]
+    },
+    "2": {
+      "name": "Brave",
+      "mods": [
+        1,
+        0,
+        -1,
+        0,
+        0
+      ]
+    },
+    "3": {
+      "name": "Adamant",
+      "mods": [
+        1,
+        0,
+        0,
+        -1,
+        0
+      ]
+    },
+    "4": {
+      "name": "Naughty",
+      "mods": [
+        1,
+        0,
+        0,
+        0,
+        -1
+      ]
+    },
+    "5": {
+      "name": "Bold",
+      "mods": [
+        -1,
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    "6": {
+      "name": "Docile",
+      "mods": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "7": {
+      "name": "Relaxed",
+      "mods": [
+        0,
+        1,
+        -1,
+        0,
+        0
+      ]
+    },
+    "8": {
+      "name": "Impish",
+      "mods": [
+        0,
+        1,
+        0,
+        -1,
+        0
+      ]
+    },
+    "9": {
+      "name": "Lax",
+      "mods": [
+        0,
+        1,
+        0,
+        0,
+        -1
+      ]
+    },
+    "10": {
+      "name": "Timid",
+      "mods": [
+        -1,
+        0,
+        1,
+        0,
+        0
+      ]
+    },
+    "11": {
+      "name": "Hasty",
+      "mods": [
+        0,
+        -1,
+        1,
+        0,
+        0
+      ]
+    },
+    "12": {
+      "name": "Serious",
+      "mods": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "13": {
+      "name": "Jolly",
+      "mods": [
+        0,
+        0,
+        1,
+        -1,
+        0
+      ]
+    },
+    "14": {
+      "name": "Naive",
+      "mods": [
+        0,
+        0,
+        1,
+        0,
+        -1
+      ]
+    },
+    "15": {
+      "name": "Modest",
+      "mods": [
+        -1,
+        0,
+        0,
+        1,
+        0
+      ]
+    },
+    "16": {
+      "name": "Mild",
+      "mods": [
+        0,
+        -1,
+        0,
+        1,
+        0
+      ]
+    },
+    "17": {
+      "name": "Quiet",
+      "mods": [
+        0,
+        0,
+        -1,
+        1,
+        0
+      ]
+    },
+    "18": {
+      "name": "Bashful",
+      "mods": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "19": {
+      "name": "Rash",
+      "mods": [
+        0,
+        0,
+        0,
+        1,
+        -1
+      ]
+    },
+    "20": {
+      "name": "Calm",
+      "mods": [
+        -1,
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    "21": {
+      "name": "Gentle",
+      "mods": [
+        0,
+        -1,
+        0,
+        0,
+        1
+      ]
+    },
+    "22": {
+      "name": "Sassy",
+      "mods": [
+        0,
+        0,
+        -1,
+        0,
+        1
+      ]
+    },
+    "23": {
+      "name": "Careful",
+      "mods": [
+        0,
+        0,
+        0,
+        -1,
+        1
+      ]
+    },
+    "24": {
+      "name": "Quirky",
+      "mods": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  }
+}

@@ -1,0 +1,5426 @@
+{
+  "__source__": "src/data/battle_moves.h",
+  "__upstream__": "https://github.com/pret/pokeemerald",
+  "__upstream_sha__": "2c8d1576588e1ed6d56889afb52061176bb319e8",
+  "__description__": "Move stats: type, power, accuracy, PP, priority, effect.",
+  "__note__": "Data \u00a9 Nintendo / Game Freak / Creatures. This JSON is derived from the pokeemerald community decompilation for informational use only.",
+  "data": {
+    "0": {
+      "name": "None",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 0,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "HIT",
+      "target": "SELECTED"
+    },
+    "1": {
+      "name": "Pound",
+      "power": 40,
+      "accuracy": 100,
+      "pp": 35,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "2": {
+      "name": "Karate-Chop",
+      "power": 50,
+      "accuracy": 100,
+      "pp": 25,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "FIGHTING",
+      "effect": "HIGH_CRITICAL",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "3": {
+      "name": "Double-Slap",
+      "power": 15,
+      "accuracy": 85,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "MULTI_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "4": {
+      "name": "Comet-Punch",
+      "power": 18,
+      "accuracy": 85,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "MULTI_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "5": {
+      "name": "Mega-Punch",
+      "power": 80,
+      "accuracy": 85,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "6": {
+      "name": "Pay-Day",
+      "power": 40,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 100,
+      "type": "NORMAL",
+      "effect": "PAY_DAY",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "7": {
+      "name": "Fire-Punch",
+      "power": 75,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 10,
+      "type": "FIRE",
+      "effect": "BURN_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "8": {
+      "name": "Ice-Punch",
+      "power": 75,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 10,
+      "type": "ICE",
+      "effect": "FREEZE_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "9": {
+      "name": "Thunder-Punch",
+      "power": 75,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 10,
+      "type": "ELECTRIC",
+      "effect": "PARALYZE_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "10": {
+      "name": "Scratch",
+      "power": 40,
+      "accuracy": 100,
+      "pp": 35,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "11": {
+      "name": "Vice-Grip",
+      "power": 55,
+      "accuracy": 100,
+      "pp": 30,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "12": {
+      "name": "Guillotine",
+      "power": 1,
+      "accuracy": 30,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "OHKO",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "13": {
+      "name": "Razor-Wind",
+      "power": 80,
+      "accuracy": 100,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "RAZOR_WIND",
+      "target": "BOTH",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "14": {
+      "name": "Swords-Dance",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 30,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "ATTACK_UP_2",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "15": {
+      "name": "Cut",
+      "power": 50,
+      "accuracy": 95,
+      "pp": 30,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "16": {
+      "name": "Gust",
+      "power": 40,
+      "accuracy": 100,
+      "pp": 35,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "FLYING",
+      "effect": "GUST",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "17": {
+      "name": "Wing-Attack",
+      "power": 60,
+      "accuracy": 100,
+      "pp": 35,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "FLYING",
+      "effect": "HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "18": {
+      "name": "Whirlwind",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 20,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "ROAR",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "19": {
+      "name": "Fly",
+      "power": 70,
+      "accuracy": 95,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "FLYING",
+      "effect": "SEMI_INVULNERABLE",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "20": {
+      "name": "Bind",
+      "power": 15,
+      "accuracy": 75,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 100,
+      "type": "NORMAL",
+      "effect": "TRAP",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "21": {
+      "name": "Slam",
+      "power": 80,
+      "accuracy": 75,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "22": {
+      "name": "Vine-Whip",
+      "power": 35,
+      "accuracy": 100,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "GRASS",
+      "effect": "HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "23": {
+      "name": "Stomp",
+      "power": 65,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 30,
+      "type": "NORMAL",
+      "effect": "FLINCH_MINIMIZE_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "24": {
+      "name": "Double-Kick",
+      "power": 30,
+      "accuracy": 100,
+      "pp": 30,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "FIGHTING",
+      "effect": "DOUBLE_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "25": {
+      "name": "Mega-Kick",
+      "power": 120,
+      "accuracy": 75,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "26": {
+      "name": "Jump-Kick",
+      "power": 70,
+      "accuracy": 95,
+      "pp": 25,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "FIGHTING",
+      "effect": "RECOIL_IF_MISS",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "27": {
+      "name": "Rolling-Kick",
+      "power": 60,
+      "accuracy": 85,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 30,
+      "type": "FIGHTING",
+      "effect": "FLINCH_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "28": {
+      "name": "Sand-Attack",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "GROUND",
+      "effect": "ACCURACY_DOWN",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "29": {
+      "name": "Headbutt",
+      "power": 70,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 30,
+      "type": "NORMAL",
+      "effect": "FLINCH_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "30": {
+      "name": "Horn-Attack",
+      "power": 65,
+      "accuracy": 100,
+      "pp": 25,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "31": {
+      "name": "Fury-Attack",
+      "power": 15,
+      "accuracy": 85,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "MULTI_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "32": {
+      "name": "Horn-Drill",
+      "power": 1,
+      "accuracy": 30,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "OHKO",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "33": {
+      "name": "Tackle",
+      "power": 35,
+      "accuracy": 95,
+      "pp": 35,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "34": {
+      "name": "Body-Slam",
+      "power": 85,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 30,
+      "type": "NORMAL",
+      "effect": "PARALYZE_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "35": {
+      "name": "Wrap",
+      "power": 15,
+      "accuracy": 85,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 100,
+      "type": "NORMAL",
+      "effect": "TRAP",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "36": {
+      "name": "Take-Down",
+      "power": 90,
+      "accuracy": 85,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "RECOIL",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "37": {
+      "name": "Thrash",
+      "power": 90,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 100,
+      "type": "NORMAL",
+      "effect": "RAMPAGE",
+      "target": "RANDOM",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "38": {
+      "name": "Double-Edge",
+      "power": 120,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "DOUBLE_EDGE",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "39": {
+      "name": "Tail-Whip",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 30,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "DEFENSE_DOWN",
+      "target": "BOTH",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "40": {
+      "name": "Poison-Sting",
+      "power": 15,
+      "accuracy": 100,
+      "pp": 35,
+      "priority": 0,
+      "secondary_chance": 30,
+      "type": "POISON",
+      "effect": "POISON_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "41": {
+      "name": "Twineedle",
+      "power": 25,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 20,
+      "type": "BUG",
+      "effect": "TWINEEDLE",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "42": {
+      "name": "Pin-Missile",
+      "power": 14,
+      "accuracy": 85,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "BUG",
+      "effect": "MULTI_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "43": {
+      "name": "Leer",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 30,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "DEFENSE_DOWN",
+      "target": "BOTH",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "44": {
+      "name": "Bite",
+      "power": 60,
+      "accuracy": 100,
+      "pp": 25,
+      "priority": 0,
+      "secondary_chance": 30,
+      "type": "DARK",
+      "effect": "FLINCH_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "45": {
+      "name": "Growl",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 40,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "ATTACK_DOWN",
+      "target": "BOTH",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "46": {
+      "name": "Roar",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 20,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "ROAR",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "47": {
+      "name": "Sing",
+      "power": 0,
+      "accuracy": 55,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "SLEEP",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "48": {
+      "name": "Supersonic",
+      "power": 0,
+      "accuracy": 55,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "CONFUSE",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "49": {
+      "name": "Sonic-Boom",
+      "power": 1,
+      "accuracy": 90,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "SONICBOOM",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "50": {
+      "name": "Disable",
+      "power": 0,
+      "accuracy": 55,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "DISABLE",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "51": {
+      "name": "Acid",
+      "power": 40,
+      "accuracy": 100,
+      "pp": 30,
+      "priority": 0,
+      "secondary_chance": 10,
+      "type": "POISON",
+      "effect": "DEFENSE_DOWN_HIT",
+      "target": "BOTH",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "52": {
+      "name": "Ember",
+      "power": 40,
+      "accuracy": 100,
+      "pp": 25,
+      "priority": 0,
+      "secondary_chance": 10,
+      "type": "FIRE",
+      "effect": "BURN_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "53": {
+      "name": "Flamethrower",
+      "power": 95,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 10,
+      "type": "FIRE",
+      "effect": "BURN_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "54": {
+      "name": "Mist",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 30,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "ICE",
+      "effect": "MIST",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "55": {
+      "name": "Water-Gun",
+      "power": 40,
+      "accuracy": 100,
+      "pp": 25,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "WATER",
+      "effect": "HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "56": {
+      "name": "Hydro-Pump",
+      "power": 120,
+      "accuracy": 80,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "WATER",
+      "effect": "HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "57": {
+      "name": "Surf",
+      "power": 95,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "WATER",
+      "effect": "HIT",
+      "target": "BOTH",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "58": {
+      "name": "Ice-Beam",
+      "power": 95,
+      "accuracy": 100,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 10,
+      "type": "ICE",
+      "effect": "FREEZE_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "59": {
+      "name": "Blizzard",
+      "power": 120,
+      "accuracy": 70,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 10,
+      "type": "ICE",
+      "effect": "FREEZE_HIT",
+      "target": "BOTH",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "60": {
+      "name": "Psybeam",
+      "power": 65,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 10,
+      "type": "PSYCHIC",
+      "effect": "CONFUSE_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "61": {
+      "name": "Bubble-Beam",
+      "power": 65,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 10,
+      "type": "WATER",
+      "effect": "SPEED_DOWN_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "62": {
+      "name": "Aurora-Beam",
+      "power": 65,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 10,
+      "type": "ICE",
+      "effect": "ATTACK_DOWN_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "63": {
+      "name": "Hyper-Beam",
+      "power": 150,
+      "accuracy": 90,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "RECHARGE",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "64": {
+      "name": "Peck",
+      "power": 35,
+      "accuracy": 100,
+      "pp": 35,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "FLYING",
+      "effect": "HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "65": {
+      "name": "Drill-Peck",
+      "power": 80,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "FLYING",
+      "effect": "HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "66": {
+      "name": "Submission",
+      "power": 80,
+      "accuracy": 80,
+      "pp": 25,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "FIGHTING",
+      "effect": "RECOIL",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "67": {
+      "name": "Low-Kick",
+      "power": 1,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "FIGHTING",
+      "effect": "LOW_KICK",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "68": {
+      "name": "Counter",
+      "power": 1,
+      "accuracy": 100,
+      "pp": 20,
+      "secondary_chance": 0,
+      "type": "FIGHTING",
+      "effect": "COUNTER",
+      "target": "DEPENDS",
+      "flags": [
+        "MAKES_CONTACT",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "69": {
+      "name": "Seismic-Toss",
+      "power": 1,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "FIGHTING",
+      "effect": "LEVEL_DAMAGE",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "70": {
+      "name": "Strength",
+      "power": 80,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "71": {
+      "name": "Absorb",
+      "power": 20,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "GRASS",
+      "effect": "ABSORB",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "72": {
+      "name": "Mega-Drain",
+      "power": 40,
+      "accuracy": 100,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "GRASS",
+      "effect": "ABSORB",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "73": {
+      "name": "Leech-Seed",
+      "power": 0,
+      "accuracy": 90,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "GRASS",
+      "effect": "LEECH_SEED",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "74": {
+      "name": "Growth",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 40,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "SPECIAL_ATTACK_UP",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "75": {
+      "name": "Razor-Leaf",
+      "power": 55,
+      "accuracy": 95,
+      "pp": 25,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "GRASS",
+      "effect": "HIGH_CRITICAL",
+      "target": "BOTH",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "76": {
+      "name": "Solar-Beam",
+      "power": 120,
+      "accuracy": 100,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "GRASS",
+      "effect": "SOLAR_BEAM",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "77": {
+      "name": "Poison-Powder",
+      "power": 0,
+      "accuracy": 75,
+      "pp": 35,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "POISON",
+      "effect": "POISON",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "78": {
+      "name": "Stun-Spore",
+      "power": 0,
+      "accuracy": 75,
+      "pp": 30,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "GRASS",
+      "effect": "PARALYZE",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "79": {
+      "name": "Sleep-Powder",
+      "power": 0,
+      "accuracy": 75,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "GRASS",
+      "effect": "SLEEP",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "80": {
+      "name": "Petal-Dance",
+      "power": 70,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 100,
+      "type": "GRASS",
+      "effect": "RAMPAGE",
+      "target": "RANDOM",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "81": {
+      "name": "String-Shot",
+      "power": 0,
+      "accuracy": 95,
+      "pp": 40,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "BUG",
+      "effect": "SPEED_DOWN",
+      "target": "BOTH",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "82": {
+      "name": "Dragon-Rage",
+      "power": 1,
+      "accuracy": 100,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "DRAGON",
+      "effect": "DRAGON_RAGE",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "83": {
+      "name": "Fire-Spin",
+      "power": 15,
+      "accuracy": 70,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 100,
+      "type": "FIRE",
+      "effect": "TRAP",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "84": {
+      "name": "Thunder-Shock",
+      "power": 40,
+      "accuracy": 100,
+      "pp": 30,
+      "priority": 0,
+      "secondary_chance": 10,
+      "type": "ELECTRIC",
+      "effect": "PARALYZE_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "85": {
+      "name": "Thunderbolt",
+      "power": 95,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 10,
+      "type": "ELECTRIC",
+      "effect": "PARALYZE_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "86": {
+      "name": "Thunder-Wave",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "ELECTRIC",
+      "effect": "PARALYZE",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "87": {
+      "name": "Thunder",
+      "power": 120,
+      "accuracy": 70,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 30,
+      "type": "ELECTRIC",
+      "effect": "THUNDER",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "88": {
+      "name": "Rock-Throw",
+      "power": 50,
+      "accuracy": 90,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "ROCK",
+      "effect": "HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "89": {
+      "name": "Earthquake",
+      "power": 100,
+      "accuracy": 100,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "GROUND",
+      "effect": "EARTHQUAKE",
+      "target": "FOES_AND_ALLY",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "90": {
+      "name": "Fissure",
+      "power": 1,
+      "accuracy": 30,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "GROUND",
+      "effect": "OHKO",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "91": {
+      "name": "Dig",
+      "power": 60,
+      "accuracy": 100,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "GROUND",
+      "effect": "SEMI_INVULNERABLE",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "92": {
+      "name": "Toxic",
+      "power": 0,
+      "accuracy": 85,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 100,
+      "type": "POISON",
+      "effect": "TOXIC",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "93": {
+      "name": "Confusion",
+      "power": 50,
+      "accuracy": 100,
+      "pp": 25,
+      "priority": 0,
+      "secondary_chance": 10,
+      "type": "PSYCHIC",
+      "effect": "CONFUSE_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "94": {
+      "name": "Psychic",
+      "power": 90,
+      "accuracy": 100,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 10,
+      "type": "PSYCHIC",
+      "effect": "SPECIAL_DEFENSE_DOWN_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "95": {
+      "name": "Hypnosis",
+      "power": 0,
+      "accuracy": 60,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "PSYCHIC",
+      "effect": "SLEEP",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "96": {
+      "name": "Meditate",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 40,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "PSYCHIC",
+      "effect": "ATTACK_UP",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "97": {
+      "name": "Agility",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 30,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "PSYCHIC",
+      "effect": "SPEED_UP_2",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "98": {
+      "name": "Quick-Attack",
+      "power": 40,
+      "accuracy": 100,
+      "pp": 30,
+      "priority": 1,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "QUICK_ATTACK",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "99": {
+      "name": "Rage",
+      "power": 20,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "RAGE",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "100": {
+      "name": "Teleport",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "PSYCHIC",
+      "effect": "TELEPORT",
+      "target": "USER"
+    },
+    "101": {
+      "name": "Night-Shade",
+      "power": 1,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "GHOST",
+      "effect": "LEVEL_DAMAGE",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "102": {
+      "name": "Mimic",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "MIMIC",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED"
+      ]
+    },
+    "103": {
+      "name": "Screech",
+      "power": 0,
+      "accuracy": 85,
+      "pp": 40,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "DEFENSE_DOWN_2",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "104": {
+      "name": "Double-Team",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "EVASION_UP",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "105": {
+      "name": "Recover",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "RESTORE_HP",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "106": {
+      "name": "Harden",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 30,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "DEFENSE_UP",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "107": {
+      "name": "Minimize",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "MINIMIZE",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "108": {
+      "name": "Smokescreen",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "ACCURACY_DOWN",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "109": {
+      "name": "Confuse-Ray",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "GHOST",
+      "effect": "CONFUSE",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "110": {
+      "name": "Withdraw",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 40,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "WATER",
+      "effect": "DEFENSE_UP",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "111": {
+      "name": "Defense-Curl",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 40,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "DEFENSE_CURL",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "112": {
+      "name": "Barrier",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 30,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "PSYCHIC",
+      "effect": "DEFENSE_UP_2",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "113": {
+      "name": "Light-Screen",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 30,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "PSYCHIC",
+      "effect": "LIGHT_SCREEN",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "114": {
+      "name": "Haze",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 30,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "ICE",
+      "effect": "HAZE",
+      "target": "USER",
+      "flags": [
+        "PROTECT_AFFECTED"
+      ]
+    },
+    "115": {
+      "name": "Reflect",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "PSYCHIC",
+      "effect": "REFLECT",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "116": {
+      "name": "Focus-Energy",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 30,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "FOCUS_ENERGY",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "117": {
+      "name": "Bide",
+      "power": 1,
+      "accuracy": 100,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "BIDE",
+      "target": "USER",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "118": {
+      "name": "Metronome",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "METRONOME",
+      "target": "DEPENDS"
+    },
+    "119": {
+      "name": "Mirror-Move",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "FLYING",
+      "effect": "MIRROR_MOVE",
+      "target": "DEPENDS"
+    },
+    "120": {
+      "name": "Self-Destruct",
+      "power": 200,
+      "accuracy": 100,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "EXPLOSION",
+      "target": "FOES_AND_ALLY",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "121": {
+      "name": "Egg-Bomb",
+      "power": 100,
+      "accuracy": 75,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "122": {
+      "name": "Lick",
+      "power": 20,
+      "accuracy": 100,
+      "pp": 30,
+      "priority": 0,
+      "secondary_chance": 30,
+      "type": "GHOST",
+      "effect": "PARALYZE_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "123": {
+      "name": "Smog",
+      "power": 20,
+      "accuracy": 70,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 40,
+      "type": "POISON",
+      "effect": "POISON_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "124": {
+      "name": "Sludge",
+      "power": 65,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 30,
+      "type": "POISON",
+      "effect": "POISON_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "125": {
+      "name": "Bone-Club",
+      "power": 65,
+      "accuracy": 85,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 10,
+      "type": "GROUND",
+      "effect": "FLINCH_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "126": {
+      "name": "Fire-Blast",
+      "power": 120,
+      "accuracy": 85,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 10,
+      "type": "FIRE",
+      "effect": "BURN_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "127": {
+      "name": "Waterfall",
+      "power": 80,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "WATER",
+      "effect": "HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "128": {
+      "name": "Clamp",
+      "power": 35,
+      "accuracy": 75,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 100,
+      "type": "WATER",
+      "effect": "TRAP",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "129": {
+      "name": "Swift",
+      "power": 60,
+      "accuracy": 0,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "ALWAYS_HIT",
+      "target": "BOTH",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "130": {
+      "name": "Skull-Bash",
+      "power": 100,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "SKULL_BASH",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "131": {
+      "name": "Spike-Cannon",
+      "power": 20,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "MULTI_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "132": {
+      "name": "Constrict",
+      "power": 10,
+      "accuracy": 100,
+      "pp": 35,
+      "priority": 0,
+      "secondary_chance": 10,
+      "type": "NORMAL",
+      "effect": "SPEED_DOWN_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "133": {
+      "name": "Amnesia",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "PSYCHIC",
+      "effect": "SPECIAL_DEFENSE_UP_2",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "134": {
+      "name": "Kinesis",
+      "power": 0,
+      "accuracy": 80,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "PSYCHIC",
+      "effect": "ACCURACY_DOWN",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "135": {
+      "name": "Soft-Boiled",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "SOFTBOILED",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "136": {
+      "name": "Hi-Jump-Kick",
+      "power": 85,
+      "accuracy": 90,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "FIGHTING",
+      "effect": "RECOIL_IF_MISS",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "137": {
+      "name": "Glare",
+      "power": 0,
+      "accuracy": 75,
+      "pp": 30,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "PARALYZE",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "138": {
+      "name": "Dream-Eater",
+      "power": 100,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "PSYCHIC",
+      "effect": "DREAM_EATER",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "139": {
+      "name": "Poison-Gas",
+      "power": 0,
+      "accuracy": 55,
+      "pp": 40,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "POISON",
+      "effect": "POISON",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "140": {
+      "name": "Barrage",
+      "power": 15,
+      "accuracy": 85,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "MULTI_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "141": {
+      "name": "Leech-Life",
+      "power": 20,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "BUG",
+      "effect": "ABSORB",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "142": {
+      "name": "Lovely-Kiss",
+      "power": 0,
+      "accuracy": 75,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "SLEEP",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "143": {
+      "name": "Sky-Attack",
+      "power": 140,
+      "accuracy": 90,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 30,
+      "type": "FLYING",
+      "effect": "SKY_ATTACK",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "144": {
+      "name": "Transform",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "TRANSFORM",
+      "target": "SELECTED"
+    },
+    "145": {
+      "name": "Bubble",
+      "power": 20,
+      "accuracy": 100,
+      "pp": 30,
+      "priority": 0,
+      "secondary_chance": 10,
+      "type": "WATER",
+      "effect": "SPEED_DOWN_HIT",
+      "target": "BOTH",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "146": {
+      "name": "Dizzy-Punch",
+      "power": 70,
+      "accuracy": 100,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 20,
+      "type": "NORMAL",
+      "effect": "CONFUSE_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "147": {
+      "name": "Spore",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "GRASS",
+      "effect": "SLEEP",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "148": {
+      "name": "Flash",
+      "power": 0,
+      "accuracy": 70,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "ACCURACY_DOWN",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "149": {
+      "name": "Psywave",
+      "power": 1,
+      "accuracy": 80,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "PSYCHIC",
+      "effect": "PSYWAVE",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "150": {
+      "name": "Splash",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 40,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "SPLASH",
+      "target": "USER"
+    },
+    "151": {
+      "name": "Acid-Armor",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 40,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "POISON",
+      "effect": "DEFENSE_UP_2",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "152": {
+      "name": "Crabhammer",
+      "power": 90,
+      "accuracy": 85,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "WATER",
+      "effect": "HIGH_CRITICAL",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "153": {
+      "name": "Explosion",
+      "power": 250,
+      "accuracy": 100,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "EXPLOSION",
+      "target": "FOES_AND_ALLY",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "154": {
+      "name": "Fury-Swipes",
+      "power": 18,
+      "accuracy": 80,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "MULTI_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "155": {
+      "name": "Bonemerang",
+      "power": 50,
+      "accuracy": 90,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "GROUND",
+      "effect": "DOUBLE_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "156": {
+      "name": "Rest",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "PSYCHIC",
+      "effect": "REST",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "157": {
+      "name": "Rock-Slide",
+      "power": 75,
+      "accuracy": 90,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 30,
+      "type": "ROCK",
+      "effect": "FLINCH_HIT",
+      "target": "BOTH",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "158": {
+      "name": "Hyper-Fang",
+      "power": 80,
+      "accuracy": 90,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 10,
+      "type": "NORMAL",
+      "effect": "FLINCH_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "159": {
+      "name": "Sharpen",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 30,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "ATTACK_UP",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "160": {
+      "name": "Conversion",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 30,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "CONVERSION",
+      "target": "USER"
+    },
+    "161": {
+      "name": "Tri-Attack",
+      "power": 80,
+      "accuracy": 100,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 20,
+      "type": "NORMAL",
+      "effect": "TRI_ATTACK",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "162": {
+      "name": "Super-Fang",
+      "power": 1,
+      "accuracy": 90,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "SUPER_FANG",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "163": {
+      "name": "Slash",
+      "power": 70,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "HIGH_CRITICAL",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "164": {
+      "name": "Substitute",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "SUBSTITUTE",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "165": {
+      "name": "Struggle",
+      "power": 50,
+      "accuracy": 100,
+      "pp": 1,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "RECOIL",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "166": {
+      "name": "Sketch",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 1,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "SKETCH",
+      "target": "SELECTED"
+    },
+    "167": {
+      "name": "Triple-Kick",
+      "power": 10,
+      "accuracy": 90,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "FIGHTING",
+      "effect": "TRIPLE_KICK",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "168": {
+      "name": "Thief",
+      "power": 40,
+      "accuracy": 100,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 100,
+      "type": "DARK",
+      "effect": "THIEF",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "169": {
+      "name": "Spider-Web",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "BUG",
+      "effect": "MEAN_LOOK",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "170": {
+      "name": "Mind-Reader",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "LOCK_ON",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "171": {
+      "name": "Nightmare",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "GHOST",
+      "effect": "NIGHTMARE",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "172": {
+      "name": "Flame-Wheel",
+      "power": 60,
+      "accuracy": 100,
+      "pp": 25,
+      "priority": 0,
+      "secondary_chance": 10,
+      "type": "FIRE",
+      "effect": "THAW_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "173": {
+      "name": "Snore",
+      "power": 40,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 30,
+      "type": "NORMAL",
+      "effect": "SNORE",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "174": {
+      "name": "Curse",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "MYSTERY",
+      "effect": "CURSE",
+      "target": "SELECTED"
+    },
+    "175": {
+      "name": "Flail",
+      "power": 1,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "FLAIL",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "176": {
+      "name": "Conversion-2",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 30,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "CONVERSION_2",
+      "target": "USER"
+    },
+    "177": {
+      "name": "Aeroblast",
+      "power": 100,
+      "accuracy": 95,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "FLYING",
+      "effect": "HIGH_CRITICAL",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "178": {
+      "name": "Cotton-Spore",
+      "power": 0,
+      "accuracy": 85,
+      "pp": 40,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "GRASS",
+      "effect": "SPEED_DOWN_2",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "179": {
+      "name": "Reversal",
+      "power": 1,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "FIGHTING",
+      "effect": "FLAIL",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "180": {
+      "name": "Spite",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "GHOST",
+      "effect": "SPITE",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "181": {
+      "name": "Powder-Snow",
+      "power": 40,
+      "accuracy": 100,
+      "pp": 25,
+      "priority": 0,
+      "secondary_chance": 10,
+      "type": "ICE",
+      "effect": "FREEZE_HIT",
+      "target": "BOTH",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "182": {
+      "name": "Protect",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 10,
+      "priority": 3,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "PROTECT",
+      "target": "USER"
+    },
+    "183": {
+      "name": "Mach-Punch",
+      "power": 40,
+      "accuracy": 100,
+      "pp": 30,
+      "priority": 1,
+      "secondary_chance": 0,
+      "type": "FIGHTING",
+      "effect": "QUICK_ATTACK",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "184": {
+      "name": "Scary-Face",
+      "power": 0,
+      "accuracy": 90,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "SPEED_DOWN_2",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "185": {
+      "name": "Faint-Attack",
+      "power": 60,
+      "accuracy": 0,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "DARK",
+      "effect": "ALWAYS_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "186": {
+      "name": "Sweet-Kiss",
+      "power": 0,
+      "accuracy": 75,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "CONFUSE",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "187": {
+      "name": "Belly-Drum",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "BELLY_DRUM",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "188": {
+      "name": "Sludge-Bomb",
+      "power": 90,
+      "accuracy": 100,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 30,
+      "type": "POISON",
+      "effect": "POISON_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "189": {
+      "name": "Mud-Slap",
+      "power": 20,
+      "accuracy": 100,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 100,
+      "type": "GROUND",
+      "effect": "ACCURACY_DOWN_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "190": {
+      "name": "Octazooka",
+      "power": 65,
+      "accuracy": 85,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 50,
+      "type": "WATER",
+      "effect": "ACCURACY_DOWN_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "191": {
+      "name": "Spikes",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "GROUND",
+      "effect": "SPIKES",
+      "target": "OPPONENTS_FIELD"
+    },
+    "192": {
+      "name": "Zap-Cannon",
+      "power": 100,
+      "accuracy": 50,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 100,
+      "type": "ELECTRIC",
+      "effect": "PARALYZE_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "193": {
+      "name": "Foresight",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 40,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "FORESIGHT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "194": {
+      "name": "Destiny-Bond",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "GHOST",
+      "effect": "DESTINY_BOND",
+      "target": "USER"
+    },
+    "195": {
+      "name": "Perish-Song",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "PERISH_SONG",
+      "target": "USER"
+    },
+    "196": {
+      "name": "Icy-Wind",
+      "power": 55,
+      "accuracy": 95,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 100,
+      "type": "ICE",
+      "effect": "SPEED_DOWN_HIT",
+      "target": "BOTH",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "197": {
+      "name": "Detect",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 5,
+      "priority": 3,
+      "secondary_chance": 0,
+      "type": "FIGHTING",
+      "effect": "PROTECT",
+      "target": "USER"
+    },
+    "198": {
+      "name": "Bone-Rush",
+      "power": 25,
+      "accuracy": 80,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "GROUND",
+      "effect": "MULTI_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "199": {
+      "name": "Lock-On",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "LOCK_ON",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "200": {
+      "name": "Outrage",
+      "power": 90,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 100,
+      "type": "DRAGON",
+      "effect": "RAMPAGE",
+      "target": "RANDOM",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "201": {
+      "name": "Sandstorm",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "ROCK",
+      "effect": "SANDSTORM",
+      "target": "USER"
+    },
+    "202": {
+      "name": "Giga-Drain",
+      "power": 60,
+      "accuracy": 100,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "GRASS",
+      "effect": "ABSORB",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "203": {
+      "name": "Endure",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 10,
+      "priority": 3,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "ENDURE",
+      "target": "USER"
+    },
+    "204": {
+      "name": "Charm",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "ATTACK_DOWN_2",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "205": {
+      "name": "Rollout",
+      "power": 30,
+      "accuracy": 90,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "ROCK",
+      "effect": "ROLLOUT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "206": {
+      "name": "False-Swipe",
+      "power": 40,
+      "accuracy": 100,
+      "pp": 40,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "FALSE_SWIPE",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "207": {
+      "name": "Swagger",
+      "power": 0,
+      "accuracy": 90,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 100,
+      "type": "NORMAL",
+      "effect": "SWAGGER",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "208": {
+      "name": "Milk-Drink",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "SOFTBOILED",
+      "target": "USER",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "209": {
+      "name": "Spark",
+      "power": 65,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 30,
+      "type": "ELECTRIC",
+      "effect": "PARALYZE_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "210": {
+      "name": "Fury-Cutter",
+      "power": 10,
+      "accuracy": 95,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "BUG",
+      "effect": "FURY_CUTTER",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "211": {
+      "name": "Steel-Wing",
+      "power": 70,
+      "accuracy": 90,
+      "pp": 25,
+      "priority": 0,
+      "secondary_chance": 10,
+      "type": "STEEL",
+      "effect": "DEFENSE_UP_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "212": {
+      "name": "Mean-Look",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "MEAN_LOOK",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "213": {
+      "name": "Attract",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "ATTRACT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "214": {
+      "name": "Sleep-Talk",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "SLEEP_TALK",
+      "target": "DEPENDS"
+    },
+    "215": {
+      "name": "Heal-Bell",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "HEAL_BELL",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "216": {
+      "name": "Return",
+      "power": 1,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "RETURN",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "217": {
+      "name": "Present",
+      "power": 1,
+      "accuracy": 90,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "PRESENT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "218": {
+      "name": "Frustration",
+      "power": 1,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "FRUSTRATION",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "219": {
+      "name": "Safeguard",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 25,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "SAFEGUARD",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "220": {
+      "name": "Pain-Split",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "PAIN_SPLIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "221": {
+      "name": "Sacred-Fire",
+      "power": 100,
+      "accuracy": 95,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 50,
+      "type": "FIRE",
+      "effect": "THAW_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "222": {
+      "name": "Magnitude",
+      "power": 1,
+      "accuracy": 100,
+      "pp": 30,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "GROUND",
+      "effect": "MAGNITUDE",
+      "target": "FOES_AND_ALLY",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "223": {
+      "name": "Dynamic-Punch",
+      "power": 100,
+      "accuracy": 50,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 100,
+      "type": "FIGHTING",
+      "effect": "CONFUSE_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "224": {
+      "name": "Megahorn",
+      "power": 120,
+      "accuracy": 85,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "BUG",
+      "effect": "HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "225": {
+      "name": "Dragon-Breath",
+      "power": 60,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 30,
+      "type": "DRAGON",
+      "effect": "PARALYZE_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "226": {
+      "name": "Baton-Pass",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 40,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "BATON_PASS",
+      "target": "USER"
+    },
+    "227": {
+      "name": "Encore",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "ENCORE",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "228": {
+      "name": "Pursuit",
+      "power": 40,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "DARK",
+      "effect": "PURSUIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "229": {
+      "name": "Rapid-Spin",
+      "power": 20,
+      "accuracy": 100,
+      "pp": 40,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "RAPID_SPIN",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "230": {
+      "name": "Sweet-Scent",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "EVASION_DOWN",
+      "target": "BOTH",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "231": {
+      "name": "Iron-Tail",
+      "power": 100,
+      "accuracy": 75,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 30,
+      "type": "STEEL",
+      "effect": "DEFENSE_DOWN_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "232": {
+      "name": "Metal-Claw",
+      "power": 50,
+      "accuracy": 95,
+      "pp": 35,
+      "priority": 0,
+      "secondary_chance": 10,
+      "type": "STEEL",
+      "effect": "ATTACK_UP_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "233": {
+      "name": "Vital-Throw",
+      "power": 70,
+      "accuracy": 100,
+      "pp": 10,
+      "secondary_chance": 0,
+      "type": "FIGHTING",
+      "effect": "VITAL_THROW",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "234": {
+      "name": "Morning-Sun",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "MORNING_SUN",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "235": {
+      "name": "Synthesis",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "GRASS",
+      "effect": "SYNTHESIS",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "236": {
+      "name": "Moonlight",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "MOONLIGHT",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "237": {
+      "name": "Hidden-Power",
+      "power": 1,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "HIDDEN_POWER",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "238": {
+      "name": "Cross-Chop",
+      "power": 100,
+      "accuracy": 80,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "FIGHTING",
+      "effect": "HIGH_CRITICAL",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "239": {
+      "name": "Twister",
+      "power": 40,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 20,
+      "type": "DRAGON",
+      "effect": "TWISTER",
+      "target": "BOTH",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "240": {
+      "name": "Rain-Dance",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "WATER",
+      "effect": "RAIN_DANCE",
+      "target": "USER"
+    },
+    "241": {
+      "name": "Sunny-Day",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "FIRE",
+      "effect": "SUNNY_DAY",
+      "target": "USER"
+    },
+    "242": {
+      "name": "Crunch",
+      "power": 80,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 20,
+      "type": "DARK",
+      "effect": "SPECIAL_DEFENSE_DOWN_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "243": {
+      "name": "Mirror-Coat",
+      "power": 1,
+      "accuracy": 100,
+      "pp": 20,
+      "secondary_chance": 0,
+      "type": "PSYCHIC",
+      "effect": "MIRROR_COAT",
+      "target": "DEPENDS",
+      "flags": [
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "244": {
+      "name": "Psych-Up",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "PSYCH_UP",
+      "target": "SELECTED",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "245": {
+      "name": "Extreme-Speed",
+      "power": 80,
+      "accuracy": 100,
+      "pp": 5,
+      "priority": 1,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "QUICK_ATTACK",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "246": {
+      "name": "Ancient-Power",
+      "power": 60,
+      "accuracy": 100,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 10,
+      "type": "ROCK",
+      "effect": "ALL_STATS_UP_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "247": {
+      "name": "Shadow-Ball",
+      "power": 80,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 20,
+      "type": "GHOST",
+      "effect": "SPECIAL_DEFENSE_DOWN_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "248": {
+      "name": "Future-Sight",
+      "power": 80,
+      "accuracy": 90,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "PSYCHIC",
+      "effect": "FUTURE_SIGHT",
+      "target": "SELECTED"
+    },
+    "249": {
+      "name": "Rock-Smash",
+      "power": 20,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 50,
+      "type": "FIGHTING",
+      "effect": "DEFENSE_DOWN_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "250": {
+      "name": "Whirlpool",
+      "power": 15,
+      "accuracy": 70,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 100,
+      "type": "WATER",
+      "effect": "TRAP",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "251": {
+      "name": "Beat-Up",
+      "power": 10,
+      "accuracy": 100,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "DARK",
+      "effect": "BEAT_UP",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "252": {
+      "name": "Fake-Out",
+      "power": 40,
+      "accuracy": 100,
+      "pp": 10,
+      "priority": 1,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "FAKE_OUT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "253": {
+      "name": "Uproar",
+      "power": 50,
+      "accuracy": 100,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 100,
+      "type": "NORMAL",
+      "effect": "UPROAR",
+      "target": "RANDOM",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "254": {
+      "name": "Stockpile",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "STOCKPILE",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "255": {
+      "name": "Spit-Up",
+      "power": 100,
+      "accuracy": 100,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "SPIT_UP",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "256": {
+      "name": "Swallow",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "SWALLOW",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "257": {
+      "name": "Heat-Wave",
+      "power": 100,
+      "accuracy": 90,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 10,
+      "type": "FIRE",
+      "effect": "BURN_HIT",
+      "target": "BOTH",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "258": {
+      "name": "Hail",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "ICE",
+      "effect": "HAIL",
+      "target": "USER",
+      "flags": [
+        "PROTECT_AFFECTED"
+      ]
+    },
+    "259": {
+      "name": "Torment",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "DARK",
+      "effect": "TORMENT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "260": {
+      "name": "Flatter",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "DARK",
+      "effect": "FLATTER",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "261": {
+      "name": "Will-O-Wisp",
+      "power": 0,
+      "accuracy": 75,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "FIRE",
+      "effect": "WILL_O_WISP",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "262": {
+      "name": "Memento",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "DARK",
+      "effect": "MEMENTO",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "263": {
+      "name": "Facade",
+      "power": 70,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "FACADE",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "264": {
+      "name": "Focus-Punch",
+      "power": 150,
+      "accuracy": 100,
+      "pp": 20,
+      "secondary_chance": 0,
+      "type": "FIGHTING",
+      "effect": "FOCUS_PUNCH",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED"
+      ]
+    },
+    "265": {
+      "name": "Smelling-Salt",
+      "power": 60,
+      "accuracy": 100,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "SMELLINGSALT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "266": {
+      "name": "Follow-Me",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 3,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "FOLLOW_ME",
+      "target": "USER"
+    },
+    "267": {
+      "name": "Nature-Power",
+      "power": 0,
+      "accuracy": 95,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "NATURE_POWER",
+      "target": "DEPENDS"
+    },
+    "268": {
+      "name": "Charge",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "ELECTRIC",
+      "effect": "CHARGE",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "269": {
+      "name": "Taunt",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "DARK",
+      "effect": "TAUNT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED"
+      ]
+    },
+    "270": {
+      "name": "Helping-Hand",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 5,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "HELPING_HAND",
+      "target": "USER"
+    },
+    "271": {
+      "name": "Trick",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "PSYCHIC",
+      "effect": "TRICK",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "272": {
+      "name": "Role-Play",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "PSYCHIC",
+      "effect": "ROLE_PLAY",
+      "target": "SELECTED"
+    },
+    "273": {
+      "name": "Wish",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "WISH",
+      "target": "USER",
+      "flags": [
+        "PROTECT_AFFECTED"
+      ]
+    },
+    "274": {
+      "name": "Assist",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "ASSIST",
+      "target": "DEPENDS"
+    },
+    "275": {
+      "name": "Ingrain",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "GRASS",
+      "effect": "INGRAIN",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "276": {
+      "name": "Superpower",
+      "power": 120,
+      "accuracy": 100,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "FIGHTING",
+      "effect": "SUPERPOWER",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "277": {
+      "name": "Magic-Coat",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 4,
+      "secondary_chance": 0,
+      "type": "PSYCHIC",
+      "effect": "MAGIC_COAT",
+      "target": "DEPENDS"
+    },
+    "278": {
+      "name": "Recycle",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "RECYCLE",
+      "target": "USER"
+    },
+    "279": {
+      "name": "Revenge",
+      "power": 60,
+      "accuracy": 100,
+      "pp": 10,
+      "secondary_chance": 0,
+      "type": "FIGHTING",
+      "effect": "REVENGE",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "280": {
+      "name": "Brick-Break",
+      "power": 75,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "FIGHTING",
+      "effect": "BRICK_BREAK",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "281": {
+      "name": "Yawn",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "YAWN",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "282": {
+      "name": "Knock-Off",
+      "power": 20,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 100,
+      "type": "DARK",
+      "effect": "KNOCK_OFF",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "283": {
+      "name": "Endeavor",
+      "power": 1,
+      "accuracy": 100,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "ENDEAVOR",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "284": {
+      "name": "Eruption",
+      "power": 150,
+      "accuracy": 100,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "FIRE",
+      "effect": "ERUPTION",
+      "target": "BOTH",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "285": {
+      "name": "Skill-Swap",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "PSYCHIC",
+      "effect": "SKILL_SWAP",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "286": {
+      "name": "Imprison",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "PSYCHIC",
+      "effect": "IMPRISON",
+      "target": "USER",
+      "flags": [
+        "PROTECT_AFFECTED"
+      ]
+    },
+    "287": {
+      "name": "Refresh",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "REFRESH",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "288": {
+      "name": "Grudge",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "GHOST",
+      "effect": "GRUDGE",
+      "target": "USER",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "289": {
+      "name": "Snatch",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 10,
+      "priority": 4,
+      "secondary_chance": 0,
+      "type": "DARK",
+      "effect": "SNATCH",
+      "target": "DEPENDS",
+      "flags": [
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "290": {
+      "name": "Secret-Power",
+      "power": 70,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 30,
+      "type": "NORMAL",
+      "effect": "SECRET_POWER",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "291": {
+      "name": "Dive",
+      "power": 60,
+      "accuracy": 100,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "WATER",
+      "effect": "SEMI_INVULNERABLE",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "292": {
+      "name": "Arm-Thrust",
+      "power": 15,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "FIGHTING",
+      "effect": "MULTI_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "293": {
+      "name": "Camouflage",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "CAMOUFLAGE",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "294": {
+      "name": "Tail-Glow",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "BUG",
+      "effect": "SPECIAL_ATTACK_UP_2",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "295": {
+      "name": "Luster-Purge",
+      "power": 70,
+      "accuracy": 100,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 50,
+      "type": "PSYCHIC",
+      "effect": "SPECIAL_DEFENSE_DOWN_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "296": {
+      "name": "Mist-Ball",
+      "power": 70,
+      "accuracy": 100,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 50,
+      "type": "PSYCHIC",
+      "effect": "SPECIAL_ATTACK_DOWN_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "297": {
+      "name": "Feather-Dance",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "FLYING",
+      "effect": "ATTACK_DOWN_2",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "298": {
+      "name": "Teeter-Dance",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "TEETER_DANCE",
+      "target": "FOES_AND_ALLY",
+      "flags": [
+        "PROTECT_AFFECTED"
+      ]
+    },
+    "299": {
+      "name": "Blaze-Kick",
+      "power": 85,
+      "accuracy": 90,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 10,
+      "type": "FIRE",
+      "effect": "BLAZE_KICK",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "300": {
+      "name": "Mud-Sport",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "GROUND",
+      "effect": "MUD_SPORT",
+      "target": "USER"
+    },
+    "301": {
+      "name": "Ice-Ball",
+      "power": 30,
+      "accuracy": 90,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "ICE",
+      "effect": "ROLLOUT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "302": {
+      "name": "Needle-Arm",
+      "power": 60,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 30,
+      "type": "GRASS",
+      "effect": "FLINCH_MINIMIZE_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "303": {
+      "name": "Slack-Off",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "RESTORE_HP",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "304": {
+      "name": "Hyper-Voice",
+      "power": 90,
+      "accuracy": 100,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "HIT",
+      "target": "BOTH",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "305": {
+      "name": "Poison-Fang",
+      "power": 50,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 30,
+      "type": "POISON",
+      "effect": "POISON_FANG",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "306": {
+      "name": "Crush-Claw",
+      "power": 75,
+      "accuracy": 95,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 50,
+      "type": "NORMAL",
+      "effect": "DEFENSE_DOWN_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "307": {
+      "name": "Blast-Burn",
+      "power": 150,
+      "accuracy": 90,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "FIRE",
+      "effect": "RECHARGE",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "308": {
+      "name": "Hydro-Cannon",
+      "power": 150,
+      "accuracy": 90,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "WATER",
+      "effect": "RECHARGE",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "309": {
+      "name": "Meteor-Mash",
+      "power": 100,
+      "accuracy": 85,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 20,
+      "type": "STEEL",
+      "effect": "ATTACK_UP_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "310": {
+      "name": "Astonish",
+      "power": 30,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 30,
+      "type": "GHOST",
+      "effect": "FLINCH_MINIMIZE_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "311": {
+      "name": "Weather-Ball",
+      "power": 50,
+      "accuracy": 100,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "WEATHER_BALL",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "312": {
+      "name": "Aromatherapy",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "GRASS",
+      "effect": "HEAL_BELL",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "313": {
+      "name": "Fake-Tears",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "DARK",
+      "effect": "SPECIAL_DEFENSE_DOWN_2",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "314": {
+      "name": "Air-Cutter",
+      "power": 55,
+      "accuracy": 95,
+      "pp": 25,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "FLYING",
+      "effect": "HIGH_CRITICAL",
+      "target": "BOTH",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "315": {
+      "name": "Overheat",
+      "power": 140,
+      "accuracy": 90,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 100,
+      "type": "FIRE",
+      "effect": "OVERHEAT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "316": {
+      "name": "Odor-Sleuth",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 40,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "FORESIGHT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "317": {
+      "name": "Rock-Tomb",
+      "power": 50,
+      "accuracy": 80,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 100,
+      "type": "ROCK",
+      "effect": "SPEED_DOWN_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "318": {
+      "name": "Silver-Wind",
+      "power": 60,
+      "accuracy": 100,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 10,
+      "type": "BUG",
+      "effect": "ALL_STATS_UP_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "319": {
+      "name": "Metal-Sound",
+      "power": 0,
+      "accuracy": 85,
+      "pp": 40,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "STEEL",
+      "effect": "SPECIAL_DEFENSE_DOWN_2",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "320": {
+      "name": "Grass-Whistle",
+      "power": 0,
+      "accuracy": 55,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "GRASS",
+      "effect": "SLEEP",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "321": {
+      "name": "Tickle",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "TICKLE",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "322": {
+      "name": "Cosmic-Power",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "PSYCHIC",
+      "effect": "COSMIC_POWER",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "323": {
+      "name": "Water-Spout",
+      "power": 150,
+      "accuracy": 100,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "WATER",
+      "effect": "ERUPTION",
+      "target": "BOTH",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "324": {
+      "name": "Signal-Beam",
+      "power": 75,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 10,
+      "type": "BUG",
+      "effect": "CONFUSE_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "325": {
+      "name": "Shadow-Punch",
+      "power": 60,
+      "accuracy": 0,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "GHOST",
+      "effect": "ALWAYS_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "326": {
+      "name": "Extrasensory",
+      "power": 80,
+      "accuracy": 100,
+      "pp": 30,
+      "priority": 0,
+      "secondary_chance": 10,
+      "type": "PSYCHIC",
+      "effect": "FLINCH_MINIMIZE_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "327": {
+      "name": "Sky-Uppercut",
+      "power": 85,
+      "accuracy": 90,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "FIGHTING",
+      "effect": "SKY_UPPERCUT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "328": {
+      "name": "Sand-Tomb",
+      "power": 15,
+      "accuracy": 70,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 100,
+      "type": "GROUND",
+      "effect": "TRAP",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "329": {
+      "name": "Sheer-Cold",
+      "power": 1,
+      "accuracy": 30,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "ICE",
+      "effect": "OHKO",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "330": {
+      "name": "Muddy-Water",
+      "power": 95,
+      "accuracy": 85,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 30,
+      "type": "WATER",
+      "effect": "ACCURACY_DOWN_HIT",
+      "target": "BOTH",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "331": {
+      "name": "Bullet-Seed",
+      "power": 10,
+      "accuracy": 100,
+      "pp": 30,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "GRASS",
+      "effect": "MULTI_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "332": {
+      "name": "Aerial-Ace",
+      "power": 60,
+      "accuracy": 0,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "FLYING",
+      "effect": "ALWAYS_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "333": {
+      "name": "Icicle-Spear",
+      "power": 10,
+      "accuracy": 100,
+      "pp": 30,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "ICE",
+      "effect": "MULTI_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "334": {
+      "name": "Iron-Defense",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "STEEL",
+      "effect": "DEFENSE_UP_2",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "335": {
+      "name": "Block",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "MEAN_LOOK",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MAGIC_COAT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "336": {
+      "name": "Howl",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 40,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "NORMAL",
+      "effect": "ATTACK_UP",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "337": {
+      "name": "Dragon-Claw",
+      "power": 80,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "DRAGON",
+      "effect": "HIT",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "338": {
+      "name": "Frenzy-Plant",
+      "power": 150,
+      "accuracy": 90,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "GRASS",
+      "effect": "RECHARGE",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "339": {
+      "name": "Bulk-Up",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "FIGHTING",
+      "effect": "BULK_UP",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "340": {
+      "name": "Bounce",
+      "power": 85,
+      "accuracy": 85,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 30,
+      "type": "FLYING",
+      "effect": "SEMI_INVULNERABLE",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "341": {
+      "name": "Mud-Shot",
+      "power": 55,
+      "accuracy": 95,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 100,
+      "type": "GROUND",
+      "effect": "SPEED_DOWN_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "342": {
+      "name": "Poison-Tail",
+      "power": 50,
+      "accuracy": 100,
+      "pp": 25,
+      "priority": 0,
+      "secondary_chance": 10,
+      "type": "POISON",
+      "effect": "POISON_TAIL",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "343": {
+      "name": "Covet",
+      "power": 40,
+      "accuracy": 100,
+      "pp": 40,
+      "priority": 0,
+      "secondary_chance": 100,
+      "type": "NORMAL",
+      "effect": "THIEF",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED"
+      ]
+    },
+    "344": {
+      "name": "Volt-Tackle",
+      "power": 120,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "ELECTRIC",
+      "effect": "DOUBLE_EDGE",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "345": {
+      "name": "Magical-Leaf",
+      "power": 60,
+      "accuracy": 0,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "GRASS",
+      "effect": "ALWAYS_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "346": {
+      "name": "Water-Sport",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "WATER",
+      "effect": "WATER_SPORT",
+      "target": "USER"
+    },
+    "347": {
+      "name": "Calm-Mind",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "PSYCHIC",
+      "effect": "CALM_MIND",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "348": {
+      "name": "Leaf-Blade",
+      "power": 70,
+      "accuracy": 100,
+      "pp": 15,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "GRASS",
+      "effect": "HIGH_CRITICAL",
+      "target": "SELECTED",
+      "flags": [
+        "MAKES_CONTACT",
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "349": {
+      "name": "Dragon-Dance",
+      "power": 0,
+      "accuracy": 0,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "DRAGON",
+      "effect": "DRAGON_DANCE",
+      "target": "USER",
+      "flags": [
+        "SNATCH_AFFECTED"
+      ]
+    },
+    "350": {
+      "name": "Rock-Blast",
+      "power": 25,
+      "accuracy": 80,
+      "pp": 10,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "ROCK",
+      "effect": "MULTI_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "351": {
+      "name": "Shock-Wave",
+      "power": 60,
+      "accuracy": 0,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "ELECTRIC",
+      "effect": "ALWAYS_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "352": {
+      "name": "Water-Pulse",
+      "power": 60,
+      "accuracy": 100,
+      "pp": 20,
+      "priority": 0,
+      "secondary_chance": 20,
+      "type": "WATER",
+      "effect": "CONFUSE_HIT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    },
+    "353": {
+      "name": "Doom-Desire",
+      "power": 120,
+      "accuracy": 85,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 0,
+      "type": "STEEL",
+      "effect": "FUTURE_SIGHT",
+      "target": "SELECTED"
+    },
+    "354": {
+      "name": "Psycho-Boost",
+      "power": 140,
+      "accuracy": 90,
+      "pp": 5,
+      "priority": 0,
+      "secondary_chance": 100,
+      "type": "PSYCHIC",
+      "effect": "OVERHEAT",
+      "target": "SELECTED",
+      "flags": [
+        "PROTECT_AFFECTED",
+        "MIRROR_MOVE_AFFECTED",
+        "KINGS_ROCK_AFFECTED"
+      ]
+    }
+  }
+}

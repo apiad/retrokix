@@ -1,0 +1,1169 @@
+{
+  "__source__": "src/data/pokemon/evolution.h",
+  "__upstream__": "https://github.com/pret/pokeemerald",
+  "__upstream_sha__": "2c8d1576588e1ed6d56889afb52061176bb319e8",
+  "__description__": "Evolution triggers + targets per species.",
+  "__note__": "Data \u00a9 Nintendo / Game Freak / Creatures. This JSON is derived from the pokeemerald community decompilation for informational use only.",
+  "data": {
+    "1": [
+      {
+        "trigger": "LEVEL",
+        "param": 16,
+        "target_species": 2,
+        "target_name": "Ivysaur"
+      }
+    ],
+    "2": [
+      {
+        "trigger": "LEVEL",
+        "param": 32,
+        "target_species": 3,
+        "target_name": "Venusaur"
+      }
+    ],
+    "4": [
+      {
+        "trigger": "LEVEL",
+        "param": 16,
+        "target_species": 5,
+        "target_name": "Charmeleon"
+      }
+    ],
+    "5": [
+      {
+        "trigger": "LEVEL",
+        "param": 36,
+        "target_species": 6,
+        "target_name": "Charizard"
+      }
+    ],
+    "7": [
+      {
+        "trigger": "LEVEL",
+        "param": 16,
+        "target_species": 8,
+        "target_name": "Wartortle"
+      }
+    ],
+    "8": [
+      {
+        "trigger": "LEVEL",
+        "param": 36,
+        "target_species": 9,
+        "target_name": "Blastoise"
+      }
+    ],
+    "10": [
+      {
+        "trigger": "LEVEL",
+        "param": 7,
+        "target_species": 11,
+        "target_name": "Metapod"
+      }
+    ],
+    "11": [
+      {
+        "trigger": "LEVEL",
+        "param": 10,
+        "target_species": 12,
+        "target_name": "Butterfree"
+      }
+    ],
+    "13": [
+      {
+        "trigger": "LEVEL",
+        "param": 7,
+        "target_species": 14,
+        "target_name": "Kakuna"
+      }
+    ],
+    "14": [
+      {
+        "trigger": "LEVEL",
+        "param": 10,
+        "target_species": 15,
+        "target_name": "Beedrill"
+      }
+    ],
+    "16": [
+      {
+        "trigger": "LEVEL",
+        "param": 18,
+        "target_species": 17,
+        "target_name": "Pidgeotto"
+      }
+    ],
+    "17": [
+      {
+        "trigger": "LEVEL",
+        "param": 36,
+        "target_species": 18,
+        "target_name": "Pidgeot"
+      }
+    ],
+    "19": [
+      {
+        "trigger": "LEVEL",
+        "param": 20,
+        "target_species": 20,
+        "target_name": "Raticate"
+      }
+    ],
+    "21": [
+      {
+        "trigger": "LEVEL",
+        "param": 20,
+        "target_species": 22,
+        "target_name": "Fearow"
+      }
+    ],
+    "23": [
+      {
+        "trigger": "LEVEL",
+        "param": 22,
+        "target_species": 24,
+        "target_name": "Arbok"
+      }
+    ],
+    "27": [
+      {
+        "trigger": "LEVEL",
+        "param": 22,
+        "target_species": 28,
+        "target_name": "Sandslash"
+      }
+    ],
+    "29": [
+      {
+        "trigger": "LEVEL",
+        "param": 16,
+        "target_species": 30,
+        "target_name": "Nidorina"
+      }
+    ],
+    "32": [
+      {
+        "trigger": "LEVEL",
+        "param": 16,
+        "target_species": 33,
+        "target_name": "Nidorino"
+      }
+    ],
+    "41": [
+      {
+        "trigger": "LEVEL",
+        "param": 22,
+        "target_species": 42,
+        "target_name": "Golbat"
+      }
+    ],
+    "42": [
+      {
+        "trigger": "FRIENDSHIP",
+        "param": 0,
+        "target_species": 169,
+        "target_name": "Crobat"
+      }
+    ],
+    "43": [
+      {
+        "trigger": "LEVEL",
+        "param": 21,
+        "target_species": 44,
+        "target_name": "Gloom"
+      }
+    ],
+    "46": [
+      {
+        "trigger": "LEVEL",
+        "param": 24,
+        "target_species": 47,
+        "target_name": "Parasect"
+      }
+    ],
+    "48": [
+      {
+        "trigger": "LEVEL",
+        "param": 31,
+        "target_species": 49,
+        "target_name": "Venomoth"
+      }
+    ],
+    "50": [
+      {
+        "trigger": "LEVEL",
+        "param": 26,
+        "target_species": 51,
+        "target_name": "Dugtrio"
+      }
+    ],
+    "52": [
+      {
+        "trigger": "LEVEL",
+        "param": 28,
+        "target_species": 53,
+        "target_name": "Persian"
+      }
+    ],
+    "54": [
+      {
+        "trigger": "LEVEL",
+        "param": 33,
+        "target_species": 55,
+        "target_name": "Golduck"
+      }
+    ],
+    "56": [
+      {
+        "trigger": "LEVEL",
+        "param": 28,
+        "target_species": 57,
+        "target_name": "Primeape"
+      }
+    ],
+    "60": [
+      {
+        "trigger": "LEVEL",
+        "param": 25,
+        "target_species": 61,
+        "target_name": "Poliwhirl"
+      }
+    ],
+    "63": [
+      {
+        "trigger": "LEVEL",
+        "param": 16,
+        "target_species": 64,
+        "target_name": "Kadabra"
+      }
+    ],
+    "64": [
+      {
+        "trigger": "TRADE",
+        "param": 0,
+        "target_species": 65,
+        "target_name": "Alakazam"
+      }
+    ],
+    "66": [
+      {
+        "trigger": "LEVEL",
+        "param": 28,
+        "target_species": 67,
+        "target_name": "Machoke"
+      }
+    ],
+    "67": [
+      {
+        "trigger": "TRADE",
+        "param": 0,
+        "target_species": 68,
+        "target_name": "Machamp"
+      }
+    ],
+    "69": [
+      {
+        "trigger": "LEVEL",
+        "param": 21,
+        "target_species": 70,
+        "target_name": "Weepinbell"
+      }
+    ],
+    "72": [
+      {
+        "trigger": "LEVEL",
+        "param": 30,
+        "target_species": 73,
+        "target_name": "Tentacruel"
+      }
+    ],
+    "74": [
+      {
+        "trigger": "LEVEL",
+        "param": 25,
+        "target_species": 75,
+        "target_name": "Graveler"
+      }
+    ],
+    "75": [
+      {
+        "trigger": "TRADE",
+        "param": 0,
+        "target_species": 76,
+        "target_name": "Golem"
+      }
+    ],
+    "77": [
+      {
+        "trigger": "LEVEL",
+        "param": 40,
+        "target_species": 78,
+        "target_name": "Rapidash"
+      }
+    ],
+    "81": [
+      {
+        "trigger": "LEVEL",
+        "param": 30,
+        "target_species": 82,
+        "target_name": "Magneton"
+      }
+    ],
+    "84": [
+      {
+        "trigger": "LEVEL",
+        "param": 31,
+        "target_species": 85,
+        "target_name": "Dodrio"
+      }
+    ],
+    "86": [
+      {
+        "trigger": "LEVEL",
+        "param": 34,
+        "target_species": 87,
+        "target_name": "Dewgong"
+      }
+    ],
+    "88": [
+      {
+        "trigger": "LEVEL",
+        "param": 38,
+        "target_species": 89,
+        "target_name": "Muk"
+      }
+    ],
+    "92": [
+      {
+        "trigger": "LEVEL",
+        "param": 25,
+        "target_species": 93,
+        "target_name": "Haunter"
+      }
+    ],
+    "93": [
+      {
+        "trigger": "TRADE",
+        "param": 0,
+        "target_species": 94,
+        "target_name": "Gengar"
+      }
+    ],
+    "96": [
+      {
+        "trigger": "LEVEL",
+        "param": 26,
+        "target_species": 97,
+        "target_name": "Hypno"
+      }
+    ],
+    "98": [
+      {
+        "trigger": "LEVEL",
+        "param": 28,
+        "target_species": 99,
+        "target_name": "Kingler"
+      }
+    ],
+    "100": [
+      {
+        "trigger": "LEVEL",
+        "param": 30,
+        "target_species": 101,
+        "target_name": "Electrode"
+      }
+    ],
+    "104": [
+      {
+        "trigger": "LEVEL",
+        "param": 28,
+        "target_species": 105,
+        "target_name": "Marowak"
+      }
+    ],
+    "109": [
+      {
+        "trigger": "LEVEL",
+        "param": 35,
+        "target_species": 110,
+        "target_name": "Weezing"
+      }
+    ],
+    "111": [
+      {
+        "trigger": "LEVEL",
+        "param": 42,
+        "target_species": 112,
+        "target_name": "Rhydon"
+      }
+    ],
+    "113": [
+      {
+        "trigger": "FRIENDSHIP",
+        "param": 0,
+        "target_species": 242,
+        "target_name": "Blissey"
+      }
+    ],
+    "116": [
+      {
+        "trigger": "LEVEL",
+        "param": 32,
+        "target_species": 117,
+        "target_name": "Seadra"
+      }
+    ],
+    "118": [
+      {
+        "trigger": "LEVEL",
+        "param": 33,
+        "target_species": 119,
+        "target_name": "Seaking"
+      }
+    ],
+    "129": [
+      {
+        "trigger": "LEVEL",
+        "param": 20,
+        "target_species": 130,
+        "target_name": "Gyarados"
+      }
+    ],
+    "138": [
+      {
+        "trigger": "LEVEL",
+        "param": 40,
+        "target_species": 139,
+        "target_name": "Omastar"
+      }
+    ],
+    "140": [
+      {
+        "trigger": "LEVEL",
+        "param": 40,
+        "target_species": 141,
+        "target_name": "Kabutops"
+      }
+    ],
+    "147": [
+      {
+        "trigger": "LEVEL",
+        "param": 30,
+        "target_species": 148,
+        "target_name": "Dragonair"
+      }
+    ],
+    "148": [
+      {
+        "trigger": "LEVEL",
+        "param": 55,
+        "target_species": 149,
+        "target_name": "Dragonite"
+      }
+    ],
+    "152": [
+      {
+        "trigger": "LEVEL",
+        "param": 16,
+        "target_species": 153,
+        "target_name": "Bayleef"
+      }
+    ],
+    "153": [
+      {
+        "trigger": "LEVEL",
+        "param": 32,
+        "target_species": 154,
+        "target_name": "Meganium"
+      }
+    ],
+    "155": [
+      {
+        "trigger": "LEVEL",
+        "param": 14,
+        "target_species": 156,
+        "target_name": "Quilava"
+      }
+    ],
+    "156": [
+      {
+        "trigger": "LEVEL",
+        "param": 36,
+        "target_species": 157,
+        "target_name": "Typhlosion"
+      }
+    ],
+    "158": [
+      {
+        "trigger": "LEVEL",
+        "param": 18,
+        "target_species": 159,
+        "target_name": "Croconaw"
+      }
+    ],
+    "159": [
+      {
+        "trigger": "LEVEL",
+        "param": 30,
+        "target_species": 160,
+        "target_name": "Feraligatr"
+      }
+    ],
+    "161": [
+      {
+        "trigger": "LEVEL",
+        "param": 15,
+        "target_species": 162,
+        "target_name": "Furret"
+      }
+    ],
+    "163": [
+      {
+        "trigger": "LEVEL",
+        "param": 20,
+        "target_species": 164,
+        "target_name": "Noctowl"
+      }
+    ],
+    "165": [
+      {
+        "trigger": "LEVEL",
+        "param": 18,
+        "target_species": 166,
+        "target_name": "Ledian"
+      }
+    ],
+    "167": [
+      {
+        "trigger": "LEVEL",
+        "param": 22,
+        "target_species": 168,
+        "target_name": "Ariados"
+      }
+    ],
+    "170": [
+      {
+        "trigger": "LEVEL",
+        "param": 27,
+        "target_species": 171,
+        "target_name": "Lanturn"
+      }
+    ],
+    "172": [
+      {
+        "trigger": "FRIENDSHIP",
+        "param": 0,
+        "target_species": 25,
+        "target_name": "Pikachu"
+      }
+    ],
+    "173": [
+      {
+        "trigger": "FRIENDSHIP",
+        "param": 0,
+        "target_species": 35,
+        "target_name": "Clefairy"
+      }
+    ],
+    "174": [
+      {
+        "trigger": "FRIENDSHIP",
+        "param": 0,
+        "target_species": 39,
+        "target_name": "Jigglypuff"
+      }
+    ],
+    "175": [
+      {
+        "trigger": "FRIENDSHIP",
+        "param": 0,
+        "target_species": 176,
+        "target_name": "Togetic"
+      }
+    ],
+    "177": [
+      {
+        "trigger": "LEVEL",
+        "param": 25,
+        "target_species": 178,
+        "target_name": "Xatu"
+      }
+    ],
+    "179": [
+      {
+        "trigger": "LEVEL",
+        "param": 15,
+        "target_species": 180,
+        "target_name": "Flaaffy"
+      }
+    ],
+    "180": [
+      {
+        "trigger": "LEVEL",
+        "param": 30,
+        "target_species": 181,
+        "target_name": "Ampharos"
+      }
+    ],
+    "183": [
+      {
+        "trigger": "LEVEL",
+        "param": 18,
+        "target_species": 184,
+        "target_name": "Azumarill"
+      }
+    ],
+    "187": [
+      {
+        "trigger": "LEVEL",
+        "param": 18,
+        "target_species": 188,
+        "target_name": "Skiploom"
+      }
+    ],
+    "188": [
+      {
+        "trigger": "LEVEL",
+        "param": 27,
+        "target_species": 189,
+        "target_name": "Jumpluff"
+      }
+    ],
+    "194": [
+      {
+        "trigger": "LEVEL",
+        "param": 20,
+        "target_species": 195,
+        "target_name": "Quagsire"
+      }
+    ],
+    "204": [
+      {
+        "trigger": "LEVEL",
+        "param": 31,
+        "target_species": 205,
+        "target_name": "Forretress"
+      }
+    ],
+    "209": [
+      {
+        "trigger": "LEVEL",
+        "param": 23,
+        "target_species": 210,
+        "target_name": "Granbull"
+      }
+    ],
+    "216": [
+      {
+        "trigger": "LEVEL",
+        "param": 30,
+        "target_species": 217,
+        "target_name": "Ursaring"
+      }
+    ],
+    "218": [
+      {
+        "trigger": "LEVEL",
+        "param": 38,
+        "target_species": 219,
+        "target_name": "Magcargo"
+      }
+    ],
+    "220": [
+      {
+        "trigger": "LEVEL",
+        "param": 33,
+        "target_species": 221,
+        "target_name": "Piloswine"
+      }
+    ],
+    "223": [
+      {
+        "trigger": "LEVEL",
+        "param": 25,
+        "target_species": 224,
+        "target_name": "Octillery"
+      }
+    ],
+    "228": [
+      {
+        "trigger": "LEVEL",
+        "param": 24,
+        "target_species": 229,
+        "target_name": "Houndoom"
+      }
+    ],
+    "231": [
+      {
+        "trigger": "LEVEL",
+        "param": 25,
+        "target_species": 232,
+        "target_name": "Donphan"
+      }
+    ],
+    "238": [
+      {
+        "trigger": "LEVEL",
+        "param": 30,
+        "target_species": 124,
+        "target_name": "Jynx"
+      }
+    ],
+    "239": [
+      {
+        "trigger": "LEVEL",
+        "param": 30,
+        "target_species": 125,
+        "target_name": "Electabuzz"
+      }
+    ],
+    "240": [
+      {
+        "trigger": "LEVEL",
+        "param": 30,
+        "target_species": 126,
+        "target_name": "Magmar"
+      }
+    ],
+    "246": [
+      {
+        "trigger": "LEVEL",
+        "param": 30,
+        "target_species": 247,
+        "target_name": "Pupitar"
+      }
+    ],
+    "247": [
+      {
+        "trigger": "LEVEL",
+        "param": 55,
+        "target_species": 248,
+        "target_name": "Tyranitar"
+      }
+    ],
+    "277": [
+      {
+        "trigger": "LEVEL",
+        "param": 16,
+        "target_species": 278,
+        "target_name": "Grovyle"
+      }
+    ],
+    "278": [
+      {
+        "trigger": "LEVEL",
+        "param": 36,
+        "target_species": 279,
+        "target_name": "Sceptile"
+      }
+    ],
+    "280": [
+      {
+        "trigger": "LEVEL",
+        "param": 16,
+        "target_species": 281,
+        "target_name": "Combusken"
+      }
+    ],
+    "281": [
+      {
+        "trigger": "LEVEL",
+        "param": 36,
+        "target_species": 282,
+        "target_name": "Blaziken"
+      }
+    ],
+    "283": [
+      {
+        "trigger": "LEVEL",
+        "param": 16,
+        "target_species": 284,
+        "target_name": "Marshtomp"
+      }
+    ],
+    "284": [
+      {
+        "trigger": "LEVEL",
+        "param": 36,
+        "target_species": 285,
+        "target_name": "Swampert"
+      }
+    ],
+    "286": [
+      {
+        "trigger": "LEVEL",
+        "param": 18,
+        "target_species": 287,
+        "target_name": "Mightyena"
+      }
+    ],
+    "288": [
+      {
+        "trigger": "LEVEL",
+        "param": 20,
+        "target_species": 289,
+        "target_name": "Linoone"
+      }
+    ],
+    "291": [
+      {
+        "trigger": "LEVEL",
+        "param": 10,
+        "target_species": 292,
+        "target_name": "Beautifly"
+      }
+    ],
+    "293": [
+      {
+        "trigger": "LEVEL",
+        "param": 10,
+        "target_species": 294,
+        "target_name": "Dustox"
+      }
+    ],
+    "295": [
+      {
+        "trigger": "LEVEL",
+        "param": 14,
+        "target_species": 296,
+        "target_name": "Lombre"
+      }
+    ],
+    "298": [
+      {
+        "trigger": "LEVEL",
+        "param": 14,
+        "target_species": 299,
+        "target_name": "Nuzleaf"
+      }
+    ],
+    "304": [
+      {
+        "trigger": "LEVEL",
+        "param": 22,
+        "target_species": 305,
+        "target_name": "Swellow"
+      }
+    ],
+    "306": [
+      {
+        "trigger": "LEVEL",
+        "param": 23,
+        "target_species": 307,
+        "target_name": "Breloom"
+      }
+    ],
+    "309": [
+      {
+        "trigger": "LEVEL",
+        "param": 25,
+        "target_species": 310,
+        "target_name": "Pelipper"
+      }
+    ],
+    "311": [
+      {
+        "trigger": "LEVEL",
+        "param": 22,
+        "target_species": 312,
+        "target_name": "Masquerain"
+      }
+    ],
+    "313": [
+      {
+        "trigger": "LEVEL",
+        "param": 40,
+        "target_species": 314,
+        "target_name": "Wailord"
+      }
+    ],
+    "318": [
+      {
+        "trigger": "LEVEL",
+        "param": 36,
+        "target_species": 319,
+        "target_name": "Claydol"
+      }
+    ],
+    "323": [
+      {
+        "trigger": "LEVEL",
+        "param": 30,
+        "target_species": 324,
+        "target_name": "Whiscash"
+      }
+    ],
+    "326": [
+      {
+        "trigger": "LEVEL",
+        "param": 30,
+        "target_species": 327,
+        "target_name": "Crawdaunt"
+      }
+    ],
+    "328": [
+      {
+        "trigger": "BEAUTY",
+        "param": 170,
+        "target_species": 329,
+        "target_name": "Milotic"
+      }
+    ],
+    "330": [
+      {
+        "trigger": "LEVEL",
+        "param": 30,
+        "target_species": 331,
+        "target_name": "Sharpedo"
+      }
+    ],
+    "332": [
+      {
+        "trigger": "LEVEL",
+        "param": 35,
+        "target_species": 333,
+        "target_name": "Vibrava"
+      }
+    ],
+    "333": [
+      {
+        "trigger": "LEVEL",
+        "param": 45,
+        "target_species": 334,
+        "target_name": "Flygon"
+      }
+    ],
+    "335": [
+      {
+        "trigger": "LEVEL",
+        "param": 24,
+        "target_species": 336,
+        "target_name": "Hariyama"
+      }
+    ],
+    "337": [
+      {
+        "trigger": "LEVEL",
+        "param": 26,
+        "target_species": 338,
+        "target_name": "Manectric"
+      }
+    ],
+    "339": [
+      {
+        "trigger": "LEVEL",
+        "param": 33,
+        "target_species": 340,
+        "target_name": "Camerupt"
+      }
+    ],
+    "341": [
+      {
+        "trigger": "LEVEL",
+        "param": 32,
+        "target_species": 342,
+        "target_name": "Sealeo"
+      }
+    ],
+    "342": [
+      {
+        "trigger": "LEVEL",
+        "param": 44,
+        "target_species": 343,
+        "target_name": "Walrein"
+      }
+    ],
+    "344": [
+      {
+        "trigger": "LEVEL",
+        "param": 32,
+        "target_species": 345,
+        "target_name": "Cacturne"
+      }
+    ],
+    "346": [
+      {
+        "trigger": "LEVEL",
+        "param": 42,
+        "target_species": 347,
+        "target_name": "Glalie"
+      }
+    ],
+    "350": [
+      {
+        "trigger": "FRIENDSHIP",
+        "param": 0,
+        "target_species": 183,
+        "target_name": "Marill"
+      }
+    ],
+    "351": [
+      {
+        "trigger": "LEVEL",
+        "param": 32,
+        "target_species": 352,
+        "target_name": "Grumpig"
+      }
+    ],
+    "356": [
+      {
+        "trigger": "LEVEL",
+        "param": 37,
+        "target_species": 357,
+        "target_name": "Medicham"
+      }
+    ],
+    "358": [
+      {
+        "trigger": "LEVEL",
+        "param": 35,
+        "target_species": 359,
+        "target_name": "Altaria"
+      }
+    ],
+    "360": [
+      {
+        "trigger": "LEVEL",
+        "param": 15,
+        "target_species": 202,
+        "target_name": "Wobbuffet"
+      }
+    ],
+    "361": [
+      {
+        "trigger": "LEVEL",
+        "param": 37,
+        "target_species": 362,
+        "target_name": "Dusclops"
+      }
+    ],
+    "364": [
+      {
+        "trigger": "LEVEL",
+        "param": 18,
+        "target_species": 365,
+        "target_name": "Vigoroth"
+      }
+    ],
+    "365": [
+      {
+        "trigger": "LEVEL",
+        "param": 36,
+        "target_species": 366,
+        "target_name": "Slaking"
+      }
+    ],
+    "367": [
+      {
+        "trigger": "LEVEL",
+        "param": 26,
+        "target_species": 368,
+        "target_name": "Swalot"
+      }
+    ],
+    "370": [
+      {
+        "trigger": "LEVEL",
+        "param": 20,
+        "target_species": 371,
+        "target_name": "Loudred"
+      }
+    ],
+    "371": [
+      {
+        "trigger": "LEVEL",
+        "param": 40,
+        "target_species": 372,
+        "target_name": "Exploud"
+      }
+    ],
+    "377": [
+      {
+        "trigger": "LEVEL",
+        "param": 37,
+        "target_species": 378,
+        "target_name": "Banette"
+      }
+    ],
+    "382": [
+      {
+        "trigger": "LEVEL",
+        "param": 32,
+        "target_species": 383,
+        "target_name": "Lairon"
+      }
+    ],
+    "383": [
+      {
+        "trigger": "LEVEL",
+        "param": 42,
+        "target_species": 384,
+        "target_name": "Aggron"
+      }
+    ],
+    "388": [
+      {
+        "trigger": "LEVEL",
+        "param": 40,
+        "target_species": 389,
+        "target_name": "Cradily"
+      }
+    ],
+    "390": [
+      {
+        "trigger": "LEVEL",
+        "param": 40,
+        "target_species": 391,
+        "target_name": "Armaldo"
+      }
+    ],
+    "392": [
+      {
+        "trigger": "LEVEL",
+        "param": 20,
+        "target_species": 393,
+        "target_name": "Kirlia"
+      }
+    ],
+    "393": [
+      {
+        "trigger": "LEVEL",
+        "param": 30,
+        "target_species": 394,
+        "target_name": "Gardevoir"
+      }
+    ],
+    "395": [
+      {
+        "trigger": "LEVEL",
+        "param": 30,
+        "target_species": 396,
+        "target_name": "Shelgon"
+      }
+    ],
+    "396": [
+      {
+        "trigger": "LEVEL",
+        "param": 50,
+        "target_species": 397,
+        "target_name": "Salamence"
+      }
+    ],
+    "398": [
+      {
+        "trigger": "LEVEL",
+        "param": 20,
+        "target_species": 399,
+        "target_name": "Metang"
+      }
+    ],
+    "399": [
+      {
+        "trigger": "LEVEL",
+        "param": 45,
+        "target_species": 400,
+        "target_name": "Metagross"
+      }
+    ]
+  }
+}

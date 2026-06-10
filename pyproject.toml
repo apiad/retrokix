@@ -1,6 +1,6 @@
 [project]
 name = "gbax"
-version = "0.11.2"
+version = "0.12.0"
 description = "Hacker-first, scriptable GBA emulator with HTTP API"
 readme = "README.md"
 license = { text = "MPL-2.0" }
@@ -65,6 +65,15 @@ packages = ["src/gbax"]
 "src/gbax/data/libretro_cheats_gba.json" = "gbax/data/libretro_cheats_gba.json"
 "src/gbax/data/emerald_species.json" = "gbax/data/emerald_species.json"
 "src/gbax/data/emerald_growth_rates.json" = "gbax/data/emerald_growth_rates.json"
+"src/gbax/data/emerald_species_info.json" = "gbax/data/emerald_species_info.json"
+"src/gbax/data/emerald_evolutions.json" = "gbax/data/emerald_evolutions.json"
+"src/gbax/data/emerald_moves.json" = "gbax/data/emerald_moves.json"
+"src/gbax/data/emerald_type_chart.json" = "gbax/data/emerald_type_chart.json"
+"src/gbax/data/emerald_items.json" = "gbax/data/emerald_items.json"
+"src/gbax/data/emerald_abilities.json" = "gbax/data/emerald_abilities.json"
+"src/gbax/data/emerald_natures.json" = "gbax/data/emerald_natures.json"
+"src/gbax/data/emerald_mapsec.json" = "gbax/data/emerald_mapsec.json"
+"src/gbax/data/emerald_types.json" = "gbax/data/emerald_types.json"
 "src/gbax/data/bots/__init__.py" = "gbax/data/bots/__init__.py"
 "src/gbax/data/bots/press_a.py" = "gbax/data/bots/press_a.py"
 "src/gbax/data/bots/random.py" = "gbax/data/bots/random.py"
