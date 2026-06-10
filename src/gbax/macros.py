@@ -9,6 +9,7 @@ shown in CLI listings.
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -17,7 +18,36 @@ from gbax.input import Button
 
 
 DEFAULT_MACROS_ROOT = Path.home() / ".gbax" / "macros"
-VALID_SLOTS = {f"F{i}" for i in range(1, 10)}
+
+# Allowed slot universe:
+#   - Single letter A-Z
+#   - Single digit 0-9
+#   - F1..F9 (F10-F12 reserved for filter/fullscreen/screenshot hotkeys)
+#   - Named keys: SPACE, RETURN, BACKSPACE
+_SLOT_RE = re.compile(r"^([A-Z]|[0-9]|F[1-9])$")
+_ALLOWED_NAMED = {"SPACE", "RETURN", "BACKSPACE"}
+
+
+def normalize_slot(s: str) -> str | None:
+    """Return the canonical slot string for ``s``, or None if invalid.
+
+    Canonical form: uppercase, no whitespace. Accepts a single letter,
+    a single digit, F1..F9, or one of SPACE/RETURN/BACKSPACE.
+    """
+    if s is None:
+        return None
+    norm = s.strip().upper()
+    if not norm:
+        return None
+    if _SLOT_RE.match(norm):
+        return norm
+    if norm in _ALLOWED_NAMED:
+        return norm
+    return None
+
+
+def is_valid_slot(s: str) -> bool:
+    return normalize_slot(s) is not None
 
 
 @dataclass
@@ -49,8 +79,10 @@ def _path_for(rom_sha1: str, slot: str, *, macros_root: Path | None = None) -> P
 
 
 def save(macro: Macro, *, macros_root: Path | None = None) -> Path:
-    if macro.slot not in VALID_SLOTS:
-        raise ValueError(f"slot must be F1..F9, got {macro.slot!r}")
+    if not is_valid_slot(macro.slot):
+        raise ValueError(
+            f"slot must be A-Z, 0-9, F1-F9, SPACE, RETURN, or BACKSPACE; got {macro.slot!r}"
+        )
     p = _path_for(macro.rom_sha1, macro.slot, macros_root=macros_root)
     p.parent.mkdir(parents=True, exist_ok=True)
     payload = {
@@ -70,7 +102,7 @@ def save(macro: Macro, *, macros_root: Path | None = None) -> Path:
 
 
 def load(rom_sha1: str, slot: str, *, macros_root: Path | None = None) -> Macro | None:
-    if slot not in VALID_SLOTS:
+    if not is_valid_slot(slot):
         return None
     p = _path_for(rom_sha1, slot, macros_root=macros_root)
     if not p.exists():
@@ -107,7 +139,8 @@ def list_for_rom(rom_sha1: str, *, macros_root: Path | None = None) -> list[Macr
     if not d.exists():
         return []
     out: list[Macro] = []
-    for slot in sorted(VALID_SLOTS):
+    for path in sorted(d.glob("*.json")):
+        slot = path.stem
         m = load(rom_sha1, slot, macros_root=macros_root)
         if m is not None:
             out.append(m)

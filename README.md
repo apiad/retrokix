@@ -41,7 +41,7 @@ That's the headline: it's an emulator you can pipe.
 
 ## Status
 
-- **Alpha.** v0.5.0. Works on Linux x86_64 — the wheel bundles the
+- **Alpha.** v0.6.0. Works on Linux x86_64 — the wheel bundles the
   libretro core, so `pip install gbax` is a one-step setup. macOS /
   Windows / ARM are PR-welcome.
 - **MPL-2.0.** Same license as the underlying mGBA core.
@@ -123,24 +123,31 @@ combos, menu navigation patterns.
 Ctrl+R                          # start recording
 … play your sequence …
 Ctrl+R                          # stop; alt-tab to the terminal
-bind to which key? [F1-F9]: F3
+bind to which key? [A-Z, 0-9, F1-F9, SPACE, RETURN, BACKSPACE]: H
 name (optional): heal-pokemon-center
-bound F3 → heal-pokemon-center
+bound H → heal-pokemon-center
 
 [mid-battle, later]
-F3                              # replays the recorded sequence
+H                               # replays the recorded sequence
 ```
+
+Slot universe is any letter A-Z, digit 0-9, F1-F9, plus `SPACE`,
+`RETURN`, `BACKSPACE`. The recorder refuses keys already mapped to a
+GBA button (X, Z, A, S, Return, Right-Shift, arrows) and the reserved
+play-loop hotkeys (`Tab`, `F10`-`F12`). Modifiers are ignored — only
+the bare keypress fires a macro, so `Ctrl+R` can never accidentally
+trigger an `R` macro.
 
 Macros are scoped per-ROM and persisted to
 `~/.gbax/macros/<rom-sha1>/<slot>.json`. List and remove from the CLI:
 
 ```
 $ gbax macros emerald
-  F3  →  heal-pokemon-center  (123 frames, recorded 2026-06-10 23:14)
+  H   →  heal-pokemon-center  (123 frames, recorded 2026-06-10 23:14)
   F5  →  (unnamed)              (47 frames, recorded 2026-06-10 23:21)
 
-$ gbax macro delete emerald F3
-deleted F3 (heal-pokemon-center).
+$ gbax macro delete emerald H
+deleted H (heal-pokemon-center).
 ```
 
 When a slot has both a cheat pin and a macro, the macro wins. Player
@@ -409,7 +416,7 @@ $ curl -s 'localhost:8420/memory?addr=33718916&len=4' | jq -r .data
 | ✅      | ROM library — `search`, `download`, `list-roms` against archive.org           |
 | ✅      | Cheat codes — vendored libretro DB (~6700 codes), F1–F9 toggle, `/cheats` API |
 | ⏳      | YAML user scripts — `Ctrl+H` runs a sequence of presses + memory pokes        |
-| ✅      | Macros — record + replay input sequences via Ctrl+R, F1-F9 (see [Macros](#macros)) |
+| ✅      | Macros — record + replay input sequences via Ctrl+R, bound to any letter/digit/F-key (see [Macros](#macros)) |
 | ⏳      | Per-game plugins — Python plugins expose `/state` and `/actions` for Pokémon, etc. |
 | ✅      | Bundled libretro core — `pip install gbax` ships a working emulator on Linux x86_64 |
 | ✅      | Fullscreen + GPU-accelerated linear upscale (F11), runtime filter toggle (F10) |

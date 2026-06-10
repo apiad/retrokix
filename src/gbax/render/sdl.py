@@ -51,6 +51,41 @@ def _load_macro_for_slot(rom_sha1: str, slot: str):
     return load(rom_sha1, slot)
 
 
+# Bare-key hotkeys reserved by the play loop. Any slot in this set is
+# refused at macro-bind time so the user can't clobber a play-loop hotkey.
+RESERVED_HOTKEYS: dict[str, str] = {
+    "TAB": "fast-forward",
+    "F10": "filter toggle",
+    "F11": "fullscreen toggle",
+    "F12": "screenshot",
+}
+
+
+def _gba_mapped_slots(keymap: dict) -> dict[str, str]:
+    """For each keymap entry, return canonical SDL key name → GBA button name.
+
+    Used at bind time to refuse macro slots that would clobber a GBA button.
+    """
+    out: dict[str, str] = {}
+    for sdl_sym, button in keymap.items():
+        name = sdl2.SDL_GetKeyName(sdl_sym).decode().upper().replace(" ", "")
+        out[name] = button.name
+    return out
+
+
+def _slot_for_keysym(sym: int, mod: int) -> str | None:
+    """Return the canonical slot name for the pressed key, or None.
+
+    Returns None when any modifier is held (so Ctrl+R doesn't trigger an
+    R macro). Returns None when the key doesn't map to an allowed slot.
+    """
+    if mod & (sdl2.KMOD_CTRL | sdl2.KMOD_SHIFT | sdl2.KMOD_ALT | sdl2.KMOD_GUI):
+        return None
+    raw = sdl2.SDL_GetKeyName(sym).decode().upper().replace(" ", "")
+    from gbax.macros import normalize_slot
+    return normalize_slot(raw)
+
+
 def _screenshots_dir() -> Path:
     out = Path.home() / ".gbax" / "screenshots"
     out.mkdir(parents=True, exist_ok=True)
@@ -156,25 +191,45 @@ def play_loop(
                             print(f"record stopped ({macro.total_frames} frames).")
                             try:
                                 slot_input = input(
-                                    "bind to which key? [F1-F9, or Enter to discard]: "
-                                ).strip().upper()
+                                    "bind to which key? [A-Z, 0-9, F1-F9, SPACE, "
+                                    "RETURN, BACKSPACE; or Enter to discard]: "
+                                ).strip()
                             except EOFError:
                                 slot_input = ""
                             if not slot_input:
                                 print("discarded.")
                                 continue
-                            if slot_input not in {f"F{i}" for i in range(1, 10)}:
-                                print(f"invalid slot {slot_input!r}; discarded.")
+                            from gbax.macros import normalize_slot
+                            norm = normalize_slot(slot_input)
+                            if norm is None:
+                                print(
+                                    f"invalid slot {slot_input!r}; "
+                                    "must be A-Z, 0-9, F1-F9, SPACE, RETURN, "
+                                    "or BACKSPACE. discarded."
+                                )
+                                continue
+                            gba_slots = _gba_mapped_slots(keymap)
+                            if norm in gba_slots:
+                                print(
+                                    f"error: {norm} is mapped to GBA "
+                                    f"{gba_slots[norm]}; pick another. discarded."
+                                )
+                                continue
+                            if norm in RESERVED_HOTKEYS:
+                                print(
+                                    f"error: {norm} is reserved for "
+                                    f"{RESERVED_HOTKEYS[norm]}; pick another. discarded."
+                                )
                                 continue
                             try:
                                 name_input = input("name (optional): ").strip()
                             except EOFError:
                                 name_input = ""
-                            macro.slot = slot_input
+                            macro.slot = norm
                             macro.name = name_input
                             from gbax.macros import save as _save_macro
                             _save_macro(macro)
-                            print(f"bound {slot_input} → {name_input or '(unnamed)'}")
+                            print(f"bound {norm} → {name_input or '(unnamed)'}")
                         else:
                             runtime.start_recording_macro()
                             print("recording... (Ctrl+R to stop)")
@@ -197,19 +252,28 @@ def play_loop(
                             print(f"slot {slot} is empty")
                         continue
 
-                    # F1..F9 — macros take precedence; otherwise cheat-pin behavior.
-                    if sdl2.SDLK_F1 <= sym <= sdl2.SDLK_F9:
-                        idx = sym - sdl2.SDLK_F1
-                        key = f"F{idx + 1}"
-                        macro = _load_macro_for_slot(runtime.rom_sha1, key)
+                    # Bare key (no modifier) — fire a macro if one is bound to
+                    # this key. Falls through to F1..F9 cheat handling and the
+                    # GBA button mapping below when no macro matches.
+                    macro_slot = _slot_for_keysym(sym, mod)
+                    if macro_slot is not None:
+                        macro = _load_macro_for_slot(runtime.rom_sha1, macro_slot)
                         if macro is not None:
                             try:
                                 runtime.play_macro(macro)
                                 label = macro.name or "(unnamed)"
-                                print(f"playing {key} → {label} ({macro.total_frames} frames)")
+                                print(
+                                    f"playing {macro_slot} → {label} "
+                                    f"({macro.total_frames} frames)"
+                                )
                             except RuntimeError as exc:
-                                print(f"{key}: {exc}")
+                                print(f"{macro_slot}: {exc}")
                             continue
+
+                    # F1..F9 — cheat-pin behavior (toggle pinned cheat, or Nth active).
+                    if sdl2.SDLK_F1 <= sym <= sdl2.SDLK_F9:
+                        idx = sym - sdl2.SDLK_F1
+                        key = f"F{idx + 1}"
                         pinned = runtime.cheat_pins().get(key)
                         if pinned:
                             try:

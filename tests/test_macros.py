@@ -73,6 +73,35 @@ def test_delete_missing_returns_false(tmp_path):
 
 
 def test_invalid_slot_raises(tmp_path):
-    m = _sample_macro(slot="F12")
+    # F12 is reserved (screenshot), so it's not in the allowed slot universe.
     with pytest.raises(ValueError):
-        save(m, macros_root=tmp_path)
+        save(_sample_macro(slot="F12"), macros_root=tmp_path)
+    # Multi-char garbage is also rejected.
+    with pytest.raises(ValueError):
+        save(_sample_macro(slot="FOO"), macros_root=tmp_path)
+    with pytest.raises(ValueError):
+        save(_sample_macro(slot=""), macros_root=tmp_path)
+
+
+def test_letter_slot_round_trip(tmp_path):
+    m = _sample_macro(slot="H", name="combo")
+    save(m, macros_root=tmp_path)
+    loaded = load("f3ae088181bf583e55daf962a92bb46f4f1d07b7", "H", macros_root=tmp_path)
+    assert loaded is not None
+    assert loaded.slot == "H"
+
+
+def test_digit_slot_round_trip(tmp_path):
+    m = _sample_macro(slot="4", name="four")
+    save(m, macros_root=tmp_path)
+    loaded = load("f3ae088181bf583e55daf962a92bb46f4f1d07b7", "4", macros_root=tmp_path)
+    assert loaded is not None
+    assert loaded.slot == "4"
+
+
+def test_named_slot_round_trip(tmp_path):
+    m = _sample_macro(slot="SPACE", name="jump")
+    save(m, macros_root=tmp_path)
+    loaded = load("f3ae088181bf583e55daf962a92bb46f4f1d07b7", "SPACE", macros_root=tmp_path)
+    assert loaded is not None
+    assert loaded.slot == "SPACE"
