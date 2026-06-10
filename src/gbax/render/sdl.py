@@ -114,6 +114,7 @@ def play_loop(
     scale: int = DEFAULT_SCALE,
     keymap: Optional[dict[int, Button]] = None,
     fullscreen: bool = False,
+    watch_state: bool = False,
 ) -> None:
     """Run the emulator in a window until the user closes it.
 
@@ -125,6 +126,34 @@ def play_loop(
     fast_forward = False
     is_fullscreen = False
     filter_quality = "linear"
+
+    watch_panel = None
+    state_reader = None
+    panel_render_fn = None
+    if watch_state:
+        from gbax.state.storage import compiled_path_for_rom
+        from gbax.state.watch import StateReader
+
+        compiled = compiled_path_for_rom(runtime.rom_sha1)
+        state_reader = StateReader(compiled, runtime)
+        if not state_reader.has_tags:
+            print(f"--watch-state: no compiled state at {compiled}; panel disabled.")
+            state_reader = None
+        else:
+            from rich.console import Console
+            from rich.live import Live
+            from rich.table import Table
+
+            def _render() -> Table:
+                t = Table(show_header=False, expand=False, box=None, padding=(0, 2))
+                values = state_reader.read_all()
+                for tag in sorted(values):
+                    t.add_row(f"{tag}:", str(values[tag]))
+                return t
+
+            panel_render_fn = _render
+            watch_panel = Live(_render(), console=Console(), refresh_per_second=10, transient=False)
+            watch_panel.__enter__()
 
     sdl2.ext.init()
     sdl2.SDL_InitSubSystem(sdl2.SDL_INIT_AUDIO)
@@ -368,6 +397,9 @@ def play_loop(
             frames_this_iteration = FAST_FORWARD_MULTIPLIER if fast_forward else 1
             runtime.step(frames=frames_this_iteration)
 
+            if watch_panel is not None and panel_render_fn is not None:
+                watch_panel.update(panel_render_fn())
+
             fb = runtime.framebuffer()  # already a copy from the locked accessor
             fb_bytes = np.ascontiguousarray(fb).tobytes()
             sdl2.SDL_UpdateTexture(texture, None, fb_bytes, GBA_WIDTH * 3)
@@ -387,5 +419,7 @@ def play_loop(
         if audio_dev:
             sdl2.SDL_CloseAudioDevice(audio_dev)
     finally:
+        if watch_panel is not None:
+            watch_panel.__exit__(None, None, None)
         runtime._core.on_audio = None
         sdl2.ext.quit()
