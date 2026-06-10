@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+# Build mgba_libretro.so and stage it for the gbax wheel.
+#
+# Used by:
+#   - Developers on a fresh checkout: `bin/build-core` produces the .so
+#     at src/gbax/cores/mgba_libretro.so (the bundled path).
+#   - The CI release workflow (release.yml): runs inside the manylinux
+#     container before `python -m build`.
+#
+# Defaults to the tag pinned in .mgba-version. Override with
+# --mgba-version=<tag> or by setting MGBA_VERSION in the environment.
+#
+# This script does NOT touch tests/cores/mgba_libretro.so — that file is
+# tracked in git and only updated by deliberate commits when bumping
+# mGBA. To refresh it after a bump, run this script then:
+#   cp src/gbax/cores/mgba_libretro.so tests/cores/mgba_libretro.so
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$REPO_ROOT"
+
+MGBA_VERSION="${MGBA_VERSION:-$(cat .mgba-version)}"
+BUILD_DIR=""
+for arg in "$@"; do
+  case "$arg" in
+    --mgba-version=*) MGBA_VERSION="${arg#*=}" ;;
+    --build-dir=*)    BUILD_DIR="${arg#*=}" ;;
+    *) echo "unknown arg: $arg" >&2; exit 2 ;;
+  esac
+done
+: "${BUILD_DIR:=/tmp/mgba-build-${MGBA_VERSION}}"
+
+echo "Building mgba_libretro.so from mGBA $MGBA_VERSION in $BUILD_DIR"
+
+if [[ ! -d "$BUILD_DIR/mgba" ]]; then
+  mkdir -p "$BUILD_DIR"
+  git clone --depth=1 --branch "$MGBA_VERSION" \
+    https://github.com/mgba-emu/mgba.git "$BUILD_DIR/mgba"
+fi
+
+# Flag set matches working .github/workflows/ci.yml as of 2026-06-09.
+# USE_LIBZIP/FFMPEG/ELF=OFF are required to stay inside the manylinux baseline.
+# BUILD_LTO=OFF is non-negotiable: with LTO on, mGBA's libretro .so can
+# ship as bytecode-only with no ELF symbols (won't dlopen).
+mkdir -p "$BUILD_DIR/mgba/build"
+cd "$BUILD_DIR/mgba/build"
+cmake .. \
+  -DBUILD_QT=OFF \
+  -DBUILD_SDL=OFF \
+  -DBUILD_LIBRETRO=ON \
+  -DBUILD_SHARED=OFF \
+  -DBUILD_STATIC=OFF \
+  -DUSE_LUA=OFF \
+  -DUSE_FREETYPE=OFF \
+  -DUSE_DISCORD_RPC=OFF \
+  -DUSE_LIBZIP=OFF \
+  -DUSE_FFMPEG=OFF \
+  -DUSE_ELF=OFF \
+  -DBUILD_LTO=OFF \
+  -DCMAKE_BUILD_TYPE=Release
+make mgba_libretro -j"$(nproc)"
+
+SO="$BUILD_DIR/mgba/build/mgba_libretro.so"
+[[ -f "$SO" ]] || { echo "build produced no $SO" >&2; exit 1; }
+
+# Symbol presence — catches the LTO-empty-.so trap.
+if ! nm -D "$SO" 2>/dev/null | grep -q '\bretro_run\b'; then
+  echo "FATAL: $SO has no retro_run symbol (LTO trap?). Rebuild with BUILD_LTO=OFF." >&2
+  exit 1
+fi
+
+# ldd allowlist — only manylinux-baseline libraries permitted.
+ALLOWED='linux-vdso\.|ld-linux-x86-64\.|libc\.|libm\.|libpthread\.|libdl\.|libgcc_s\.|libstdc\+\+\.|libz\.'
+BAD="$(ldd "$SO" | grep '=>' | grep -Ev "$ALLOWED" || true)"
+if [[ -n "$BAD" ]]; then
+  echo "FATAL: $SO links libraries outside manylinux baseline:" >&2
+  echo "$BAD" >&2
+  exit 1
+fi
+
+mkdir -p "$REPO_ROOT/src/gbax/cores"
+cp "$SO" "$REPO_ROOT/src/gbax/cores/mgba_libretro.so"
+cp "$BUILD_DIR/mgba/LICENSE" "$REPO_ROOT/src/gbax/cores/LICENSE.mGBA"
+
+# Stamp MGBA_VERSION into the package __init__.
+INIT="$REPO_ROOT/src/gbax/cores/__init__.py"
+python3 - <<PY
+import re, pathlib
+p = pathlib.Path("$INIT")
+text = p.read_text()
+new = re.sub(r'^MGBA_VERSION\s*=.*$', f'MGBA_VERSION = "$MGBA_VERSION"', text, count=1, flags=re.M)
+p.write_text(new)
+PY
+
+echo "OK: bundled core at src/gbax/cores/mgba_libretro.so (mGBA $MGBA_VERSION)"
