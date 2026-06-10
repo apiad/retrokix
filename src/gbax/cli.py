@@ -178,7 +178,8 @@ def list_roms() -> None:
 @app.command()
 def play(
     rom: str = typer.Argument(..., help="Path to a .gba, or a fuzzy query against ~/.gbax/roms/."),
-    scale: int = typer.Option(3, "--scale", help="Window scale factor."),
+    scale: int = typer.Option(3, "--scale", help="Window scale factor (windowed mode only)."),
+    fullscreen: bool = typer.Option(False, "--fullscreen", "-f", help="Start in borderless-desktop fullscreen. F11 toggles at runtime."),
     core_path: Path | None = typer.Option(None, "--core", help="Path to libretro core .so."),
     cheats: str | None = typer.Option(None, "--cheats", help="Comma-separated cheat slugs to enable at boot."),
 ) -> None:
@@ -202,7 +203,7 @@ def play(
             except KeyError as exc:
                 typer.echo(f"warning: {exc}", err=True)
     try:
-        play_loop(runtime, scale=scale)
+        play_loop(runtime, scale=scale, fullscreen=fullscreen)
     finally:
         runtime.close()
 

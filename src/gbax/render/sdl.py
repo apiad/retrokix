@@ -51,32 +51,60 @@ def _screenshots_dir() -> Path:
     return out
 
 
+def _make_texture(renderer_ptr, filter_quality: str):
+    """Recreate the streaming texture under a given scale-quality hint.
+
+    SDL bakes the scale-quality hint into the texture at create time, not
+    the renderer, so toggling filter at runtime means destroying and
+    recreating the texture. Cheap — one handle, no GPU memory pressure.
+    """
+    sdl2.SDL_SetHint(sdl2.SDL_HINT_RENDER_SCALE_QUALITY, filter_quality.encode())
+    return sdl2.SDL_CreateTexture(
+        renderer_ptr,
+        sdl2.SDL_PIXELFORMAT_RGB24,
+        sdl2.SDL_TEXTUREACCESS_STREAMING,
+        GBA_WIDTH,
+        GBA_HEIGHT,
+    )
+
+
 def play_loop(
     runtime: EmulatorRuntime,
     scale: int = DEFAULT_SCALE,
     keymap: Optional[dict[int, Button]] = None,
+    fullscreen: bool = False,
 ) -> None:
-    """Run the emulator in a window until the user closes it."""
+    """Run the emulator in a window until the user closes it.
+
+    F11 toggles borderless-desktop fullscreen.
+    F10 toggles the upscale filter between linear and nearest.
+    """
     keymap = keymap if keymap is not None else default_keymap()
     held: set[Button] = set()
     fast_forward = False
+    is_fullscreen = False
+    filter_quality = "linear"
 
     sdl2.ext.init()
     sdl2.SDL_InitSubSystem(sdl2.SDL_INIT_AUDIO)
     try:
+        # Hint must be set before the renderer / texture are created.
+        sdl2.SDL_SetHint(sdl2.SDL_HINT_RENDER_SCALE_QUALITY, filter_quality.encode())
+
         window = sdl2.ext.Window(
             f"gbax — {runtime.rom_path.name}",
             size=(GBA_WIDTH * scale, GBA_HEIGHT * scale),
+            flags=sdl2.SDL_WINDOW_RESIZABLE,
         )
         window.show()
         renderer = sdl2.ext.Renderer(window, flags=sdl2.SDL_RENDERER_ACCELERATED)
-        texture = sdl2.SDL_CreateTexture(
-            renderer.sdlrenderer,
-            sdl2.SDL_PIXELFORMAT_RGB24,
-            sdl2.SDL_TEXTUREACCESS_STREAMING,
-            GBA_WIDTH,
-            GBA_HEIGHT,
-        )
+        # Letterbox + aspect-preserve: SDL handles the rest of the scaling math.
+        sdl2.SDL_RenderSetLogicalSize(renderer.sdlrenderer, GBA_WIDTH, GBA_HEIGHT)
+        texture = _make_texture(renderer.sdlrenderer, filter_quality)
+
+        if fullscreen:
+            sdl2.SDL_SetWindowFullscreen(window.window, sdl2.SDL_WINDOW_FULLSCREEN_DESKTOP)
+            is_fullscreen = True
 
         # Open a stereo S16 audio device matching the core's sample rate.
         wanted = sdl2.SDL_AudioSpec(
@@ -148,6 +176,23 @@ def play_loop(
                                 print(f"cheat {'ON ' if now_on else 'OFF'}: {cheat.name}")
                             else:
                                 print(f"{key} is unpinned (try: gbax pin <rom> {key} <slug>)")
+                        continue
+
+                    # F10 — toggle upscale filter (linear ↔ nearest)
+                    if sym == sdl2.SDLK_F10:
+                        filter_quality = "nearest" if filter_quality == "linear" else "linear"
+                        sdl2.SDL_DestroyTexture(texture)
+                        texture = _make_texture(renderer.sdlrenderer, filter_quality)
+                        print(f"filter: {filter_quality}")
+                        continue
+
+                    # F11 — toggle borderless-desktop fullscreen
+                    if sym == sdl2.SDLK_F11:
+                        is_fullscreen = not is_fullscreen
+                        sdl2.SDL_SetWindowFullscreen(
+                            window.window,
+                            sdl2.SDL_WINDOW_FULLSCREEN_DESKTOP if is_fullscreen else 0,
+                        )
                         continue
 
                     # F12 — screenshot
