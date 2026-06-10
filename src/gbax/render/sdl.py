@@ -92,23 +92,6 @@ def _screenshots_dir() -> Path:
     return out
 
 
-def _make_texture(renderer_ptr, filter_quality: str):
-    """Recreate the streaming texture under a given scale-quality hint.
-
-    SDL bakes the scale-quality hint into the texture at create time, not
-    the renderer, so toggling filter at runtime means destroying and
-    recreating the texture. Cheap — one handle, no GPU memory pressure.
-    """
-    sdl2.SDL_SetHint(sdl2.SDL_HINT_RENDER_SCALE_QUALITY, filter_quality.encode())
-    return sdl2.SDL_CreateTexture(
-        renderer_ptr,
-        sdl2.SDL_PIXELFORMAT_RGB24,
-        sdl2.SDL_TEXTUREACCESS_STREAMING,
-        GBA_WIDTH,
-        GBA_HEIGHT,
-    )
-
-
 def play_loop(
     runtime: EmulatorRuntime,
     scale: int = DEFAULT_SCALE,
@@ -184,8 +167,7 @@ def play_loop(
     sdl2.ext.init()
     sdl2.SDL_InitSubSystem(sdl2.SDL_INIT_AUDIO)
     try:
-        # Hint must be set before the renderer / texture are created.
-        sdl2.SDL_SetHint(sdl2.SDL_HINT_RENDER_SCALE_QUALITY, filter_quality.encode())
+        from gbax.render.sdl_renderer import SDLRenderer
 
         window = sdl2.ext.Window(
             f"gbax — {runtime.rom_path.name}",
@@ -193,13 +175,12 @@ def play_loop(
             flags=sdl2.SDL_WINDOW_RESIZABLE,
         )
         window.show()
-        renderer = sdl2.ext.Renderer(window, flags=sdl2.SDL_RENDERER_ACCELERATED)
-        # Letterbox + aspect-preserve: SDL handles the rest of the scaling math.
-        sdl2.SDL_RenderSetLogicalSize(renderer.sdlrenderer, GBA_WIDTH, GBA_HEIGHT)
-        texture = _make_texture(renderer.sdlrenderer, filter_quality)
+        renderer = SDLRenderer()
+        renderer.current_shader = filter_quality
+        renderer.init(window, GBA_WIDTH, GBA_HEIGHT)
 
         if fullscreen:
-            sdl2.SDL_SetWindowFullscreen(window.window, sdl2.SDL_WINDOW_FULLSCREEN_DESKTOP)
+            renderer.set_fullscreen(True)
             is_fullscreen = True
 
         # Open a stereo S16 audio device matching the core's sample rate.
@@ -374,21 +355,16 @@ def play_loop(
                                 print(f"{key} is unpinned (try: gbax pin <rom> {key} <slug>)")
                         continue
 
-                    # F10 — toggle upscale filter (linear ↔ nearest)
+                    # F10 — cycle upscale shader
                     if sym == sdl2.SDLK_F10:
-                        filter_quality = "nearest" if filter_quality == "linear" else "linear"
-                        sdl2.SDL_DestroyTexture(texture)
-                        texture = _make_texture(renderer.sdlrenderer, filter_quality)
-                        print(f"filter: {filter_quality}")
+                        filter_quality = renderer.cycle_shader()
+                        print(f"shader: {filter_quality}")
                         continue
 
                     # F11 — toggle borderless-desktop fullscreen
                     if sym == sdl2.SDLK_F11:
                         is_fullscreen = not is_fullscreen
-                        sdl2.SDL_SetWindowFullscreen(
-                            window.window,
-                            sdl2.SDL_WINDOW_FULLSCREEN_DESKTOP if is_fullscreen else 0,
-                        )
+                        renderer.set_fullscreen(is_fullscreen)
                         continue
 
                     # F12 — screenshot
@@ -465,11 +441,7 @@ def play_loop(
 
             fb = runtime.framebuffer()  # already a copy from the locked accessor
             fb_bytes = np.ascontiguousarray(fb).tobytes()
-            sdl2.SDL_UpdateTexture(texture, None, fb_bytes, GBA_WIDTH * 3)
-
-            renderer.clear()
-            sdl2.SDL_RenderCopy(renderer.sdlrenderer, texture, None, None)
-            renderer.present()
+            renderer.present_frame(fb_bytes)
 
             if not fast_forward:
                 elapsed = time.monotonic() - last_frame
@@ -478,7 +450,7 @@ def play_loop(
                     time.sleep(sleep)
             last_frame = time.monotonic()
 
-        sdl2.SDL_DestroyTexture(texture)
+        renderer.close()
         if audio_dev:
             sdl2.SDL_CloseAudioDevice(audio_dev)
     finally:
