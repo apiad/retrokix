@@ -1024,34 +1024,36 @@ def _wait_frames(runtime, frames: int):
 
 
 def _advance_to_decision(runtime, max_iters=AUTO_MAX_ITERS):
-    """Loop A/B/wait until phase becomes 2 (action menu), 3 (sub-menu),
-    or in_battle goes False. Returns final phase or None on timeout."""
-    start_active_species = None
-    active = _read_battle_mon(runtime, BMON_PLAYER_SLOT)
-    if active:
-        start_active_species = active["species"]
+    """Loop A/B/wait until phase becomes 2 (action menu) or in_battle goes
+    False. Returns final phase or None on timeout / out-of-battle.
+
+    Phase 3 (secondary menu) inside this loop ALWAYS means we ended up in
+    a menu we didn't open ourselves — the auto-Yes Pokemon-change prompt or
+    a stray sub-menu. We press B unconditionally (no species check, since
+    gBattleMons[0] may be unreadable mid-party-menu). Capped consecutive B
+    presses prevent an infinite loop if B somehow doesn't escape.
+    """
+    consecutive_b_presses = 0
     for _ in range(max_iters):
         if not in_battle(runtime):
             return None
         p = _phase(runtime)
-        # Detect auto-Yes party menu (active hasn't changed but secondary menu open)
-        if p == PHASE_SECONDARY_MENU:
-            cur_active = _read_battle_mon(runtime, BMON_PLAYER_SLOT)
-            if (cur_active and start_active_species is not None
-                and cur_active["species"] == start_active_species):
-                # Party menu opened by auto-Yes — back out
-                _press_button(runtime, "b", settle_frames=40)
-                continue
-            return p
         if p == PHASE_ACTION_MENU:
             return p
+        if p == PHASE_SECONDARY_MENU:
+            consecutive_b_presses += 1
+            if consecutive_b_presses > 6:
+                # B isn't escaping — give up, let caller decide
+                return p
+            _press_button(runtime, "b", settle_frames=40)
+            continue
+        consecutive_b_presses = 0
         if p in WAIT_PHASES:
             _wait_frames(runtime, 80)
             continue
         if p in ADVANCEABLE_PHASES:
             _press_button(runtime, "a", settle_frames=80)
             continue
-        # Unknown phase — stop and report
         return p
     return None
 
@@ -1234,17 +1236,25 @@ def http_auto_turn(ctx):
 
 @p.route("/battle/auto/opponent", methods=["POST"])
 def http_auto_opponent(ctx):
-    """Fight until current opponent species changes OR battle ends."""
+    """Fight until current opponent species changes OR battle ends.
+    Also stops after 3 consecutive noop turns (stuck or done)."""
     if not in_battle(ctx.runtime):
         return {"error": "not in battle"}
     start_opp = _read_battle_mon(ctx.runtime, OPP_SINGLES_SLOT)
     start_species = start_opp["species"] if start_opp else None
     turns = []
-    for _ in range(20):  # safety: max 20 turns per opponent
+    noops = 0
+    for _ in range(20):
         if not in_battle(ctx.runtime):
             break
         result = _auto_one_turn(ctx.runtime)
         turns.append(result)
+        if result.get("decision", {}).get("action") not in ("use_move", "switch"):
+            noops += 1
+            if noops >= 3:
+                break
+        else:
+            noops = 0
         if not result.get("in_battle"):
             break
         cur_opp = _read_battle_mon(ctx.runtime, OPP_SINGLES_SLOT)
@@ -1256,15 +1266,22 @@ def http_auto_opponent(ctx):
 
 @p.route("/battle/auto/full", methods=["POST"])
 def http_auto_full(ctx):
-    """Fight until battle ends entirely. Bounded by AUTO_MAX_ITERS turns."""
+    """Fight until battle ends, OR 3 consecutive noop turns."""
     if not in_battle(ctx.runtime):
         return {"error": "not in battle"}
     turns = []
-    for _ in range(60):  # safety: max 60 turns per battle
+    noops = 0
+    for _ in range(60):
         if not in_battle(ctx.runtime):
             break
         result = _auto_one_turn(ctx.runtime)
         turns.append(result)
+        if result.get("decision", {}).get("action") not in ("use_move", "switch"):
+            noops += 1
+            if noops >= 3:
+                break
+        else:
+            noops = 0
         if not result.get("in_battle"):
             break
     return {"turn_count": len(turns), "turns": turns,
@@ -1288,31 +1305,55 @@ def _autohotkey_turn(ctx):
 
 @p.on_key("K")
 def _autohotkey_opponent(ctx):
-    if in_battle(ctx.runtime):
-        ctx.log("[k] auto/opponent")
-        def runner(rt):
-            for _ in range(20):
-                if not in_battle(rt):
+    if not in_battle(ctx.runtime):
+        return
+    ctx.log("[k] auto/opponent")
+    def runner(rt):
+        start = _read_battle_mon(rt, OPP_SINGLES_SLOT)
+        start_species = start["species"] if start else None
+        noops = 0
+        for i in range(20):
+            if not in_battle(rt):
+                break
+            result = _auto_one_turn(rt)
+            if result.get("decision", {}).get("action") not in ("use_move", "switch"):
+                noops += 1
+                if noops >= 3:
+                    ctx.log(f"[k] stop: {noops} consecutive noops")
                     break
-                _auto_one_turn(rt)
-                opp = _read_battle_mon(rt, OPP_SINGLES_SLOT)
-                if opp is None:
-                    break
-            ctx.log("[k] auto/opponent done")
-        _run_async(runner, ctx.runtime)
+            else:
+                noops = 0
+            cur_opp = _read_battle_mon(rt, OPP_SINGLES_SLOT)
+            if cur_opp is None:
+                break
+            if start_species is not None and cur_opp["species"] != start_species:
+                ctx.log(f"[k] stop: opp species changed {start_species}→{cur_opp['species']}")
+                break
+        ctx.log("[k] done")
+    _run_async(runner, ctx.runtime)
 
 
 @p.on_key("L")
 def _autohotkey_full(ctx):
-    if in_battle(ctx.runtime):
-        ctx.log("[l] auto/full")
-        def runner(rt):
-            for _ in range(60):
-                if not in_battle(rt):
+    if not in_battle(ctx.runtime):
+        return
+    ctx.log("[l] auto/full")
+    def runner(rt):
+        noops = 0
+        for i in range(60):
+            if not in_battle(rt):
+                ctx.log(f"[l] exited battle after {i} turns")
+                break
+            result = _auto_one_turn(rt)
+            if result.get("decision", {}).get("action") not in ("use_move", "switch"):
+                noops += 1
+                if noops >= 3:
+                    ctx.log(f"[l] stop: {noops} consecutive noops (stuck or done)")
                     break
-                _auto_one_turn(rt)
-            ctx.log("[l] auto/full done")
-        _run_async(runner, ctx.runtime)
+            else:
+                noops = 0
+        ctx.log("[l] done")
+    _run_async(runner, ctx.runtime)
 
 
 @p.route("/battle/state")
