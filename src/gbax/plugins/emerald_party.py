@@ -997,6 +997,324 @@ def http_battle_switch(ctx, party_slot: int):
             "screenshot_b64": shots[-1] if shots else None}
 
 
+# --- Auto-fight driver (policy B: HP-threshold switch + matchup-best bench) ---
+
+AUTO_HP_SWITCH_THRESHOLD = 0.25   # swap if active HP fraction below this
+AUTO_MAX_ITERS = 400               # safety cap on advance loop per call
+
+
+def _phase(runtime) -> int:
+    return runtime.read_memory(BATTLE_PHASE_ADDR, 1)[0]
+
+
+def _press_button(runtime, btn: str, hold_frames=3, settle_frames=80):
+    """Single button press via the runtime, releasing lock between actions."""
+    from gbax.input import button_from_str
+    with runtime._lock:
+        runtime.set_buttons({button_from_str(btn)})
+        runtime.step(hold_frames)
+        runtime.set_buttons(set())
+        if settle_frames:
+            runtime.step(settle_frames)
+
+
+def _wait_frames(runtime, frames: int):
+    with runtime._lock:
+        runtime.step(frames)
+
+
+def _advance_to_decision(runtime, max_iters=AUTO_MAX_ITERS):
+    """Loop A/B/wait until phase becomes 2 (action menu), 3 (sub-menu),
+    or in_battle goes False. Returns final phase or None on timeout."""
+    start_active_species = None
+    active = _read_battle_mon(runtime, BMON_PLAYER_SLOT)
+    if active:
+        start_active_species = active["species"]
+    for _ in range(max_iters):
+        if not in_battle(runtime):
+            return None
+        p = _phase(runtime)
+        # Detect auto-Yes party menu (active hasn't changed but secondary menu open)
+        if p == PHASE_SECONDARY_MENU:
+            cur_active = _read_battle_mon(runtime, BMON_PLAYER_SLOT)
+            if (cur_active and start_active_species is not None
+                and cur_active["species"] == start_active_species):
+                # Party menu opened by auto-Yes — back out
+                _press_button(runtime, "b", settle_frames=40)
+                continue
+            return p
+        if p == PHASE_ACTION_MENU:
+            return p
+        if p in WAIT_PHASES:
+            _wait_frames(runtime, 80)
+            continue
+        if p in ADVANCEABLE_PHASES:
+            _press_button(runtime, "a", settle_frames=80)
+            continue
+        # Unknown phase — stop and report
+        return p
+    return None
+
+
+def _party_slots_full(runtime) -> list[dict]:
+    """Return all 6 party slot dicts (or None for empty)."""
+    return [read_slot(runtime, i) for i in range(SLOT_COUNT)]
+
+
+def _score_move_vs(types_list: list[int], move_type_name: str, power: int) -> float:
+    from gbax.plugins.emerald_formulas import type_effectiveness
+    type_id = _type_id_for_name(move_type_name or "NORMAL")
+    if type_id is None:
+        return 0.0
+    return float(power) * type_effectiveness(type_id, types_list)
+
+
+def _best_real_move_score(slot_dict: dict, defender_types: list[int]) -> float:
+    """Score using a slot's REAL moveset (Slice 3+). Returns 0 if none usable."""
+    if not slot_dict:
+        return 0.0
+    best = 0.0
+    for m in slot_dict.get("moves", []):
+        if m.get("pp_current", 0) <= 0:
+            continue
+        s = _score_move_vs(defender_types, m.get("type") or "NORMAL", m.get("power") or 0)
+        if s > best:
+            best = s
+    return best
+
+
+def _bench_best_switch(runtime, active_data_slot: int, opp_types: list[int]) -> int | None:
+    """Pick the data-slot index of the best non-active healthy party member
+    against the current opponent. Returns None if no viable bench."""
+    party = _party_slots_full(runtime)
+    best_idx = None
+    best_score = 0.0
+    for i, slot in enumerate(party):
+        if slot is None:
+            continue
+        if i == active_data_slot:
+            continue
+        if slot.get("hp", 0) <= 0:
+            continue
+        s = _best_real_move_score(slot, opp_types)
+        if s > best_score:
+            best_score = s
+            best_idx = i
+    return best_idx if best_score > 0 else None
+
+
+def _visual_position(data_slot: int, active_data_slot: int) -> int:
+    """Party menu layout: visual position 0 is the active slot (left column),
+    bench positions 1..5 are the remaining party members in data order
+    skipping the active. Returns the visual position of `data_slot`."""
+    if data_slot == active_data_slot:
+        return 0
+    pos = 1
+    for i in range(SLOT_COUNT):
+        if i == active_data_slot:
+            continue
+        if i == data_slot:
+            return pos
+        pos += 1
+    return 0
+
+
+def _active_party_data_slot(runtime, active_species: int) -> int | None:
+    """Match the in-battle active species to a data slot (0..5)."""
+    party = _party_slots_full(runtime)
+    for i, slot in enumerate(party):
+        if slot and slot.get("species") == active_species and slot.get("hp", 0) > 0:
+            return i
+    return None
+
+
+def _do_use_move_sequence(runtime, slot: int):
+    """Inline version of /battle/use_move/{slot} sequence."""
+    steps = []
+    steps += _home_cursor_steps()
+    steps += [{"hold": ["a"], "frames": PRESS_FRAMES},
+              {"release": True, "frames": MENU_TRANSITION_FRAMES}]
+    steps += _home_cursor_steps()
+    steps += _nav_to_2x2_slot_steps(slot)
+    steps += _press_a_steps(settle=SETTLE_FRAMES)
+    _run_action(runtime, steps)
+
+
+def _do_switch_sequence(runtime, visual_position: int):
+    """Inline version of /battle/switch/{position} sequence."""
+    steps = []
+    steps += _home_cursor_steps()
+    steps += [{"hold": ["down"], "frames": PRESS_FRAMES},
+              {"release": True, "frames": NAV_GAP_FRAMES}]
+    steps += [{"hold": ["a"], "frames": PRESS_FRAMES},
+              {"release": True, "frames": PARTY_MENU_SETTLE_FRAMES}]
+    steps += [{"hold": ["right"], "frames": PRESS_FRAMES},
+              {"release": True, "frames": NAV_GAP_FRAMES}]
+    for _ in range(visual_position - 1):
+        steps += [{"hold": ["down"], "frames": PRESS_FRAMES},
+                  {"release": True, "frames": NAV_GAP_FRAMES}]
+    steps += [{"hold": ["a"], "frames": PRESS_FRAMES},
+              {"release": True, "frames": MENU_TRANSITION_FRAMES}]
+    steps += _press_a_steps(settle=SETTLE_FRAMES)
+    _run_action(runtime, steps)
+
+
+def _auto_one_turn(runtime) -> dict:
+    """Execute exactly one decision (best move OR HP-threshold swap), then
+    advance through resolution. Returns a summary."""
+    # Reach action menu first
+    p = _advance_to_decision(runtime)
+    if p != PHASE_ACTION_MENU:
+        return {
+            "decision": "noop",
+            "reason": f"could not reach action menu (phase={p})",
+            "phase": p,
+            "in_battle": in_battle(runtime),
+        }
+
+    active = _read_battle_mon(runtime, BMON_PLAYER_SLOT)
+    opp = _read_battle_mon(runtime, OPP_SINGLES_SLOT)
+    if not active or not opp:
+        return {"decision": "noop", "reason": "could not read battlers", "in_battle": in_battle(runtime)}
+
+    hp_frac = active["hp"] / max(1, active["max_hp"])
+    active_data_slot = _active_party_data_slot(runtime, active["species"])
+
+    decision = None
+    if hp_frac < AUTO_HP_SWITCH_THRESHOLD and active_data_slot is not None:
+        bench_data_slot = _bench_best_switch(runtime, active_data_slot, opp["types"])
+        if bench_data_slot is not None:
+            vis_pos = _visual_position(bench_data_slot, active_data_slot)
+            decision = {"action": "switch",
+                        "from_data_slot": active_data_slot,
+                        "to_data_slot": bench_data_slot,
+                        "visual_position": vis_pos,
+                        "active_hp_frac": round(hp_frac, 3)}
+            _do_switch_sequence(runtime, vis_pos)
+        # No viable bench → fall through to attack
+    if decision is None:
+        # Pick best move from active's real moveset
+        from gbax.plugins.emerald_data import load_moves
+        from gbax.plugins.emerald_formulas import type_effectiveness
+        moves_table = load_moves()
+        best_slot = 0
+        best_score = -1.0
+        for i, mid in enumerate(active["move_ids"]):
+            if mid == 0:
+                continue
+            if active["pp"][i] <= 0:
+                continue
+            rec = moves_table.get(str(mid)) or {}
+            type_id = _type_id_for_name(rec.get("type", "NORMAL"))
+            power = rec.get("power", 0) or 0
+            mul = type_effectiveness(type_id, opp["types"]) if type_id is not None else 1.0
+            score = float(power) * mul
+            if score > best_score:
+                best_score = score
+                best_slot = i
+        decision = {"action": "use_move", "menu_slot": best_slot,
+                    "score": round(best_score, 2)}
+        _do_use_move_sequence(runtime, best_slot)
+
+    # Advance through resolution to next decision or end
+    final_phase = _advance_to_decision(runtime)
+    return {
+        "decision": decision,
+        "phase_after": final_phase,
+        "in_battle": in_battle(runtime),
+        "state": _battle_state_dict(runtime),
+    }
+
+
+@p.route("/battle/auto/turn", methods=["POST"])
+def http_auto_turn(ctx):
+    """One turn: decide → execute → advance to next decision point."""
+    return _auto_one_turn(ctx.runtime)
+
+
+@p.route("/battle/auto/opponent", methods=["POST"])
+def http_auto_opponent(ctx):
+    """Fight until current opponent species changes OR battle ends."""
+    if not in_battle(ctx.runtime):
+        return {"error": "not in battle"}
+    start_opp = _read_battle_mon(ctx.runtime, OPP_SINGLES_SLOT)
+    start_species = start_opp["species"] if start_opp else None
+    turns = []
+    for _ in range(20):  # safety: max 20 turns per opponent
+        if not in_battle(ctx.runtime):
+            break
+        result = _auto_one_turn(ctx.runtime)
+        turns.append(result)
+        if not result.get("in_battle"):
+            break
+        cur_opp = _read_battle_mon(ctx.runtime, OPP_SINGLES_SLOT)
+        if cur_opp and cur_opp["species"] != start_species:
+            break
+    return {"turns": turns, "in_battle": in_battle(ctx.runtime),
+            "state": _battle_state_dict(ctx.runtime)}
+
+
+@p.route("/battle/auto/full", methods=["POST"])
+def http_auto_full(ctx):
+    """Fight until battle ends entirely. Bounded by AUTO_MAX_ITERS turns."""
+    if not in_battle(ctx.runtime):
+        return {"error": "not in battle"}
+    turns = []
+    for _ in range(60):  # safety: max 60 turns per battle
+        if not in_battle(ctx.runtime):
+            break
+        result = _auto_one_turn(ctx.runtime)
+        turns.append(result)
+        if not result.get("in_battle"):
+            break
+    return {"turn_count": len(turns), "turns": turns,
+            "in_battle": in_battle(ctx.runtime),
+            "state": _battle_state_dict(ctx.runtime)}
+
+
+# --- Key bindings: j/k/l fire the auto driver in background threads ---
+
+def _run_async(fn, *args):
+    import threading
+    threading.Thread(target=fn, args=args, daemon=True).start()
+
+
+@p.on_key("J")
+def _autohotkey_turn(ctx):
+    if in_battle(ctx.runtime):
+        ctx.log("[j] auto/turn")
+        _run_async(_auto_one_turn, ctx.runtime)
+
+
+@p.on_key("K")
+def _autohotkey_opponent(ctx):
+    if in_battle(ctx.runtime):
+        ctx.log("[k] auto/opponent")
+        def runner(rt):
+            for _ in range(20):
+                if not in_battle(rt):
+                    break
+                _auto_one_turn(rt)
+                opp = _read_battle_mon(rt, OPP_SINGLES_SLOT)
+                if opp is None:
+                    break
+            ctx.log("[k] auto/opponent done")
+        _run_async(runner, ctx.runtime)
+
+
+@p.on_key("L")
+def _autohotkey_full(ctx):
+    if in_battle(ctx.runtime):
+        ctx.log("[l] auto/full")
+        def runner(rt):
+            for _ in range(60):
+                if not in_battle(rt):
+                    break
+                _auto_one_turn(rt)
+            ctx.log("[l] auto/full done")
+        _run_async(runner, ctx.runtime)
+
+
 @p.route("/battle/state")
 def http_battle_state(ctx):
     """Combined snapshot for an agent driving a battle: active battler + opponent
