@@ -23,18 +23,11 @@ jobs:
 
       - name: Build mgba_libretro.so
         run: |
-          git clone --depth=1 https://github.com/mgba-emu/mgba.git /tmp/mgba
-          cd /tmp/mgba
-          mkdir build && cd build
-          cmake .. \
-            -DBUILD_QT=OFF -DBUILD_SDL=OFF -DBUILD_LIBRETRO=ON \
-            -DBUILD_SHARED=OFF -DBUILD_STATIC=OFF \
-            -DUSE_LUA=OFF -DUSE_FREETYPE=OFF -DUSE_DISCORD_RPC=OFF \
-            -DUSE_LIBZIP=OFF -DUSE_FFMPEG=OFF -DUSE_ELF=OFF \
-            -DBUILD_LTO=OFF -DCMAKE_BUILD_TYPE=Release
-          make mgba_libretro -j$(nproc)
-          mkdir -p $GITHUB_WORKSPACE/tests/cores
-          cp mgba_libretro.so $GITHUB_WORKSPACE/tests/cores/
+          bin/build-core
+          # CI tests historically read tests/cores/mgba_libretro.so via the
+          # `mgba_core` conftest fixture; mirror the bundled artifact there
+          # so existing tests keep finding it.
+          cp src/gbax/cores/mgba_libretro.so tests/cores/mgba_libretro.so
 
       - name: Install gbax + dev deps
         run: pip install -e ".[dev]"
