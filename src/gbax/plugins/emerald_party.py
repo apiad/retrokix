@@ -287,6 +287,7 @@ def http_weaknesses(ctx, species_id: int):
 
 EMERALD_US_V10_SHA1 = "f3ae088181bf583e55daf962a92bb46f4f1d07b7"
 GBATTLE_MONS_BASE = 0x02024084
+GBATTLE_TYPE_FLAGS = 0x02022FEC   # zeroed when battle ends — gate for stale reads
 BATTLE_MON_SIZE = 88
 OPP_SINGLES_SLOT = 1
 
@@ -298,9 +299,18 @@ BMON_OFF_MAX_HP = 0x2C
 BMON_OFF_TYPES = 0x21  # u8 × 2
 
 
+def in_battle(runtime) -> bool:
+    """gBattleTypeFlags non-zero ⇒ currently in a battle."""
+    flags = struct.unpack("<I", runtime.read_memory(GBATTLE_TYPE_FLAGS, 4))[0]
+    # In battle, only the low ~24 bits are populated. A wild value here
+    # (e.g. > 0x00FFFFFF) signals our address is wrong on this build.
+    return 0 < flags < 0x01000000
+
+
 def read_battle_opponent(runtime):
-    """Read gBattleMons[1]. Return a dict if it looks like a live Pokémon,
-    else None. Validation guards against reading garbage when not in battle."""
+    """Read gBattleMons[1]. Return a dict if a live opponent, else None."""
+    if not in_battle(runtime):
+        return None
     base = GBATTLE_MONS_BASE + OPP_SINGLES_SLOT * BATTLE_MON_SIZE
     species = struct.unpack("<H", runtime.read_memory(base + BMON_OFF_SPECIES, 2))[0]
     if species == 0 or species > 412:
@@ -354,6 +364,31 @@ def http_opponent_clear(ctx):
     global _opponent
     _opponent = None
     return {"cleared": True}
+
+
+@p.route("/debug/battle")
+def http_debug_battle(ctx):
+    """Raw read of the battle-state addresses, for troubleshooting auto-detect."""
+    flags = struct.unpack("<I", ctx.runtime.read_memory(GBATTLE_TYPE_FLAGS, 4))[0]
+    base = GBATTLE_MONS_BASE + OPP_SINGLES_SLOT * BATTLE_MON_SIZE
+    species = struct.unpack("<H", ctx.runtime.read_memory(base, 2))[0]
+    level = ctx.runtime.read_memory(base + BMON_OFF_LEVEL, 1)[0]
+    hp = struct.unpack("<H", ctx.runtime.read_memory(base + BMON_OFF_HP, 2))[0]
+    max_hp = struct.unpack("<H", ctx.runtime.read_memory(base + BMON_OFF_MAX_HP, 2))[0]
+    return {
+        "rom_sha1": getattr(ctx.runtime, "rom_sha1", None),
+        "expected_sha1": EMERALD_US_V10_SHA1,
+        "autodetect_enabled": _autodetect_enabled,
+        "gBattleTypeFlags_addr": f"0x{GBATTLE_TYPE_FLAGS:08X}",
+        "gBattleTypeFlags_value": f"0x{flags:08X}",
+        "in_battle_judgment": 0 < flags < 0x01000000,
+        "gBattleMons_1_addr": f"0x{base:08X}",
+        "species": species,
+        "species_name": SPECIES_NAMES.get(species, f"#{species}") if species else None,
+        "level": level,
+        "hp": hp,
+        "max_hp": max_hp,
+    }
 
 
 @p.on_frame(every=30)
