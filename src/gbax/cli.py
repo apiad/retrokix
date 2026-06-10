@@ -298,6 +298,9 @@ def play(
     renderer: str = typer.Option("sdl", "--renderer", help="Renderer backend: sdl (default) or wgpu (needs gbax[gpu])."),
     shader: str = typer.Option("linear", "--shader", help="Initial shader name (e.g. linear, nearest, crt-lottes, xbrz)."),
     user_shader: Path | None = typer.Option(None, "--user-shader", help="Path to a WGSL file to register as the 'user' shader (wgpu only)."),
+    listen: bool = typer.Option(False, "--listen", help="Run the gbax HTTP API alongside the SDL window (default 127.0.0.1:8420)."),
+    listen_host: str = typer.Option("127.0.0.1", "--listen-host", help="HTTP API bind host. Implies --listen."),
+    listen_port: int = typer.Option(8420, "--listen-port", help="HTTP API bind port. Implies --listen."),
     core_path: Path | None = typer.Option(None, "--core", help="Path to libretro core .so."),
     cheats: str | None = typer.Option(None, "--cheats", help="Comma-separated cheat slugs to enable at boot."),
 ) -> None:
@@ -321,6 +324,8 @@ def play(
             except KeyError as exc:
                 typer.echo(f"warning: {exc}", err=True)
     try:
+        # --listen-host / --listen-port imply --listen.
+        listen_enabled = listen or listen_host != "127.0.0.1" or listen_port != 8420
         play_loop(
             runtime,
             scale=scale,
@@ -330,6 +335,9 @@ def play(
             renderer_kind=renderer,
             initial_shader=shader,
             user_shader_path=user_shader,
+            listen=listen_enabled,
+            listen_host=listen_host,
+            listen_port=listen_port,
         )
     finally:
         runtime.close()

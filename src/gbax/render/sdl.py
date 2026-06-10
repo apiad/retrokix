@@ -102,6 +102,9 @@ def play_loop(
     renderer_kind: str = "sdl",
     initial_shader: str = "linear",
     user_shader_path: "Path | None" = None,
+    listen: bool = False,
+    listen_host: str = "127.0.0.1",
+    listen_port: int = 8420,
 ) -> None:
     """Run the emulator in a window until the user closes it.
 
@@ -179,6 +182,31 @@ def play_loop(
             except Exception:
                 import traceback
                 traceback.print_exc()
+
+    http_server_thread = None
+    if listen:
+        import threading
+
+        import uvicorn
+
+        from gbax.api.server import create_app
+
+        app = create_app(runtime)
+        config = uvicorn.Config(
+            app,
+            host=listen_host,
+            port=listen_port,
+            log_level="warning",
+            access_log=False,
+        )
+        http_server = uvicorn.Server(config)
+
+        def _run_http():
+            http_server.run()
+
+        http_server_thread = threading.Thread(target=_run_http, daemon=True)
+        http_server_thread.start()
+        print(f"gbax HTTP API listening on http://{listen_host}:{listen_port}")
 
     sdl2.ext.init()
     sdl2.SDL_InitSubSystem(sdl2.SDL_INIT_AUDIO)
@@ -487,6 +515,8 @@ def play_loop(
         if audio_dev:
             sdl2.SDL_CloseAudioDevice(audio_dev)
     finally:
+        if http_server_thread is not None:
+            http_server.should_exit = True
         if loaded_plugin is not None and plugin_ctx is not None:
             for fn in loaded_plugin.teardown_handlers:
                 try:
