@@ -295,6 +295,9 @@ def play(
     fullscreen: bool = typer.Option(False, "--fullscreen", "-f", help="Start in borderless-desktop fullscreen. F11 toggles at runtime."),
     watch_state: bool = typer.Option(False, "--watch-state", help="Show a live Rich panel with state values from compiled.json (if present)."),
     plugin_path: Path | None = typer.Option(None, "--plugin", help="Path to a Python plugin file (creates a gbax.plugin() instance)."),
+    renderer: str = typer.Option("sdl", "--renderer", help="Renderer backend: sdl (default) or wgpu (needs gbax[gpu])."),
+    shader: str = typer.Option("linear", "--shader", help="Initial shader name (e.g. linear, nearest, crt-lottes, xbrz)."),
+    user_shader: Path | None = typer.Option(None, "--user-shader", help="Path to a WGSL file to register as the 'user' shader (wgpu only)."),
     core_path: Path | None = typer.Option(None, "--core", help="Path to libretro core .so."),
     cheats: str | None = typer.Option(None, "--cheats", help="Comma-separated cheat slugs to enable at boot."),
 ) -> None:
@@ -324,6 +327,9 @@ def play(
             fullscreen=fullscreen,
             watch_state=watch_state,
             plugin_path=plugin_path,
+            renderer_kind=renderer,
+            initial_shader=shader,
+            user_shader_path=user_shader,
         )
     finally:
         runtime.close()

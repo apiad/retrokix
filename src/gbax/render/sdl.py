@@ -99,6 +99,9 @@ def play_loop(
     fullscreen: bool = False,
     watch_state: bool = False,
     plugin_path: "Path | None" = None,
+    renderer_kind: str = "sdl",
+    initial_shader: str = "linear",
+    user_shader_path: "Path | None" = None,
 ) -> None:
     """Run the emulator in a window until the user closes it.
 
@@ -175,13 +178,30 @@ def play_loop(
             flags=sdl2.SDL_WINDOW_RESIZABLE,
         )
         window.show()
-        renderer = SDLRenderer()
-        renderer.current_shader = filter_quality
-        renderer.init(window, GBA_WIDTH, GBA_HEIGHT)
 
+        if renderer_kind == "wgpu":
+            from gbax.render.wgpu_renderer import WGPURenderer
+            renderer = WGPURenderer()
+        elif renderer_kind == "sdl":
+            renderer = SDLRenderer()
+        else:
+            raise SystemExit(f"unknown --renderer: {renderer_kind!r}; choices: sdl, wgpu")
+        # Only honor the user's initial_shader if it's available; otherwise default to linear.
+        if initial_shader in renderer.available_shaders:
+            renderer.current_shader = initial_shader
+        else:
+            renderer.current_shader = "linear"
+        renderer.init(window, GBA_WIDTH, GBA_HEIGHT)
+        if user_shader_path is not None:
+            if hasattr(renderer, "load_user_shader"):
+                renderer.load_user_shader(user_shader_path)
+            else:
+                print("warning: --user-shader only supported for --renderer=wgpu")
         if fullscreen:
             renderer.set_fullscreen(True)
             is_fullscreen = True
+        # Surface the active shader for the F10 log line.
+        filter_quality = renderer.current_shader
 
         # Open a stereo S16 audio device matching the core's sample rate.
         wanted = sdl2.SDL_AudioSpec(
