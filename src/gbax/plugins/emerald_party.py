@@ -1032,11 +1032,12 @@ def _detect_forced_switch(runtime) -> bool:
 
 
 def _handle_forced_switch(runtime) -> bool:
-    """Navigate party menu to pick best healthy bench by matchup against
-    the current opponent (or first healthy if opp unreadable). Returns
-    True if a swap sequence was sent."""
+    """Navigate party menu to pick best healthy bench. Live-verified
+    sequence (with longer settles to ride out menu transitions):
+        A (dismiss "no energy" overlay) → Right (to bench top) →
+        Down × (vis_pos - 1) → A (open SEND OUT submenu) →
+        A (confirm SEND OUT)."""
     party = _party_slots_full(runtime)
-    # The fainted slot acts as the "active" position in the menu layout
     fainted_slot = None
     for i, s in enumerate(party):
         if s and s.get("hp", 0) == 0:
@@ -1059,16 +1060,12 @@ def _handle_forced_switch(runtime) -> bool:
     if best_idx is None:
         return False
     vis_pos = _visual_position(best_idx, fainted_slot)
-    # Dismiss any "X has no energy" overlay first
-    _press_button(runtime, "a", settle_frames=40)
-    # Navigate: Right then Down × (vis_pos - 1)
-    _press_button(runtime, "right", settle_frames=20)
+    _press_button(runtime, "a", settle_frames=80)
+    _press_button(runtime, "right", settle_frames=30)
     for _ in range(vis_pos - 1):
-        _press_button(runtime, "down", settle_frames=15)
-    # A on chosen Pokémon → "Send Out" or SHIFT/SUMMARY/CANCEL
-    _press_button(runtime, "a", settle_frames=60)
-    # A again to confirm send-out (or pick SHIFT from submenu)
-    _press_button(runtime, "a", settle_frames=200)
+        _press_button(runtime, "down", settle_frames=20)
+    _press_button(runtime, "a", settle_frames=120)
+    _press_button(runtime, "a", settle_frames=300)
     return True
 
 
@@ -1103,19 +1100,18 @@ def _advance_to_decision(runtime, max_iters=AUTO_MAX_ITERS):
     Unknown phases also get a B press as the safest default (Yes/No
     prompts at unknown phase values, sub-sub-menus, etc.).
     """
-    forced_switch_attempted = False
-    # Phase 1 is ambiguous: it covers BOTH "trainer is about to use X" text
+    forced_switch_attempts = 0
+    # Phase 1 is ambiguous: covers BOTH "trainer is about to use X" text
     # AND the party menu / SHIFT-SUMMARY-CANCEL submenu states. We
-    # disambiguate empirically: try A first (advances text), and if the
-    # phase doesn't change after the press, switch to B (exits menu),
-    # then nav to CANCEL.
+    # disambiguate empirically by trying A then B then nav-to-CANCEL.
     phase_1_streak = 0
     for _ in range(max_iters):
         if _confirm_out_of_battle(runtime):
             return None
-        # Forced switch (active fainted) — handle before anything else
-        if _detect_forced_switch(runtime) and not forced_switch_attempted:
-            forced_switch_attempted = True
+        # Forced switch — retry up to 3 times (single attempt sometimes
+        # fails due to menu transition timing)
+        if _detect_forced_switch(runtime) and forced_switch_attempts < 3:
+            forced_switch_attempts += 1
             _handle_forced_switch(runtime)
             phase_1_streak = 0
             continue
