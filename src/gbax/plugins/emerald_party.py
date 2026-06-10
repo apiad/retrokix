@@ -208,7 +208,66 @@ _live = None
 _render_fn = None
 
 
-def _build_opponent_panel():
+def _likely_moves(species: int, level: int):
+    """Heuristic: the last 4 distinct damaging moves a species has learned via
+    level-up at-or-below the current level. Pokémon let you keep at most 4 at
+    a time; new ones displace old ones in learn order. Status moves (power=0)
+    are still returned so the panel can flag 'no damaging answer'."""
+    from gbax.plugins.emerald_data import load_levelup
+    learnset = load_levelup().get(str(species), [])
+    eligible = [m for m in learnset if m["level"] <= level]
+    # Walk newest → oldest, dedupe by move_id, take 4
+    seen = set()
+    keep = []
+    for m in reversed(eligible):
+        if m["move_id"] in seen:
+            continue
+        seen.add(m["move_id"])
+        keep.append(m)
+        if len(keep) >= 4:
+            break
+    return keep
+
+
+def _type_id_for_name(name: str) -> int | None:
+    from gbax.plugins.emerald_data import load_types
+    for tid, disp in load_types().items():
+        if disp.upper() == name.upper():
+            return int(tid)
+    return None
+
+
+def _best_move_against(species: int, level: int, defender_types: list[int]):
+    """Return (move_name, mul, power) for this slot's best move vs the
+    defender, or None if no damaging move."""
+    from gbax.plugins.emerald_data import load_moves
+    from gbax.plugins.emerald_formulas import type_effectiveness
+    moves = load_moves()
+    best = None
+    for m in _likely_moves(species, level):
+        move_info = moves.get(str(m["move_id"])) or {}
+        power = move_info.get("power", 0)
+        if power == 0:
+            continue
+        type_name = move_info.get("type", "NORMAL")
+        type_id = _type_id_for_name(type_name)
+        if type_id is None:
+            continue
+        mul = type_effectiveness(type_id, defender_types)
+        # Crude damage proxy: power × mul. Real calc waits for Slice 3.
+        score = power * mul
+        if best is None or score > best["score"]:
+            best = {
+                "move_name": m["move_name"],
+                "type_name": type_name,
+                "mul": mul,
+                "power": power,
+                "score": score,
+            }
+    return best
+
+
+def _build_opponent_panel(runtime=None):
     """Rich Panel for the currently tagged opponent. None if no opponent set."""
     if _opponent is None:
         return None
@@ -222,20 +281,59 @@ def _build_opponent_panel():
     type_names = load_types()
     name = SPECIES_NAMES.get(sp, f"#{sp}")
     types_str = " / ".join(type_names.get(str(t), f"#{t}") for t in types) or "?"
-    table = Table.grid(padding=(0, 2))
-    table.add_column(style="bold")
-    table.add_column()
-    table.add_row("[red]4×[/red]",
+
+    # Top section: weakness/resistance bands
+    bands = Table.grid(padding=(0, 2))
+    bands.add_column(style="bold")
+    bands.add_column()
+    bands.add_row("[red]4×[/red]",
         ", ".join(type_names.get(str(t), f"#{t}") for t, m in weaknesses(types) if m == 4.0) or "—")
-    table.add_row("[yellow]2×[/yellow]",
+    bands.add_row("[yellow]2×[/yellow]",
         ", ".join(type_names.get(str(t), f"#{t}") for t, m in weaknesses(types) if m == 2.0) or "—")
-    table.add_row("[green]½×[/green]",
+    bands.add_row("[green]½×[/green]",
         ", ".join(type_names.get(str(t), f"#{t}") for t, m in resistances(types) if m == 0.5) or "—")
-    table.add_row("[green]¼×[/green]",
+    bands.add_row("[green]¼×[/green]",
         ", ".join(type_names.get(str(t), f"#{t}") for t, m in resistances(types) if m == 0.25) or "—")
-    table.add_row("[blue]0×[/blue]",
+    bands.add_row("[blue]0×[/blue]",
         ", ".join(type_names.get(str(t), f"#{t}") for t, m in resistances(types) if m == 0.0) or "—")
-    return Panel(table,
+
+    # Per-party recommendations (needs runtime to read party)
+    recs = None
+    if runtime is not None:
+        recs = Table(show_header=True, header_style="bold cyan", expand=False)
+        recs.add_column("slot")
+        recs.add_column("best move")
+        recs.add_column("type")
+        recs.add_column("×", justify="right")
+        rows = []
+        for i in range(SLOT_COUNT):
+            slot = read_slot(runtime, i)
+            if slot is None:
+                continue
+            best = _best_move_against(slot["species"], slot["level"], types)
+            if best is None:
+                rows.append((slot["species_name"], "(status only)", "—", 0))
+                continue
+            rows.append((slot["species_name"], best["move_name"], best["type_name"], best["mul"]))
+        rows.sort(key=lambda r: r[3], reverse=True)
+        for sp_name, mv_name, ty_name, mul in rows:
+            mul_str = f"{mul:g}"
+            mark = "✓" if mul >= 2.0 else (" " if mul == 1.0 else "✗")
+            style = "bold green" if mul >= 2.0 else ("dim red" if mul < 1.0 else "white")
+            recs.add_row(
+                f"[{style}]{mark} {sp_name}[/{style}]",
+                f"[{style}]{mv_name}[/{style}]",
+                f"[{style}]{ty_name}[/{style}]",
+                f"[{style}]{mul_str}×[/{style}]",
+            )
+
+    if recs is None:
+        body = bands
+    else:
+        from rich.console import Group
+        body = Group(bands, "", recs)
+
+    return Panel(body,
                  title=f"[bold]opponent — {name} L{lv} ({types_str})[/bold]",
                  border_style="red")
 
@@ -481,7 +579,7 @@ def setup(ctx):
 
     def render():
         party = _build_table(ctx.runtime)
-        opp = _build_opponent_panel()
+        opp = _build_opponent_panel(ctx.runtime)
         if opp is None:
             return party
         return Group(party, opp)
