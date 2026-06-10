@@ -45,6 +45,12 @@ def default_keymap() -> dict[int, Button]:
     }
 
 
+def _load_macro_for_slot(rom_sha1: str, slot: str):
+    """Return the Macro for this ROM+slot, or None. Local import to avoid cycles."""
+    from gbax.macros import load
+    return load(rom_sha1, slot)
+
+
 def _screenshots_dir() -> Path:
     out = Path.home() / ".gbax" / "screenshots"
     out.mkdir(parents=True, exist_ok=True)
@@ -140,6 +146,40 @@ def play_loop(
                     sym = event.key.keysym.sym
                     mod = event.key.keysym.mod
 
+                    # Ctrl+R — toggle macro recording
+                    if sym == sdl2.SDLK_r and (mod & sdl2.KMOD_CTRL):
+                        if runtime.is_recording_macro():
+                            macro = runtime.stop_recording_macro()
+                            if macro is None or macro.total_frames == 0:
+                                print("record stopped (empty recording, discarded)")
+                                continue
+                            print(f"record stopped ({macro.total_frames} frames).")
+                            try:
+                                slot_input = input(
+                                    "bind to which key? [F1-F9, or Enter to discard]: "
+                                ).strip().upper()
+                            except EOFError:
+                                slot_input = ""
+                            if not slot_input:
+                                print("discarded.")
+                                continue
+                            if slot_input not in {f"F{i}" for i in range(1, 10)}:
+                                print(f"invalid slot {slot_input!r}; discarded.")
+                                continue
+                            try:
+                                name_input = input("name (optional): ").strip()
+                            except EOFError:
+                                name_input = ""
+                            macro.slot = slot_input
+                            macro.name = name_input
+                            from gbax.macros import save as _save_macro
+                            _save_macro(macro)
+                            print(f"bound {slot_input} → {name_input or '(unnamed)'}")
+                        else:
+                            runtime.start_recording_macro()
+                            print("recording... (Ctrl+R to stop)")
+                        continue
+
                     # Ctrl+1..9 — save slot (modifier required so it's not fumbled)
                     if (sdl2.SDLK_1 <= sym <= sdl2.SDLK_9) and (mod & sdl2.KMOD_CTRL):
                         slot = sym - sdl2.SDLK_0
@@ -157,11 +197,19 @@ def play_loop(
                             print(f"slot {slot} is empty")
                         continue
 
-                    # F1..F9 — toggle the cheat pinned to that key, or fall back
-                    # to "Nth currently-active cheat" if no pin is set.
+                    # F1..F9 — macros take precedence; otherwise cheat-pin behavior.
                     if sdl2.SDLK_F1 <= sym <= sdl2.SDLK_F9:
                         idx = sym - sdl2.SDLK_F1
                         key = f"F{idx + 1}"
+                        macro = _load_macro_for_slot(runtime.rom_sha1, key)
+                        if macro is not None:
+                            try:
+                                runtime.play_macro(macro)
+                                label = macro.name or "(unnamed)"
+                                print(f"playing {key} → {label} ({macro.total_frames} frames)")
+                            except RuntimeError as exc:
+                                print(f"{key}: {exc}")
+                            continue
                         pinned = runtime.cheat_pins().get(key)
                         if pinned:
                             try:
