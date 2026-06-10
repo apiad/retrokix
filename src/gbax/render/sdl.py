@@ -4,7 +4,7 @@ Single event-loop client of EmulatorRuntime:
   - blits the framebuffer to a window at fixed-factor upscale
   - emits audio samples to an SDL audio device
   - keyboard → GBA buttons
-  - hotkeys for save state slots 1-9, fast-forward (Tab), screenshot (F12)
+  - hotkeys for save state slots 1-9, fast-forward (LShift), screenshot (F12)
   - persistence with Ctrl+S
 """
 
@@ -54,7 +54,7 @@ def _load_macro_for_slot(rom_sha1: str, slot: str):
 # Bare-key hotkeys reserved by the play loop. Any slot in this set is
 # refused at macro-bind time so the user can't clobber a play-loop hotkey.
 RESERVED_HOTKEYS: dict[str, str] = {
-    "TAB": "fast-forward",
+    "LSHIFT": "fast-forward",
     "F10": "filter toggle",
     "F11": "fullscreen toggle",
     "F12": "screenshot",
@@ -436,8 +436,8 @@ def play_loop(
                         print(f"screenshot → {out}")
                         continue
 
-                    # Tab — start fast-forward
-                    if sym == sdl2.SDLK_TAB:
+                    # LShift — start fast-forward
+                    if sym == sdl2.SDLK_LSHIFT:
                         fast_forward = True
                         continue
 
@@ -463,7 +463,7 @@ def play_loop(
 
                 elif event.type == sdl2.SDL_KEYUP:
                     sym = event.key.keysym.sym
-                    if sym == sdl2.SDLK_TAB:
+                    if sym == sdl2.SDLK_LSHIFT:
                         fast_forward = False
                         continue
                     btn = keymap.get(sym)
