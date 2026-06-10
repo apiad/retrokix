@@ -30,15 +30,22 @@ class Mode(str, Enum):
 
 
 def _default_core_path() -> Path:
-    """Find a libretro core, in priority order: env var → known dev path."""
+    """Find a libretro core, in priority order:
+
+    1. ``$GBAX_CORE_PATH`` — explicit override (power users, alt cores).
+    2. Bundled ``gbax/cores/mgba_libretro.so`` — what ``pip install`` ships.
+    3. Dev fixture ``tests/cores/mgba_libretro.so`` — built from source via
+       ``bin/build-core`` when working on the binding without ``pip install -e .``.
+    """
     env = os.environ.get("GBAX_CORE_PATH")
     if env:
         return Path(env)
-    # Fall back to the dev fixture so `gbax play` works out of the box during
-    # development. Wheel installs will ship a core into ~/.gbax/cores/.
+    from gbax.cores import bundled_core_path
+    bundled = bundled_core_path()
+    if bundled is not None:
+        return bundled
     here = Path(__file__).resolve()
-    repo_test_core = here.parent.parent.parent / "tests" / "cores" / "mgba_libretro.so"
-    return repo_test_core
+    return here.parent.parent.parent / "tests" / "cores" / "mgba_libretro.so"
 
 
 class EmulatorRuntime:
@@ -55,9 +62,11 @@ class EmulatorRuntime:
         self._save_dir = Path(save_dir) if save_dir else Path.home() / ".gbax" / "saves"
         if not self._core_path.exists():
             raise FileNotFoundError(
-                f"libretro core not found at {self._core_path}; "
-                "build it (see know-how/building-libretro-core.md) "
-                "or set GBAX_CORE_PATH"
+                f"libretro core not found at {self._core_path}. "
+                "Options: (1) `pip install gbax` on Linux x86_64 to get the "
+                "bundled core, (2) set $GBAX_CORE_PATH to an existing .so, "
+                "or (3) build from source with bin/build-core (see "
+                "know-how/building-libretro-core.md)."
             )
         self._core = LibretroCore(self._core_path)
         self._core.init()
