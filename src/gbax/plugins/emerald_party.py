@@ -1053,6 +1053,14 @@ def _advance_to_decision(runtime, max_iters=AUTO_MAX_ITERS):
             continue
         if p in ADVANCEABLE_PHASES:
             _press_button(runtime, "a", settle_frames=80)
+            # Defensive: if A accidentally confirmed the trainer's
+            # "Will you change Pokemon?" Yes/No prompt, the party menu
+            # opens. Back out immediately rather than waiting for the
+            # next loop iteration (which has a settle gap and may
+            # observe a transient).
+            if _phase(runtime) == PHASE_SECONDARY_MENU:
+                _press_button(runtime, "b", settle_frames=80)
+                _press_button(runtime, "b", settle_frames=80)
             continue
         # Unknown phase — try B as the safer default rather than returning
         # immediately. Many sub-prompts (Yes/No, "use which item?", etc.)
@@ -1297,9 +1305,25 @@ def http_auto_full(ctx):
 
 # --- Key bindings: j/k/l fire the auto driver in background threads ---
 
+_AUTO_RUNNER_LOCK = None
+
+
 def _run_async(fn, *args):
+    """Run fn in a background thread. Singleton — refuses to start a
+    second auto runner while one is already in flight, to prevent the
+    button-thrash that happens when the user mashes the hotkey."""
     import threading
-    threading.Thread(target=fn, args=args, daemon=True).start()
+    global _AUTO_RUNNER_LOCK
+    if _AUTO_RUNNER_LOCK is None:
+        _AUTO_RUNNER_LOCK = threading.Lock()
+    if not _AUTO_RUNNER_LOCK.acquire(blocking=False):
+        return  # one is already running; skip
+    def wrapper():
+        try:
+            fn(*args)
+        finally:
+            _AUTO_RUNNER_LOCK.release()
+    threading.Thread(target=wrapper, daemon=True).start()
 
 
 def _auto_turn_handler(ctx):
