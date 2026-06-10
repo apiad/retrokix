@@ -1302,30 +1302,33 @@ def _run_async(fn, *args):
     threading.Thread(target=fn, args=args, daemon=True).start()
 
 
-@p.on_key("J")
-def _autohotkey_turn(ctx):
-    if in_battle(ctx.runtime):
-        ctx.log("[j] auto/turn")
-        _run_async(_auto_one_turn, ctx.runtime)
-
-
-@p.on_key("K")
-def _autohotkey_opponent(ctx):
+def _auto_turn_handler(ctx):
+    ctx.log("[J] auto/turn fired")
     if not in_battle(ctx.runtime):
+        ctx.log("[J] not in battle — skipping")
         return
-    ctx.log("[k] auto/opponent")
+    _run_async(_auto_one_turn, ctx.runtime)
+
+
+def _auto_opponent_handler(ctx):
+    ctx.log("[K] auto/opponent fired")
+    if not in_battle(ctx.runtime):
+        ctx.log("[K] not in battle — skipping")
+        return
     def runner(rt):
         start = _read_battle_mon(rt, OPP_SINGLES_SLOT)
         start_species = start["species"] if start else None
         noops = 0
-        for i in range(20):
+        for _ in range(20):
             if not in_battle(rt):
                 break
             result = _auto_one_turn(rt)
-            if result.get("decision", {}).get("action") not in ("use_move", "switch"):
+            decision = result.get("decision") or {}
+            action = decision.get("action") if isinstance(decision, dict) else None
+            if action not in ("use_move", "switch"):
                 noops += 1
                 if noops >= 3:
-                    ctx.log(f"[k] stop: {noops} consecutive noops")
+                    ctx.log("[K] stop: 3 noops")
                     break
             else:
                 noops = 0
@@ -1333,33 +1336,44 @@ def _autohotkey_opponent(ctx):
             if cur_opp is None:
                 break
             if start_species is not None and cur_opp["species"] != start_species:
-                ctx.log(f"[k] stop: opp species changed {start_species}→{cur_opp['species']}")
+                ctx.log(f"[K] stop: opp species {start_species}→{cur_opp['species']}")
                 break
-        ctx.log("[k] done")
+        ctx.log("[K] done")
     _run_async(runner, ctx.runtime)
 
 
-@p.on_key("L")
-def _autohotkey_full(ctx):
+def _auto_full_handler(ctx):
+    ctx.log("[L] auto/full fired")
     if not in_battle(ctx.runtime):
+        ctx.log("[L] not in battle — skipping")
         return
-    ctx.log("[l] auto/full")
     def runner(rt):
         noops = 0
         for i in range(60):
             if not in_battle(rt):
-                ctx.log(f"[l] exited battle after {i} turns")
+                ctx.log(f"[L] exited battle after {i} turns")
                 break
             result = _auto_one_turn(rt)
-            if result.get("decision", {}).get("action") not in ("use_move", "switch"):
+            decision = result.get("decision") or {}
+            action = decision.get("action") if isinstance(decision, dict) else None
+            if action not in ("use_move", "switch"):
                 noops += 1
                 if noops >= 3:
-                    ctx.log(f"[l] stop: {noops} consecutive noops (stuck or done)")
+                    ctx.log("[L] stop: 3 noops")
                     break
             else:
                 noops = 0
-        ctx.log("[l] done")
+        ctx.log("[L] done")
     _run_async(runner, ctx.runtime)
+
+
+p.on_key("J")(_auto_turn_handler)
+p.on_key("K")(_auto_opponent_handler)
+# Bind /battle/auto/full to multiple keys so the user has fallbacks if
+# any one of them is intercepted by something else in the dispatch chain.
+p.on_key("L")(_auto_full_handler)
+p.on_key("P")(_auto_full_handler)
+p.on_key("Y")(_auto_full_handler)
 
 
 @p.route("/battle/state")
