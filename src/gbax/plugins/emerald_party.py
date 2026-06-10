@@ -15,20 +15,55 @@ import gbax
 p = gbax.plugin()
 
 
-def _load_species_table() -> dict[int, str]:
-    """Load the Hoenn-internal species index → name table.
-
-    Source: pokeemerald `include/constants/species.h` (412 entries).
-    Internal indices ≥252 do NOT match National Dex.
-    """
+def _load_json_table(name: str) -> dict[int, object]:
     try:
-        raw = files("gbax.data").joinpath("emerald_species.json").read_text()
+        raw = files("gbax.data").joinpath(name).read_text()
         return {int(k): v for k, v in json.loads(raw).items()}
     except Exception:
         return {}
 
 
-SPECIES_NAMES = _load_species_table()
+SPECIES_NAMES = _load_json_table("emerald_species.json")
+GROWTH_RATES = _load_json_table("emerald_growth_rates.json")
+
+GROWTH_MEDIUM_FAST = 0
+GROWTH_ERRATIC = 1
+GROWTH_FLUCTUATING = 2
+GROWTH_MEDIUM_SLOW = 3
+GROWTH_FAST = 4
+GROWTH_SLOW = 5
+
+
+def exp_at_level(growth: int, n: int) -> int:
+    """Cumulative experience required to reach level n. Mirrors pokeemerald
+    src/data/pokemon/experience_tables.h macros. n in [0, 100]."""
+    if n <= 0:
+        return 0
+    if n == 1:
+        return 1
+    if growth == GROWTH_MEDIUM_FAST:
+        return n ** 3
+    if growth == GROWTH_FAST:
+        return (4 * n ** 3) // 5
+    if growth == GROWTH_SLOW:
+        return (5 * n ** 3) // 4
+    if growth == GROWTH_MEDIUM_SLOW:
+        return (6 * n ** 3) // 5 - 15 * n ** 2 + 100 * n - 140
+    if growth == GROWTH_ERRATIC:
+        if n <= 50:
+            return (100 - n) * n ** 3 // 50
+        if n <= 68:
+            return (150 - n) * n ** 3 // 100
+        if n <= 98:
+            return ((1911 - 10 * n) // 3) * n ** 3 // 500
+        return (160 - n) * n ** 3 // 100
+    if growth == GROWTH_FLUCTUATING:
+        if n <= 15:
+            return ((n + 1) // 3 + 24) * n ** 3 // 50
+        if n <= 36:
+            return (n + 14) * n ** 3 // 50
+        return ((n // 2) + 32) * n ** 3 // 50
+    return n ** 3
 
 
 # --- canonical Emerald layout ---
@@ -99,6 +134,13 @@ def read_slot(runtime, slot_idx: int):
     pp_bonus = dec[g_pos + 8]
     friendship = dec[g_pos + 9]
 
+    growth = GROWTH_RATES.get(species, GROWTH_MEDIUM_FAST)
+    exp_cur_lv = exp_at_level(growth, level)
+    exp_next_lv = exp_at_level(growth, level + 1) if level < 100 else exp_cur_lv
+    span = max(1, exp_next_lv - exp_cur_lv)
+    into = max(0, exp - exp_cur_lv)
+    to_next = max(0, exp_next_lv - exp)
+
     return {
         "slot": slot_idx,
         "species": species,
@@ -107,6 +149,9 @@ def read_slot(runtime, slot_idx: int):
         "hp": hp,
         "max_hp": max_hp,
         "exp": exp,
+        "exp_into_level": into,
+        "exp_to_next_level": to_next,
+        "exp_level_span": span,
         "held": held,
         "friendship": friendship,
         "pp_bonus": pp_bonus,
@@ -127,18 +172,23 @@ def _build_table(runtime):
     t.add_column("lv", justify="right")
     t.add_column("hp", justify="right")
     t.add_column("exp", justify="right")
+    t.add_column("to next", justify="right")
     t.add_column("fnd", justify="right")
     for i in range(SLOT_COUNT):
         slot = read_slot(runtime, i)
         if slot is None:
             continue
         hp_color = "green" if slot["hp"] >= slot["max_hp"] * 0.5 else "yellow" if slot["hp"] >= slot["max_hp"] * 0.25 else "red"
+        span = slot["exp_level_span"]
+        into = slot["exp_into_level"]
+        pct = int(100 * into / span) if span else 0
         t.add_row(
             str(slot["slot"]),
             slot["species_name"],
             str(slot["level"]),
             f"[{hp_color}]{slot['hp']}/{slot['max_hp']}[/{hp_color}]",
-            str(slot["exp"]),
+            f"{slot['exp']}",
+            f"{slot['exp_to_next_level']} ({pct}%)",
             str(slot["friendship"]),
         )
     return t
