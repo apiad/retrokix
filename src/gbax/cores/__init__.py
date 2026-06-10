@@ -15,7 +15,7 @@ from __future__ import annotations
 from importlib.resources import files as _files_impl
 from pathlib import Path
 
-MGBA_VERSION = "unbundled"
+MGBA_VERSION = "0.10.5"
 
 
 def _files(package: str):
