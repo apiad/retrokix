@@ -628,10 +628,13 @@ OPP_SINGLES_SLOT = 1
 
 # Offsets within a BattlePokemon, source: include/pokemon.h
 BMON_OFF_SPECIES = 0x00
+BMON_OFF_MOVES = 0x0C    # u16 × 4
+BMON_OFF_PP = 0x24       # u8 × 4
 BMON_OFF_HP = 0x28
 BMON_OFF_LEVEL = 0x2A
 BMON_OFF_MAX_HP = 0x2C
-BMON_OFF_TYPES = 0x21  # u8 × 2
+BMON_OFF_TYPES = 0x21    # u8 × 2
+BMON_PLAYER_SLOT = 0
 
 
 def in_battle(runtime) -> bool:
@@ -640,6 +643,37 @@ def in_battle(runtime) -> bool:
     # In battle, only the low ~24 bits are populated. A wild value here
     # (e.g. > 0x00FFFFFF) signals our address is wrong on this build.
     return 0 < flags < 0x01000000
+
+
+def _read_battle_mon(runtime, slot: int) -> dict | None:
+    """Read gBattleMons[slot]. Returns None if validation fails."""
+    base = GBATTLE_MONS_BASE + slot * BATTLE_MON_SIZE
+    species = struct.unpack("<H", runtime.read_memory(base + BMON_OFF_SPECIES, 2))[0]
+    if species == 0 or species > 412:
+        return None
+    level = runtime.read_memory(base + BMON_OFF_LEVEL, 1)[0]
+    if level == 0 or level > 100:
+        return None
+    max_hp = struct.unpack("<H", runtime.read_memory(base + BMON_OFF_MAX_HP, 2))[0]
+    if max_hp == 0 or max_hp > 999:
+        return None
+    hp = struct.unpack("<H", runtime.read_memory(base + BMON_OFF_HP, 2))[0]
+    if hp > max_hp:
+        return None
+    type1 = runtime.read_memory(base + BMON_OFF_TYPES, 1)[0]
+    type2 = runtime.read_memory(base + BMON_OFF_TYPES + 1, 1)[0]
+    move_ids = struct.unpack("<HHHH", runtime.read_memory(base + BMON_OFF_MOVES, 8))
+    pp_values = list(runtime.read_memory(base + BMON_OFF_PP, 4))
+    return {
+        "species": species,
+        "species_name": SPECIES_NAMES.get(species, f"#{species}"),
+        "level": level,
+        "hp": hp,
+        "max_hp": max_hp,
+        "types": [type1, type2],
+        "move_ids": list(move_ids),
+        "pp": pp_values,
+    }
 
 
 def read_battle_opponent(runtime):
@@ -699,6 +733,65 @@ def http_opponent_clear(ctx):
     global _opponent
     _opponent = None
     return {"cleared": True}
+
+
+@p.route("/battle/state")
+def http_battle_state(ctx):
+    """Combined snapshot for an agent driving a battle: active battler + opponent
+    + per-move type-effectiveness ranking. All numbers come from gBattleMons[]
+    so the move order matches what's on the screen."""
+    from gbax.plugins.emerald_data import load_moves, load_types
+    from gbax.plugins.emerald_formulas import type_effectiveness
+    if not in_battle(ctx.runtime):
+        return {"in_battle": False}
+    active = _read_battle_mon(ctx.runtime, BMON_PLAYER_SLOT)
+    opp = _read_battle_mon(ctx.runtime, OPP_SINGLES_SLOT)
+    if not active or not opp:
+        return {"in_battle": True, "active": active, "opponent": opp,
+                "warning": "could not read both battlers cleanly"}
+    types_lookup = load_types()
+    moves_table = load_moves()
+
+    def _enrich_mon(m):
+        return {
+            **m,
+            "type_names": [types_lookup.get(str(t), f"#{t}") for t in m["types"]],
+        }
+
+    active_enriched = _enrich_mon(active)
+    opp_enriched = _enrich_mon(opp)
+
+    ranked = []
+    for slot_idx, mid in enumerate(active["move_ids"]):
+        if mid == 0:
+            continue
+        rec = moves_table.get(str(mid)) or {}
+        type_name = rec.get("type", "NORMAL")
+        type_id = _type_id_for_name(type_name)
+        power = rec.get("power", 0)
+        accuracy = rec.get("accuracy", 100)
+        mul = type_effectiveness(type_id, opp["types"]) if type_id is not None else 1.0
+        ranked.append({
+            "menu_slot": slot_idx,
+            "move_id": mid,
+            "name": rec.get("name", f"#{mid}"),
+            "type": type_name,
+            "power": power,
+            "accuracy": accuracy,
+            "pp": active["pp"][slot_idx],
+            "effective_mul": mul,
+            "score": (power or 0) * mul,
+        })
+    ranked.sort(key=lambda r: r["score"], reverse=True)
+    best = ranked[0] if ranked and ranked[0]["score"] > 0 else None
+
+    return {
+        "in_battle": True,
+        "active": active_enriched,
+        "opponent": opp_enriched,
+        "ranked_moves": ranked,
+        "best_move": best,
+    }
 
 
 @p.route("/debug/battle")
