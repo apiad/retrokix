@@ -225,6 +225,49 @@ def parse_evolutions(root: Path, species_ids: dict[str, int]) -> dict:
     return out
 
 
+def parse_levelup_learnsets(root: Path, species_ids: dict[str, int],
+                             move_ids: dict[str, int]) -> dict:
+    """Parse src/data/pokemon/level_up_learnsets.h.
+
+    Each species has `static const u16 sXxxLevelUpLearnset[]` filled with
+    LEVEL_UP_MOVE(lvl, MOVE_X). Decode each entry; output species_id →
+    [{level, move_id, move_name}, ...] sorted by level.
+    """
+    text = (root / "src/data/pokemon/level_up_learnsets.h").read_text()
+    out = {}
+    # Match each named array: static const u16 sNAMELevelUpLearnset[] = { ... };
+    pat = re.compile(
+        r"static const u16 s([A-Za-z0-9_]+?)LevelUpLearnset\[\]\s*=\s*\{(.*?)\};",
+        re.DOTALL,
+    )
+    for m in pat.finditer(text):
+        sp_pascal = m.group(1)
+        body = m.group(2)
+        # Convert PascalCase species name → SCREAMING_SNAKE for species lookup.
+        # E.g. "MrMime" → "MR_MIME", "PorygonZ" handled but Emerald doesn't have it.
+        sp_caps = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", sp_pascal).upper()
+        if sp_caps not in species_ids:
+            # Try common aliases (Nidoran etc).
+            continue
+        moves = []
+        for mm in re.finditer(
+            r"LEVEL_UP_MOVE\(\s*(\d+)\s*,\s*MOVE_([A-Z0-9_]+)\s*\)", body
+        ):
+            level = int(mm.group(1))
+            mv = mm.group(2)
+            if mv not in move_ids:
+                continue
+            moves.append({
+                "level": level,
+                "move_id": move_ids[mv],
+                "move_name": title(mv),
+            })
+        moves.sort(key=lambda r: r["level"])
+        if moves:
+            out[species_ids[sp_caps]] = moves
+    return out
+
+
 def parse_moves(root: Path, move_ids: dict[str, int]) -> dict:
     """Parse src/data/battle_moves.h.
 
@@ -527,6 +570,11 @@ def main():
         parse_evolutions(root, species_ids),
         "src/data/pokemon/evolution.h", root,
         "Evolution triggers + targets per species."))
+
+    dump("emerald_levelup.json", wrap(
+        parse_levelup_learnsets(root, species_ids, move_ids),
+        "src/data/pokemon/level_up_learnsets.h", root,
+        "Level-up move list per species, sorted by level."))
 
     dump("emerald_moves.json", wrap(
         parse_moves(root, move_ids),

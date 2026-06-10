@@ -33,6 +33,12 @@ def load_evolutions() -> dict:
 
 
 @cache
+def load_levelup() -> dict:
+    """species_id_string → [{level, move_id, move_name}, ...] sorted by level."""
+    return _load("emerald_levelup.json")
+
+
+@cache
 def load_moves() -> dict:
     """Per-move record: name, type, power, accuracy, pp, priority, effect, flags."""
     return _load("emerald_moves.json")

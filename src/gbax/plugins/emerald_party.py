@@ -155,6 +155,50 @@ def read_slot(runtime, slot_idx: int):
         "held": held,
         "friendship": friendship,
         "pp_bonus": pp_bonus,
+        "next_move": next_move_for(species, level),
+        "next_evolution": next_evolution_for(species, level),
+    }
+
+
+# --- Goal lookups (next move + next evolution per slot) ---
+
+def next_move_for(species: int, level: int) -> dict | None:
+    """Next level-up move this species learns after current level."""
+    from gbax.plugins.emerald_data import load_levelup
+    learnset = load_levelup().get(str(species), [])
+    for entry in learnset:
+        if entry["level"] > level:
+            return {
+                "level": entry["level"],
+                "move_name": entry["move_name"],
+                "move_id": entry["move_id"],
+                "in": entry["level"] - level,
+            }
+    return None
+
+
+def next_evolution_for(species: int, level: int) -> dict | None:
+    """Next evolution and when it'll trigger. Levels only for v0.12 —
+    Item/Friendship/etc. triggers report the trigger but no time-to-fire."""
+    from gbax.plugins.emerald_data import load_evolutions
+    evos = load_evolutions().get(str(species), [])
+    if not evos:
+        return None
+    # Pick the first reachable: prefer LEVEL trigger over branch ones for clarity
+    for evo in evos:
+        if evo["trigger"] == "LEVEL":
+            return {
+                "target_name": evo["target_name"],
+                "trigger": "LEVEL",
+                "at_level": evo["param"],
+                "in": max(0, evo["param"] - level),
+            }
+    # Fall back: any other trigger (FRIENDSHIP, ITEM, TRADE…)
+    evo = evos[0]
+    return {
+        "target_name": evo["target_name"],
+        "trigger": evo["trigger"],
+        "param": evo["param"],
     }
 
 
@@ -203,9 +247,9 @@ def _build_table(runtime):
     t.add_column("species", justify="right")
     t.add_column("lv", justify="right")
     t.add_column("hp", justify="right")
-    t.add_column("exp", justify="right")
-    t.add_column("to next", justify="right")
-    t.add_column("fnd", justify="right")
+    t.add_column("xp →", justify="right")
+    t.add_column("next move", justify="left")
+    t.add_column("next evo", justify="left")
     for i in range(SLOT_COUNT):
         slot = read_slot(runtime, i)
         if slot is None:
@@ -214,14 +258,26 @@ def _build_table(runtime):
         span = slot["exp_level_span"]
         into = slot["exp_into_level"]
         pct = int(100 * into / span) if span else 0
+
+        nm = slot.get("next_move")
+        next_move_str = f"{nm['move_name']} @L{nm['level']} (+{nm['in']})" if nm else "—"
+
+        ev = slot.get("next_evolution")
+        if ev and ev.get("trigger") == "LEVEL":
+            next_evo_str = f"{ev['target_name']} @L{ev['at_level']} (+{ev['in']})"
+        elif ev:
+            next_evo_str = f"{ev['target_name']} ({ev['trigger'].lower()})"
+        else:
+            next_evo_str = "—"
+
         t.add_row(
             str(slot["slot"]),
             slot["species_name"],
             str(slot["level"]),
             f"[{hp_color}]{slot['hp']}/{slot['max_hp']}[/{hp_color}]",
-            f"{slot['exp']}",
             f"{slot['exp_to_next_level']} ({pct}%)",
-            str(slot["friendship"]),
+            next_move_str,
+            next_evo_str,
         )
     return t
 

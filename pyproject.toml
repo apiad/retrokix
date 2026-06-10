@@ -1,6 +1,6 @@
 [project]
 name = "gbax"
-version = "0.12.2"
+version = "0.12.3"
 description = "Hacker-first, scriptable GBA emulator with HTTP API"
 readme = "README.md"
 license = { text = "MPL-2.0" }
@@ -67,6 +67,7 @@ packages = ["src/gbax"]
 "src/gbax/data/emerald_growth_rates.json" = "gbax/data/emerald_growth_rates.json"
 "src/gbax/data/emerald_species_info.json" = "gbax/data/emerald_species_info.json"
 "src/gbax/data/emerald_evolutions.json" = "gbax/data/emerald_evolutions.json"
+"src/gbax/data/emerald_levelup.json" = "gbax/data/emerald_levelup.json"
 "src/gbax/data/emerald_moves.json" = "gbax/data/emerald_moves.json"
 "src/gbax/data/emerald_type_chart.json" = "gbax/data/emerald_type_chart.json"
 "src/gbax/data/emerald_items.json" = "gbax/data/emerald_items.json"
