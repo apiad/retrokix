@@ -41,7 +41,7 @@ That's the headline: it's an emulator you can pipe.
 
 ## Status
 
-- **Alpha.** v0.4.0. Works on Linux x86_64 — the wheel bundles the
+- **Alpha.** v0.5.0. Works on Linux x86_64 — the wheel bundles the
   libretro core, so `pip install gbax` is a one-step setup. macOS /
   Windows / ARM are PR-welcome.
 - **MPL-2.0.** Same license as the underlying mGBA core.
@@ -59,6 +59,7 @@ fullscreen at launch.
 - D-pad: arrow keys · A: `X` · B: `Z` · L: `A` · R: `S` · Start: Enter · Select: Right-Shift
 - `Ctrl+1`…`Ctrl+9` — save state to slot N (auto-persisted to `~/.gbax/saves/<rom-sha1>/`)
 - `Shift+1`…`Shift+9` — load slot N
+- `Ctrl+R` — toggle macro recording (see [Macros](#macros))
 - `F10` — toggle upscale filter (linear ↔ nearest)
 - `F11` — toggle borderless-desktop fullscreen
 - `F12` — screenshot to `~/.gbax/screenshots/`
@@ -110,6 +111,46 @@ Over the API: `POST /cheats/<slug>/enable`, `POST /cheats/<slug>/disable`,
 The libretro-database snapshot (~6700 GameShark / Action Replay / Code
 Breaker codes covering 512 GBA games) ships in the wheel — no network at
 runtime.
+
+### Macros
+
+Record a button sequence once, replay it whenever you want — without
+losing your current state. Useful for grinding routines, in-battle
+combos, menu navigation patterns.
+
+```
+[in-game]
+Ctrl+R                          # start recording
+… play your sequence …
+Ctrl+R                          # stop; alt-tab to the terminal
+bind to which key? [F1-F9]: F3
+name (optional): heal-pokemon-center
+bound F3 → heal-pokemon-center
+
+[mid-battle, later]
+F3                              # replays the recorded sequence
+```
+
+Macros are scoped per-ROM and persisted to
+`~/.gbax/macros/<rom-sha1>/<slot>.json`. List and remove from the CLI:
+
+```
+$ gbax macros emerald
+  F3  →  heal-pokemon-center  (123 frames, recorded 2026-06-10 23:14)
+  F5  →  (unnamed)              (47 frames, recorded 2026-06-10 23:21)
+
+$ gbax macro delete emerald F3
+deleted F3 (heal-pokemon-center).
+```
+
+When a slot has both a cheat pin and a macro, the macro wins. Player
+input during replay is merged set-union with the macro's held buttons
+— useful if you want to nudge a direction mid-routine, harmless if
+you don't.
+
+Note: the record-stop prompt is plain `input()` on the terminal where
+you launched gbax. Alt-tab to the terminal to type the slot + name;
+the game pauses momentarily.
 
 ### Automation: Controller, Scenarios, Tournaments
 
@@ -368,7 +409,7 @@ $ curl -s 'localhost:8420/memory?addr=33718916&len=4' | jq -r .data
 | ✅      | ROM library — `search`, `download`, `list-roms` against archive.org           |
 | ✅      | Cheat codes — vendored libretro DB (~6700 codes), F1–F9 toggle, `/cheats` API |
 | ⏳      | YAML user scripts — `Ctrl+H` runs a sequence of presses + memory pokes        |
-| ⏳      | Recording / replay — deterministic input log + divergence detection           |
+| ✅      | Macros — record + replay input sequences via Ctrl+R, F1-F9 (see [Macros](#macros)) |
 | ⏳      | Per-game plugins — Python plugins expose `/state` and `/actions` for Pokémon, etc. |
 | ✅      | Bundled libretro core — `pip install gbax` ships a working emulator on Linux x86_64 |
 | ✅      | Fullscreen + GPU-accelerated linear upscale (F11), runtime filter toggle (F10) |
