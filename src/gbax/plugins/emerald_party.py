@@ -1103,41 +1103,46 @@ def _advance_to_decision(runtime, max_iters=AUTO_MAX_ITERS):
     Unknown phases also get a B press as the safest default (Yes/No
     prompts at unknown phase values, sub-sub-menus, etc.).
     """
-    stuck_iters = 0
-    cancel_attempted = False
     forced_switch_attempted = False
+    # Phase 1 is ambiguous: it covers BOTH "trainer is about to use X" text
+    # AND the party menu / SHIFT-SUMMARY-CANCEL submenu states. We
+    # disambiguate empirically: try A first (advances text), and if the
+    # phase doesn't change after the press, switch to B (exits menu),
+    # then nav to CANCEL.
+    phase_1_streak = 0
     for _ in range(max_iters):
         if _confirm_out_of_battle(runtime):
             return None
-        # Top-priority check: forced switch (our active fainted, party menu open)
+        # Forced switch (active fainted) — handle before anything else
         if _detect_forced_switch(runtime) and not forced_switch_attempted:
             forced_switch_attempted = True
             _handle_forced_switch(runtime)
+            phase_1_streak = 0
             continue
         p = _phase(runtime)
         if p == PHASE_ACTION_MENU:
             return p
 
-        stuck_iters += 1
-
-        # If we've been stuck for 10+ iterations not reaching the action
-        # menu, the party menu is likely open in a mode that bounces
-        # between phase 1 (cursor-on-Pokemon, 'already in battle' text)
-        # and phase 3 (SHIFT/SUMMARY/CANCEL sub-menu) — neither of
-        # which our normal handlers escape. Actively navigate to the
-        # CANCEL button at the bottom-right of the party menu.
-        if stuck_iters >= 10 and not cancel_attempted:
-            cancel_attempted = True
-            # Step 1: press B a couple times to clear any submenu/text overlay
-            _press_button(runtime, "b", settle_frames=60)
-            _press_button(runtime, "b", settle_frames=60)
-            # Step 2: from left column (active), Right → bench top, then
-            # Down 5× to reach CANCEL at bottom-right.
-            _press_button(runtime, "right", settle_frames=20)
-            for _ in range(5):
-                _press_button(runtime, "down", settle_frames=15)
-            _press_button(runtime, "a", settle_frames=150)
+        if p == PHASE_TRAINER_ANNOUNCE:  # phase 1 — ambiguous, ladder of escapes
+            phase_1_streak += 1
+            if phase_1_streak == 1:
+                _press_button(runtime, "a", settle_frames=80)
+            elif phase_1_streak in (2, 3):
+                # A didn't escape — try B (handles SHIFT submenu, then party menu)
+                _press_button(runtime, "b", settle_frames=80)
+            elif phase_1_streak == 4:
+                # Still stuck — actively navigate to CANCEL button
+                _press_button(runtime, "right", settle_frames=20)
+                for _ in range(5):
+                    _press_button(runtime, "down", settle_frames=15)
+                _press_button(runtime, "a", settle_frames=150)
+            elif phase_1_streak > 8:
+                return p
+            else:
+                _press_button(runtime, "b", settle_frames=80)
             continue
+        # Phase changed — reset the phase-1 streak counter
+        phase_1_streak = 0
 
         if p == PHASE_SECONDARY_MENU:
             _press_button(runtime, "b", settle_frames=80)
@@ -1145,14 +1150,11 @@ def _advance_to_decision(runtime, max_iters=AUTO_MAX_ITERS):
         if p in WAIT_PHASES:
             _wait_frames(runtime, 80)
             continue
-        if p in ADVANCEABLE_PHASES:
+        if p in ADVANCEABLE_PHASES:  # 0 and 5 only (1 handled above)
             _press_button(runtime, "a", settle_frames=80)
-            if _phase(runtime) == PHASE_SECONDARY_MENU:
-                _press_button(runtime, "b", settle_frames=80)
-                _press_button(runtime, "b", settle_frames=80)
             continue
-        # Unknown phase — try B as safest default
-        _press_button(runtime, "b", settle_frames=60)
+        # Unknown phase — try B as the safest default
+        _press_button(runtime, "b", settle_frames=80)
     return None
 
 
