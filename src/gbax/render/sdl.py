@@ -115,6 +115,7 @@ def play_loop(
     keymap: Optional[dict[int, Button]] = None,
     fullscreen: bool = False,
     watch_state: bool = False,
+    plugin_path: "Path | None" = None,
 ) -> None:
     """Run the emulator in a window until the user closes it.
 
@@ -154,6 +155,31 @@ def play_loop(
             panel_render_fn = _render
             watch_panel = Live(_render(), console=Console(), refresh_per_second=10, transient=False)
             watch_panel.__enter__()
+
+    loaded_plugin = None
+    plugin_ctx = None
+    plugin_last_state: dict[str, int | str] = {}
+    if plugin_path is not None:
+        from gbax.plugin import PluginContext, load_plugin
+        from gbax.state.storage import compiled_path_for_rom
+        from gbax.state.watch import StateReader
+
+        loaded_plugin = load_plugin(plugin_path)
+        plugin_reader = StateReader(compiled_path_for_rom(runtime.rom_sha1), runtime)
+        plugin_compiled: dict = {}
+        compiled = compiled_path_for_rom(runtime.rom_sha1)
+        if compiled.exists():
+            import json as _json
+            plugin_compiled = _json.loads(compiled.read_text()).get("tags", {})
+        plugin_ctx = PluginContext(runtime, plugin_reader, plugin_compiled)
+        plugin_ctx.refresh_state()
+        plugin_last_state = dict(plugin_ctx.state)
+        for fn in loaded_plugin.setup_handlers:
+            try:
+                fn(plugin_ctx)
+            except Exception:
+                import traceback
+                traceback.print_exc()
 
     sdl2.ext.init()
     sdl2.SDL_InitSubSystem(sdl2.SDL_INIT_AUDIO)
@@ -384,6 +410,20 @@ def play_loop(
                         held.add(btn)
                         runtime.set_buttons(held)
 
+                    # Plugin on_key dispatch (bare key, no modifier).
+                    if (
+                        loaded_plugin is not None
+                        and not (mod & (sdl2.KMOD_CTRL | sdl2.KMOD_SHIFT | sdl2.KMOD_ALT | sdl2.KMOD_GUI))
+                    ):
+                        slot = _slot_for_keysym(sym, mod)
+                        if slot is not None and slot in loaded_plugin.key_handlers:
+                            for fn in loaded_plugin.key_handlers[slot]:
+                                try:
+                                    fn(plugin_ctx)
+                                except Exception:
+                                    import traceback
+                                    traceback.print_exc()
+
                 elif event.type == sdl2.SDL_KEYUP:
                     sym = event.key.keysym.sym
                     if sym == sdl2.SDLK_TAB:
@@ -396,6 +436,29 @@ def play_loop(
 
             frames_this_iteration = FAST_FORWARD_MULTIPLIER if fast_forward else 1
             runtime.step(frames=frames_this_iteration)
+
+            if loaded_plugin is not None and plugin_ctx is not None:
+                plugin_ctx.refresh_state()
+                new_state = plugin_ctx.state
+                for tag, new_val in new_state.items():
+                    old_val = plugin_last_state.get(tag, None)
+                    if old_val != new_val and tag in loaded_plugin.state_change_handlers:
+                        for fn, to_filter in loaded_plugin.state_change_handlers[tag]:
+                            if to_filter is not None and new_val != to_filter:
+                                continue
+                            try:
+                                fn(plugin_ctx, old_val, new_val)
+                            except Exception:
+                                import traceback
+                                traceback.print_exc()
+                plugin_last_state = dict(new_state)
+                for fn, every in loaded_plugin.frame_handlers:
+                    if every <= 1 or (runtime.frame_count % every) == 0:
+                        try:
+                            fn(plugin_ctx)
+                        except Exception:
+                            import traceback
+                            traceback.print_exc()
 
             if watch_panel is not None and panel_render_fn is not None:
                 watch_panel.update(panel_render_fn())
@@ -419,6 +482,13 @@ def play_loop(
         if audio_dev:
             sdl2.SDL_CloseAudioDevice(audio_dev)
     finally:
+        if loaded_plugin is not None and plugin_ctx is not None:
+            for fn in loaded_plugin.teardown_handlers:
+                try:
+                    fn(plugin_ctx)
+                except Exception:
+                    import traceback
+                    traceback.print_exc()
         if watch_panel is not None:
             watch_panel.__exit__(None, None, None)
         runtime._core.on_audio = None
