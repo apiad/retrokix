@@ -130,6 +130,38 @@ def play_loop(
     is_fullscreen = False
     filter_quality = "linear"
 
+    # Load the plugin first so its scene_resolvers are available when the
+    # watch panel's StateReader is built.
+    loaded_plugin = None
+    plugin_ctx = None
+    plugin_last_state: dict[str, int | str] = {}
+    plugin_scene_resolvers: list = []
+    if plugin_path is not None:
+        from gbax.plugin import PluginContext, load_plugin
+        from gbax.state.storage import compiled_path_for_rom
+        from gbax.state.watch import StateReader
+
+        loaded_plugin = load_plugin(plugin_path)
+        plugin_scene_resolvers = list(loaded_plugin.scene_resolvers)
+        plugin_reader = StateReader(
+            compiled_path_for_rom(runtime.rom_sha1), runtime,
+            plugin_scene_resolvers=plugin_scene_resolvers,
+        )
+        plugin_compiled: dict = {}
+        compiled = compiled_path_for_rom(runtime.rom_sha1)
+        if compiled.exists():
+            import json as _json
+            plugin_compiled = _json.loads(compiled.read_text()).get("tags", {})
+        plugin_ctx = PluginContext(runtime, plugin_reader, plugin_compiled)
+        plugin_ctx.refresh_state()
+        plugin_last_state = dict(plugin_ctx.state)
+        for fn in loaded_plugin.setup_handlers:
+            try:
+                fn(plugin_ctx)
+            except Exception:
+                import traceback
+                traceback.print_exc()
+
     watch_panel = None
     state_reader = None
     panel_render_fn = None
@@ -138,7 +170,10 @@ def play_loop(
         from gbax.state.watch import StateReader
 
         compiled = compiled_path_for_rom(runtime.rom_sha1)
-        state_reader = StateReader(compiled, runtime)
+        state_reader = StateReader(
+            compiled, runtime,
+            plugin_scene_resolvers=plugin_scene_resolvers,
+        )
         if not state_reader.has_tags:
             print(f"--watch-state: no compiled state at {compiled}; panel disabled.")
             state_reader = None
@@ -157,31 +192,6 @@ def play_loop(
             panel_render_fn = _render
             watch_panel = Live(_render(), console=Console(), refresh_per_second=10, transient=False)
             watch_panel.__enter__()
-
-    loaded_plugin = None
-    plugin_ctx = None
-    plugin_last_state: dict[str, int | str] = {}
-    if plugin_path is not None:
-        from gbax.plugin import PluginContext, load_plugin
-        from gbax.state.storage import compiled_path_for_rom
-        from gbax.state.watch import StateReader
-
-        loaded_plugin = load_plugin(plugin_path)
-        plugin_reader = StateReader(compiled_path_for_rom(runtime.rom_sha1), runtime)
-        plugin_compiled: dict = {}
-        compiled = compiled_path_for_rom(runtime.rom_sha1)
-        if compiled.exists():
-            import json as _json
-            plugin_compiled = _json.loads(compiled.read_text()).get("tags", {})
-        plugin_ctx = PluginContext(runtime, plugin_reader, plugin_compiled)
-        plugin_ctx.refresh_state()
-        plugin_last_state = dict(plugin_ctx.state)
-        for fn in loaded_plugin.setup_handlers:
-            try:
-                fn(plugin_ctx)
-            except Exception:
-                import traceback
-                traceback.print_exc()
 
     http_server_thread = None
     if listen:
@@ -353,9 +363,13 @@ def play_loop(
                         from gbax.state.capture import save_capture, sparse_capture
                         print("recording 30 frames…")
                         sparse = sparse_capture(runtime, n_frames=30)
+                        fb = runtime.framebuffer()
                         ts = datetime.now(timezone.utc)
-                        path = save_capture(runtime.rom_sha1, sparse, labels, ts)
-                        print(f"captured. ({len(sparse)} stable bytes) → {path}")
+                        path = save_capture(
+                            runtime.rom_sha1, sparse, labels, ts,
+                            framebuffer=fb,
+                        )
+                        print(f"captured. ({len(sparse)} stable bytes + framebuffer) → {path}")
                         continue
 
                     # Ctrl+R — toggle macro recording

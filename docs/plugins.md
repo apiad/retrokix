@@ -61,6 +61,7 @@ Otherwise try a dotted module import.
 | `@p.on_key(key)` | bare key press; same slot universe as macros |
 | `@p.route(path)` | exposes an HTTP endpoint under `/plugins/<name>/<path>` |
 | `@p.route(path, methods=["POST"])` | with explicit methods |
+| `@p.scene_resolver` | overrides scene inference; `fn(runtime) -> str \| None` |
 
 ## The `ctx` object
 
@@ -146,6 +147,34 @@ kill the plugin — subsequent handlers and the SDL loop continue.
 
 More to come. PRs welcome — see `gbax.plugins.emerald_party` for the
 canonical pattern.
+
+## Scene resolvers
+
+The state tracker classifies string-labelled tags ("scenes") via a
+three-strategy classifier: plugin resolver → memory-pattern vote →
+pHash framebuffer template (see
+[state-tracker.md](state-tracker.md) for the algorithm).
+
+A plugin can register a resolver that runs first. If it returns a
+non-None string, that wins — memory voting and pHash matching are
+skipped for that frame. If it returns None, the classifier falls
+through to the next strategy.
+
+```python
+@p.scene_resolver
+def resolve_scene(runtime):
+    """Pokémon Emerald: read gMain.callback1 (4 bytes at 0x03003eb4)."""
+    cb = int.from_bytes(runtime.read_memory(0x03003eb4, 4), "little")
+    return {
+        0x080046a5: "overworld",
+        0x080b4aed: "battle",
+        0x080a1f31: "start_menu",
+    }.get(cb)
+```
+
+This is the recommended escape hatch when the inferred classifier
+mis-fires on a specific scene — game-specific knowledge always beats
+unsupervised inference.
 
 ## Case study: `gbax.plugins.emerald_party`
 

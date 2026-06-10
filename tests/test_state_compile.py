@@ -52,7 +52,12 @@ def test_numeric_u16_le_value_match(tmp_path):
     assert int(money["addr"], 16) == EWRAM_BASE + 0x300
 
 
-def test_categorical_discrimination(tmp_path):
+def test_scene_kind_from_string_labels(tmp_path):
+    """String labels now infer as the multi-modal scene kind (v0.11).
+
+    The memory-vote block picks up the discriminating byte at 0x500;
+    no PNG sidecars means the phash_templates block is empty.
+    """
     _save(tmp_path,
           {("ewram", 0x500): 0x12, ("ewram", 0x600): 0xff},
           {"scene": "fight-menu"},
@@ -68,9 +73,17 @@ def test_categorical_discrimination(tmp_path):
     out_path = compile_for_rom(SHA1, root=tmp_path)
     payload = json.loads(out_path.read_text())
     scene = payload["tags"]["scene"]
-    assert scene["kind"] == "categorical"
-    assert int(scene["addr"], 16) == EWRAM_BASE + 0x500
-    assert scene["values"] == {"0x12": "fight-menu", "0x34": "overworld"}
+    assert scene["kind"] == "scene"
+    # memory_vote block holds the discriminating addresses
+    addrs = scene["memory_vote"]["addresses"]
+    assert len(addrs) >= 1
+    # 0x02000500 should be in there with the right per-scene values
+    matched = [a for a in addrs if int(a["addr"], 16) == EWRAM_BASE + 0x500]
+    assert matched, f"expected 0x{EWRAM_BASE + 0x500:x} in addresses; got {addrs}"
+    a = matched[0]
+    assert a["width"] == "u8"
+    assert a["values"]["fight-menu"] == "0x12"
+    assert a["values"]["overworld"] == "0x34"
 
 
 def test_ambiguity_reported(tmp_path):

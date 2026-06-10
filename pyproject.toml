@@ -1,6 +1,6 @@
 [project]
 name = "gbax"
-version = "0.10.0"
+version = "0.11.0"
 description = "Hacker-first, scriptable GBA emulator with HTTP API"
 readme = "README.md"
 license = { text = "MPL-2.0" }
@@ -32,6 +32,7 @@ dependencies = [
   "pysdl2>=0.9.16",
   "pysdl2-dll>=2.30",
   "cffi>=1.17",  # used by gbax.libretro to bind the libretro ABI
+  "imagehash>=4.3",  # pHash/dHash for scene-detection fallback
 ]
 
 [project.urls]

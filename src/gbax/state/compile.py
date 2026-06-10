@@ -182,6 +182,51 @@ def compile_for_rom(rom_sha1: str, *, root: Path | None = None) -> Path:
                     for r, w, o in ambig
                 ]
         else:
+            # String-labelled tag — try scene-detection first (multi-modal:
+            # memory vote across u8/u16/u32-LE + pHash framebuffer templates),
+            # falling back to the v0.10 single-byte categorical algorithm if
+            # scene strategies don't produce enough discrimination.
+            from gbax.state.scene import find_memory_addresses, compute_phash_templates
+            from gbax.state.capture import png_path_for_capture
+
+            scene_captures = [
+                (sparse, lbls[tag]) for sparse, lbls, _ in captures
+                if tag in lbls and isinstance(lbls[tag], str)
+            ]
+            scene_values = {lbl for _, lbl in scene_captures}
+            if len(scene_values) >= 2:
+                memory_addrs = find_memory_addresses(scene_captures)
+                cap_dir = captures_dir_for_rom(rom_sha1, root=root)
+                samples = []
+                if cap_dir.exists():
+                    try:
+                        from PIL import Image
+                        for dump in sorted(cap_dir.glob("*.dump")):
+                            png = png_path_for_capture(dump)
+                            if png is None:
+                                continue
+                            ts_part = dump.stem
+                            # find matching label
+                            for sparse, lbls, c_ts in captures:
+                                if c_ts.strftime("%Y-%m-%dT%H-%M-%S") == ts_part and tag in lbls and isinstance(lbls[tag], str):
+                                    samples.append((Image.open(png).convert("RGB"), lbls[tag]))
+                                    break
+                    except ImportError:
+                        samples = []
+                phash_block = compute_phash_templates(samples) if samples else {}
+
+                if memory_addrs or phash_block.get("templates"):
+                    tags_out[tag] = {
+                        "kind": "scene",
+                        "memory_vote": {
+                            "addresses": memory_addrs,
+                            "k_required": max(1, len(memory_addrs) // 2),
+                        },
+                        "phash_templates": phash_block,
+                    }
+                    continue
+
+            # Fall back to v0.10 categorical for single-byte sub-states.
             primary, ambig = _infer_categorical(captures, tag)
             if primary:
                 region, offset, lookup = primary[0]
@@ -201,7 +246,7 @@ def compile_for_rom(rom_sha1: str, *, root: Path | None = None) -> Path:
     out_path = compiled_path_for_rom(rom_sha1, root=root)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     payload = {
-        "version": 1,
+        "version": 2,
         "rom_sha1": rom_sha1,
         "captures_used": len(captures),
         "tags": tags_out,

@@ -27,6 +27,10 @@ class Plugin:
         # http_routes: list of (path, methods, handler) tuples; mounted under
         # /plugins/<plugin_name>/ when the play loop's --listen flag is set.
         self.http_routes: list[tuple[str, list[str], Callable]] = []
+        # scene_resolvers: callables taking a runtime and returning a scene
+        # name string OR None to fall through. Invoked as Strategy A (highest
+        # priority) by the StateReader before memory-vote / pHash.
+        self.scene_resolvers: list[Callable] = []
 
     def on_setup(self, fn: Callable) -> Callable:
         self.setup_handlers.append(fn)
@@ -56,6 +60,17 @@ class Plugin:
             self.state_change_handlers.setdefault(tag, []).append((fn, to))
             return fn
         return decorator
+
+    def scene_resolver(self, fn: Callable) -> Callable:
+        """Register a callable that returns the current scene name or None.
+
+        Signature: ``fn(runtime) -> str | None``. The runtime is the live
+        EmulatorRuntime; read memory directly via ``runtime.read_memory()``,
+        ``runtime.read_u32()``, etc. Return ``None`` to fall through to the
+        next strategy (memory vote, then pHash).
+        """
+        self.scene_resolvers.append(fn)
+        return fn
 
     def route(self, path: str, methods: list[str] | None = None) -> Callable:
         """Register an HTTP route mounted under ``/plugins/<name>/`` when --listen is on.

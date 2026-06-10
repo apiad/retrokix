@@ -79,10 +79,66 @@ way of `print()` and `input()` from plugins.
 | Kind | Label | What's inferred |
 |---|---|---|
 | numeric | integer | address + width (u8 / u16-LE / u32-LE) where value matches in every capture |
-| categorical | string | address where the byte is constant per label group AND different across groups |
+| scene | string | multi-byte memory-vote across u8/u16-LE/u32-LE AND a perceptual-hash framebuffer template |
 | string | (deferred) | needs per-game character encoding; not in v1 |
 
-Need ≥2 distinct categorical values to discriminate.
+Need ≥2 distinct scene values to discriminate.
+
+## Scene detection
+
+String labels go through a three-strategy classifier at runtime, in
+priority order. The first strategy that returns a non-None value wins.
+
+### Strategy 1: plugin resolver (highest priority)
+
+A plugin can register a function that reads game-specific structures
+(e.g., `gMain.callback1` in pokeemerald) and returns a scene label
+directly. See [plugins.md](plugins.md) for `@p.scene_resolver`.
+
+### Strategy 2: memory-pattern vote
+
+At compile time, `find_memory_addresses` scans EWRAM + IWRAM across
+u8, u16-LE, and u32-LE widths for offsets where the value is
+**constant within each scene** AND **distinct across all scenes**.
+The top-K survivors form the vote slate, stored in `compiled.json`.
+
+At runtime, the classifier reads each address, looks up which scene
+matches, and votes. If ≥ k_required addresses vote for the same scene,
+that scene wins.
+
+Multi-byte widths matter — single-byte categorical inference (the
+pre-v0.11 algorithm) misses scenes that are only distinguishable by a
+function-pointer value (4 bytes) at a specific WRAM address. The
+u32-LE pass catches those.
+
+### Strategy 3: pHash framebuffer template (fallback)
+
+Each capture writes a sibling `.png` of the 240×160 framebuffer.
+Compile computes a perceptual hash per scene (dHash by default,
+hash_size=8 → 64-bit fingerprint). At runtime, if memory voting is
+inconclusive, the classifier hashes the current framebuffer and
+matches against the templates by Hamming distance.
+
+Works well for menus and other visually-bounded scenes. Fails on
+visually-unbounded scenes like overworld where every screen looks
+different — within-scene hash distance approaches random. Treat as
+fallback, not primary signal.
+
+### Known caveats
+
+- **Display-buffer trap.** Some games stage scene-conditional bytes
+  through a render buffer that reads 0x00 in other scenes. Those
+  addresses look perfectly discriminating in training but break the
+  moment the buffer flips. The compiler tags any address where some
+  scene reads 0x00 as `trap=true` so a future runtime can weight them
+  down; v0.11 still includes them in the vote.
+- **Selection-gated training accuracy.** The memory-vote slate is the
+  top-K addresses that score best on the training captures by
+  construction. Generalisation across sessions is unmeasured. If a
+  scene flips silently, add more captures from a fresh session and
+  recompile.
+- **pHash overworld failure.** As above. Don't rely on pHash for
+  unbounded scenes.
 
 ## Known blind spots
 
@@ -106,14 +162,6 @@ inventories), the state tracker won't reach it — you write a plugin
 that decodes the canonical block via `ctx.runtime.read_memory`. See
 [plugins.md](plugins.md) and [cookbook/emerald_party.md](cookbook/emerald_party.md).
 
-### Categorical inference is single-byte
-
-The current categorical algorithm searches single bytes (u8) for the
-discriminating address. Some game states are only distinguishable by
-a function-pointer value (4 bytes) at a specific WRAM address. v1
-won't find these. Workaround: write a plugin that reads the four
-bytes and exposes `scene` as a computed value.
-
 ### Constant values during a capture session
 
 If a value never varies across your captures (e.g., `max_hp = 21` the
@@ -129,8 +177,9 @@ differs.
 ├── captures/
 │   ├── 2026-06-10T14-21-40.dump
 │   ├── 2026-06-10T14-21-40.labels.json
+│   ├── 2026-06-10T14-21-40.png     # framebuffer for pHash (v0.11+)
 │   └── …
-└── compiled.json
+└── compiled.json                    # schema version 2
 ```
 
 `.dump` files are forward-compatible; recompile any time with `gbax

@@ -60,8 +60,15 @@ def save_capture(
     ts: datetime,
     *,
     root: Path | None = None,
+    framebuffer=None,  # numpy array (H, W, 3) uint8, or None
 ) -> Path:
-    """Persist a sparse capture + labels alongside it. Returns the dump path."""
+    """Persist a sparse capture + labels + optional PNG framebuffer sidecar.
+
+    Returns the dump path. If ``framebuffer`` is provided (240×160×3 RGB
+    uint8 array, the standard ``runtime.framebuffer()`` shape), a sibling
+    ``.png`` is written next to the dump. The PNG enables scene-detection
+    via perceptual hashing in the v0.11+ compile step.
+    """
     dump_path = _capture_dump_path(rom_sha1, ts, root=root)
     dump_path.parent.mkdir(parents=True, exist_ok=True)
     payload = {
@@ -73,6 +80,10 @@ def save_capture(
         pickle.dump(payload, f, protocol=4)
     labels_path = dump_path.with_suffix(".labels.json")
     labels_path.write_text(json.dumps(labels, indent=2, sort_keys=True))
+    if framebuffer is not None:
+        from PIL import Image
+        png_path = dump_path.with_suffix(".png")
+        Image.fromarray(framebuffer).save(png_path)
     return dump_path
 
 
@@ -84,3 +95,9 @@ def load_capture(dump_path: Path) -> tuple[SparseBytes, dict[str, int | str], da
     labels = json.loads(labels_path.read_text()) if labels_path.exists() else {}
     ts = datetime.fromisoformat(payload["captured_at"])
     return payload["bytes"], labels, ts
+
+
+def png_path_for_capture(dump_path: Path) -> Path | None:
+    """Return the framebuffer PNG path for a capture if it exists, else None."""
+    p = dump_path.with_suffix(".png")
+    return p if p.exists() else None

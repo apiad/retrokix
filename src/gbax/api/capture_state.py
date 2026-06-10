@@ -37,8 +37,12 @@ def build_router() -> APIRouter:
 
         with runtime._lock:
             sparse = sparse_capture(runtime, n_frames=body.n_frames)
+            framebuffer = runtime.framebuffer()
             ts = datetime.now(timezone.utc)
-            path = save_capture(runtime.rom_sha1, sparse, body.labels, ts)
+            path = save_capture(
+                runtime.rom_sha1, sparse, body.labels, ts,
+                framebuffer=framebuffer,
+            )
 
         return {
             "path": str(path),
