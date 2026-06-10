@@ -1,6 +1,6 @@
 [project]
 name = "gbax"
-version = "0.9.0"
+version = "0.10.0"
 description = "Hacker-first, scriptable GBA emulator with HTTP API"
 readme = "README.md"
 license = { text = "MPL-2.0" }
@@ -76,6 +76,8 @@ packages = ["src/gbax"]
 "src/gbax/render/shaders/nearest.wgsl" = "gbax/render/shaders/nearest.wgsl"
 "src/gbax/render/shaders/linear.wgsl" = "gbax/render/shaders/linear.wgsl"
 "src/gbax/render/shaders/crt_lottes.wgsl" = "gbax/render/shaders/crt_lottes.wgsl"
+"src/gbax/plugins/__init__.py" = "gbax/plugins/__init__.py"
+"src/gbax/plugins/emerald_party.py" = "gbax/plugins/emerald_party.py"
 
 [tool.hatch.build.targets.sdist]
 # Keep build artifacts out of the source tarball — only the platform

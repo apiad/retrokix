@@ -69,9 +69,31 @@ library — `gbax play emerald` resolves to
 | Select       | `Right-Shift`                      |
 | Save slot N  | `Ctrl+1` … `Ctrl+9`                |
 | Load slot N  | `Shift+1` … `Shift+9`              |
-| Fast-forward | `Tab` (hold) — 8×                  |
+| Fast-forward | `Left-Shift` (hold) — 8×           |
+| Macro record | `Ctrl+R` — toggle (see macros doc) |
+| State capture | `Ctrl+F` — labeled state snapshot |
+| Filter cycle | `F10` — cycle upscale shader       |
+| Fullscreen   | `F11` — toggle borderless desktop  |
 | Screenshot   | `F12` — saves to `~/.gbax/screenshots/` |
 | Toggle cheat | `F1` … `F9` — toggle the Nth active cheat |
+
+### Flags
+
+| Flag | Default | Purpose |
+|------|---------|---------|
+| `--scale N` | `3` | window scale factor (windowed mode only) |
+| `--fullscreen`, `-f` | off | start in borderless-desktop fullscreen |
+| `--listen` | off | run the HTTP API alongside the SDL window |
+| `--listen-host` | `127.0.0.1` | HTTP bind host (implies `--listen`) |
+| `--listen-port` | `8420` | HTTP bind port (implies `--listen`) |
+| `--watch-state` | off | live Rich panel of tagged state values |
+| `--plugin PATH` | none | load a Python plugin (file path OR module name) |
+| `--renderer={sdl,wgpu}` | `sdl` | renderer backend (`wgpu` needs `gbax[gpu]`) |
+| `--shader NAME` | `linear` | initial shader (linear/nearest/crt-lottes) |
+| `--user-shader PATH` | none | register a custom WGSL fragment shader |
+| `--cheats SLUGS` | none | comma-separated cheat slugs to enable at boot |
+| `--core PATH` | bundled | override the libretro core .so |
+
 
 Save state slots are written immediately to
 `~/.gbax/saves/<rom-sha1>/slot-N.state` and hydrate automatically on next

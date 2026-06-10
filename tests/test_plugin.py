@@ -318,3 +318,13 @@ def test_load_plugin_syntax_error_propagates(tmp_path):
     plugin_file.write_text("def broken(:\n")
     with pytest.raises(SyntaxError):
         load_plugin(plugin_file)
+
+
+def test_load_plugin_by_module_name():
+    """The bundled emerald_party plugin loads via dotted module name."""
+    from gbax.plugin import Plugin, load_plugin
+
+    plugin = load_plugin("gbax.plugins.emerald_party")
+    assert isinstance(plugin, Plugin)
+    # Should have @p.route entries we registered.
+    assert any(r[0] == "/party" for r in plugin.http_routes)

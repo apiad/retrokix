@@ -1,8 +1,19 @@
 # HTTP API reference
 
-`gbax serve <rom>` exposes the running emulator as a FastAPI server, by
-default at `http://127.0.0.1:8420`. The endpoints are deliberately small and
-direct — `gbax` is a substrate; the controllers are the interesting part.
+`gbax` exposes the running emulator as a FastAPI server. Two ways to
+reach it:
+
+```bash
+gbax serve emerald                          # API only, no window
+gbax play emerald --listen                  # API + SDL window (cooperative loop)
+```
+
+Both modes serve the same endpoints. The default bind is
+`127.0.0.1:8420`; override with `--port` (on `serve`) or `--listen-host`
+/ `--listen-port` (on `play`).
+
+The endpoints are deliberately small and direct — `gbax` is a
+substrate; the controllers are the interesting part.
 
 ## Modes: step vs free
 
@@ -206,9 +217,125 @@ $ curl -s -X POST localhost:8420/cheats/custom \
 
 Clear all active cheats.
 
+## Atomic actions
+
+### `POST /action`
+
+Run a sequence of (set buttons, advance frames, screenshot, read
+memory) as one atomic operation. The runtime lock is held for the
+entire action, so the SDL play loop blocks for the duration — no
+real-time slop interleaves between your "press" and "screenshot."
+
+Each step is a dict with any combination of these keys, applied in
+order within the step:
+
+- `hold`: list of button names to hold during the next frames
+- `release`: `true` to release all buttons (same as `hold: []`)
+- `frames`: advance N frames (capped at 3600)
+- `screenshot`: `true` to capture the current framebuffer as a PNG
+- `read_memory`: list of `{addr, len}` to read
+
+```bash
+curl -X POST localhost:8420/action -H 'content-type: application/json' -d '{
+  "steps": [
+    {"hold": ["down"], "frames": 48},
+    {"release": true, "frames": 8},
+    {
+      "screenshot": true,
+      "read_memory": [
+        {"addr": "0x020240ac", "len": 1},
+        {"addr": "0x02023892", "len": 1}
+      ]
+    }
+  ]
+}'
+```
+
+Response:
+
+```json
+{
+  "frames_advanced": 56,
+  "frame_count_before": 199847,
+  "frame_count": 199903,
+  "sdl_frames_inserted": 0,
+  "screenshots": ["iVBORw0KGgo..."],
+  "memory_reads": [
+    {"addr": "0x20240ac", "len": 1, "hex": "10", "u8": 16},
+    {"addr": "0x2023892", "len": 1, "hex": "06", "u8": 6}
+  ]
+}
+```
+
+`sdl_frames_inserted: 0` confirms atomicity. Screenshots are base64
+PNG; multiple `screenshot: true` steps in one action append in order.
+
+## State tracker
+
+### `POST /capture_state`
+
+Equivalent of the in-game `Ctrl+F` hotkey: records a 30-frame
+sparse-filtered memory capture and saves it with your labels. Holds
+the runtime lock during the 30-frame window so the snapshot is
+internally consistent.
+
+```bash
+curl -X POST localhost:8420/capture_state -H 'content-type: application/json' -d '{
+  "labels": {"scene": "overworld", "hp": 22, "level": 6},
+  "n_frames": 30
+}'
+```
+
+Response:
+
+```json
+{
+  "path": "/home/you/.gbax/states/<sha1>/captures/2026-06-10T14-21-40.dump",
+  "stable_bytes": 291421,
+  "n_frames": 30,
+  "labels": {"scene": "overworld", "hp": 22, "level": 6},
+  "captured_at": "2026-06-10T14:21:40.690691+00:00"
+}
+```
+
+Run `gbax state compile <rom>` offline to merge new captures into
+the compiled inference. See [state-tracker.md](state-tracker.md).
+
+## Plugins
+
+### `GET /plugins`
+
+Lists active plugins and the routes they expose.
+
+```json
+{
+  "plugins": [
+    {
+      "name": "emerald_party",
+      "path": "/path/to/gbax/plugins/emerald_party.py",
+      "routes": [
+        {"path": "/plugins/emerald_party/party", "methods": ["GET"]},
+        {"path": "/plugins/emerald_party/slot/{idx}", "methods": ["GET"]}
+      ]
+    }
+  ]
+}
+```
+
+### `/plugins/<name>/<route>`
+
+Each plugin's `@p.route()`-decorated handlers get mounted at
+`/plugins/<name>/<route>`. Method, path params, and return shape are
+the plugin's call. See [plugins.md](plugins.md) for how to register
+routes; see [cookbook/emerald_party.md](cookbook/emerald_party.md) for
+a worked example.
+
+Like `/action`, plugin routes are invoked while holding the runtime
+lock — the handler sees a consistent runtime snapshot.
+
 ## Coming soon
 
 - `GET/POST /savestate/<slot>` — slot dump/load over HTTP
-- `GET /state`, `POST /actions/<name>` — per-game plugin layer (Pokémon Emerald first)
+- `GET /state` — computed read of every tag in the compiled state map
 
 See the project README's roadmap.

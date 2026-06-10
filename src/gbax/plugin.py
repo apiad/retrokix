@@ -188,17 +188,34 @@ class PluginContext:
         self._log_fn(str(msg))
 
 
-def load_plugin(path) -> Plugin:
-    """Load a plugin file and return its sole ``Plugin`` instance.
+def load_plugin(path_or_module) -> Plugin:
+    """Load a plugin and return its sole ``Plugin`` instance.
+
+    Accepts either a filesystem path (``/tmp/myplugin.py``) or a dotted
+    module name (``gbax.plugins.emerald_party``). Resolution order: if the
+    argument exists as a file, treat as path; otherwise try dotted import.
 
     Raises:
         RuntimeError: if the file defines zero or more than one Plugin instances.
         SyntaxError: if the file fails to parse.
     """
+    import importlib
     import importlib.util
     from pathlib import Path
 
-    p = Path(path)
+    arg = str(path_or_module)
+    p = Path(arg)
+    if not p.exists() and "." in arg and "/" not in arg and "\\" not in arg:
+        # Looks like a dotted module name and no such file exists — import it.
+        module = importlib.import_module(arg)
+        instances = [v for v in vars(module).values() if isinstance(v, Plugin)]
+        if len(instances) != 1:
+            raise RuntimeError(
+                f"plugin module {arg!r} must define exactly one gbax.plugin() instance; "
+                f"found {len(instances)}"
+            )
+        return instances[0]
+
     spec = importlib.util.spec_from_file_location(f"_gbax_plugin_{p.stem}", p)
     if spec is None or spec.loader is None:
         raise RuntimeError(f"could not load plugin spec for {p}")
