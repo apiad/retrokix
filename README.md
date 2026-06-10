@@ -41,7 +41,7 @@ That's the headline: it's an emulator you can pipe.
 
 ## Status
 
-- **Alpha.** v0.7.0. Works on Linux x86_64 — the wheel bundles the
+- **Alpha.** v0.8.0. Works on Linux x86_64 — the wheel bundles the
   libretro core, so `pip install gbax` is a one-step setup. macOS /
   Windows / ARM are PR-welcome.
 - **MPL-2.0.** Same license as the underlying mGBA core.
@@ -213,6 +213,68 @@ Captures live at `~/.gbax/states/<rom-sha1>/captures/`; the compiled
 file at `~/.gbax/states/<rom-sha1>/compiled.json`. Use `gbax state
 list <rom>` to inspect and `gbax state ambiguous <rom>` to find tags
 that need more captures.
+
+### Plugins
+
+Hook into the play loop with a small Python file. Reads state, writes
+memory, injects buttons, reacts to key presses, runs on every frame.
+The complement to the standalone `gbax.Controller`: same scripting
+power, but live alongside a player using the keyboard.
+
+```python
+# my_plugin.py
+import gbax
+p = gbax.plugin()
+
+@p.on_setup
+def setup(ctx):
+    ctx.log("emerald plugin loaded")
+
+@p.on_state_change("scene", to="fight-menu")
+def auto_fight(ctx, old, new):
+    ctx.press(["down", "a"], frames=2)
+
+@p.on_key("M")
+def max_money(ctx):
+    ctx.set("money", 999_999)
+    ctx.log("money: 999,999")
+
+@p.on_frame(every=60)
+def heartbeat(ctx):
+    ctx.log(f"frame {ctx.frame_count}, hp={ctx.state.get('hp', '?')}")
+```
+
+```
+gbax play emerald --plugin my_plugin.py
+```
+
+Decorators:
+
+- `@p.on_setup`, `@p.on_teardown` — once at load / once at exit.
+- `@p.on_frame` (or `@p.on_frame(every=N)`) — every frame / every Nth.
+- `@p.on_state_change(tag)` or `@p.on_state_change(tag, to=value)` —
+  fires when a tracked tag's value changes; the `to=` filter fires only
+  on transitions to a specific value.
+- `@p.on_key(key)` — bare key press (no modifier). Same slot universe
+  as macros: A-Z, 0-9, F1-F9, SPACE, RETURN, BACKSPACE.
+
+The `ctx` passed to every handler:
+
+- `ctx.state["hp"]` — read tagged state (snapshot per frame).
+- `ctx.set("money", 999_999)` — write the inferred address at the
+  compiled width (numeric tags only in v1).
+- `ctx.press(["a", "down"], frames=2)` — schedule synthetic input.
+  Player + plugin coexist via set-union.
+- `ctx.runtime` — the full `EmulatorRuntime` (`read_memory`,
+  `framebuffer`, save state ops) as the escape hatch.
+- `ctx.log(msg)` — single-line stdout that coexists with `--watch-state`.
+
+Handlers run inline on the SDL main thread — keep them fast. For heavy
+work (network, ML, file I/O), spawn your own thread in `on_setup` and
+communicate via a queue.
+
+A handler raising an exception prints the traceback but does not kill
+the plugin; subsequent handlers and the SDL loop continue.
 
 ### Automation: Controller, Scenarios, Tournaments
 
@@ -473,7 +535,8 @@ $ curl -s 'localhost:8420/memory?addr=33718916&len=4' | jq -r .data
 | ⏳      | YAML user scripts — `Ctrl+H` runs a sequence of presses + memory pokes        |
 | ✅      | Macros — record + replay input sequences via Ctrl+R, bound to any letter/digit/F-key (see [Macros](#macros)) |
 | ✅      | State tracker — supervised memory inference + live Rich panel (see [State tracker](#state-tracker)) |
-| ⏳      | Triggers — bind macros to state changes (when scene=fight-menu, fire F3) |
+| ✅      | Plugins — play-time hooks with `@on_state_change`, `@on_key`, `@on_frame` (see [Plugins](#plugins)) |
+| ⏳      | Predicate filters (`@on_state_change("hp", below=20)`) + sync API (`ctx.wait`) |
 | ⏳      | Python `Controller.state` + HTTP `/state` endpoint |
 | ✅      | Bundled libretro core — `pip install gbax` ships a working emulator on Linux x86_64 |
 | ✅      | Fullscreen + GPU-accelerated linear upscale (F11), runtime filter toggle (F10) |
