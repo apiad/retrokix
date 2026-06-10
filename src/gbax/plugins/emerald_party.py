@@ -646,35 +646,46 @@ def in_battle(runtime) -> bool:
 
 
 # Battle phase detector — discovered via state-tracker capture diff +
-# live-poll exploration through wild encounter and Roxanne fight.
+# live-poll exploration through wild encounter and Roxanne fight (R3).
 # Mapping of byte values at 0x02024332:
 #
 #   0 = wild encounter intro / send-out animation
+#   1 = trainer "is about to use X" announcement
 #   2 = action menu (FIGHT/BAG/PKMN/RUN)
 #   3 = secondary selection menu (move menu OR party menu — same value;
-#       caller must distinguish via context, e.g. by sequence)
+#       caller must distinguish by context)
 #   5 = generic: text scroll, attack animation, Yes/No prompts,
-#       out-of-battle (overworld), battle outro
+#       out-of-battle, battle outro
+#   6 = transition (closing menu / UI rebuild — wait, don't press)
 #
-# Unknown: 1, 4 (likely trainer-battle intro, faint dialog, or
-# specific sub-states). Iteratively expand by labelling captures.
+# Unknown: 4 (likely trainer battle full intro or fainting sequence).
 BATTLE_PHASE_ADDR = 0x02024332
 
-PHASE_INTRO = 0
+PHASE_WILD_INTRO = 0
+PHASE_TRAINER_ANNOUNCE = 1
 PHASE_ACTION_MENU = 2
 PHASE_SECONDARY_MENU = 3   # move menu OR party menu
 PHASE_GENERIC = 5
+PHASE_TRANSITION = 6
 
 PHASE_NAMES = {
-    PHASE_INTRO: "intro",
+    PHASE_WILD_INTRO: "wild_intro",
+    PHASE_TRAINER_ANNOUNCE: "trainer_announce",
     PHASE_ACTION_MENU: "action_menu",
     PHASE_SECONDARY_MENU: "secondary_menu",
     PHASE_GENERIC: "generic",
+    PHASE_TRANSITION: "transition",
 }
 
 # Phases where pressing A could accidentally confirm an interactive
 # selection — the high-level /battle/advance refuses these.
 INTERACTIVE_PHASES = {PHASE_ACTION_MENU, PHASE_SECONDARY_MENU}
+
+# Phases where pressing A advances dialog/animation safely.
+ADVANCEABLE_PHASES = {PHASE_WILD_INTRO, PHASE_TRAINER_ANNOUNCE, PHASE_GENERIC}
+
+# Phases where we should wait, not press.
+WAIT_PHASES = {PHASE_TRANSITION}
 
 
 def battle_phase(runtime) -> tuple[int, str]:
@@ -938,6 +949,8 @@ def http_battle_use_move(ctx, slot: int):
             "screenshot_b64": shots[-1] if shots else None}
 
 
+PARTY_MENU_SETTLE_FRAMES = 90  # let the party menu render fully before nav
+
 @p.route("/battle/switch/{party_slot}", methods=["POST"])
 def http_battle_switch(ctx, party_slot: int):
     """Switch to party slot {0..5}. Works from both the action menu (you
@@ -966,7 +979,7 @@ def http_battle_switch(ctx, party_slot: int):
     steps += [{"hold": ["down"], "frames": PRESS_FRAMES},
               {"release": True, "frames": NAV_GAP_FRAMES}]
     steps += [{"hold": ["a"], "frames": PRESS_FRAMES},
-              {"release": True, "frames": MENU_TRANSITION_FRAMES}]
+              {"release": True, "frames": PARTY_MENU_SETTLE_FRAMES}]
     # Now on party menu — cursor on active (left). Right to jump to position 1.
     steps += [{"hold": ["right"], "frames": PRESS_FRAMES},
               {"release": True, "frames": NAV_GAP_FRAMES}]
