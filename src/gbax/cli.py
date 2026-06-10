@@ -205,6 +205,76 @@ def macro_delete(
     typer.echo(f"deleted {slot_upper} ({label}).")
 
 
+state_app = typer.Typer(help="Manage labeled memory captures and inferred state.")
+app.add_typer(state_app, name="state")
+
+
+@state_app.command("compile")
+def state_compile(
+    rom: str = typer.Argument(..., help="ROM path or fuzzy query."),
+) -> None:
+    """Run supervised address inference over captured snapshots."""
+    from gbax.state.compile import compile_for_rom
+
+    _, sha1 = _resolve_rom_sha1(rom)
+    out = compile_for_rom(sha1)
+    typer.echo(f"compiled → {out}")
+
+
+@state_app.command("list")
+def state_list(
+    rom: str = typer.Argument(..., help="ROM path or fuzzy query."),
+) -> None:
+    """Show captures + inferred tags for the given ROM."""
+    import json as _json
+    from gbax.state.storage import captures_dir_for_rom, compiled_path_for_rom
+
+    _, sha1 = _resolve_rom_sha1(rom)
+    cap_dir = captures_dir_for_rom(sha1)
+    n_caps = len(list(cap_dir.glob("*.dump"))) if cap_dir.exists() else 0
+    typer.echo(f"captures: {n_caps}")
+    compiled = compiled_path_for_rom(sha1)
+    if not compiled.exists():
+        typer.echo("not compiled — run `gbax state compile <rom>`")
+        return
+    payload = _json.loads(compiled.read_text())
+    tags = payload.get("tags", {})
+    if not tags:
+        typer.echo("no tags inferred")
+        return
+    for tag in sorted(tags):
+        info = tags[tag]
+        if info["kind"] == "numeric":
+            typer.echo(f"  {tag}  {info['kind']:<11}  {info['addr']}  ({info['width']})")
+        else:
+            n_vals = len(info.get("values", {}))
+            typer.echo(f"  {tag}  {info['kind']:<11}  {info['addr']}  ({n_vals} values)")
+
+
+@state_app.command("ambiguous")
+def state_ambiguous(
+    rom: str = typer.Argument(..., help="ROM path or fuzzy query."),
+) -> None:
+    """Show tags where >1 address matched — add captures to disambiguate."""
+    import json as _json
+    from gbax.state.storage import compiled_path_for_rom
+
+    _, sha1 = _resolve_rom_sha1(rom)
+    compiled = compiled_path_for_rom(sha1)
+    if not compiled.exists():
+        typer.echo("not compiled — run `gbax state compile <rom>`", err=True)
+        raise typer.Exit(code=1)
+    payload = _json.loads(compiled.read_text())
+    ambig = payload.get("ambiguous", {})
+    if not ambig:
+        typer.echo("(no ambiguous tags)")
+        return
+    for tag in sorted(ambig):
+        typer.echo(f"  {tag}:")
+        for cand in ambig[tag]:
+            typer.echo(f"    {cand['addr']} ({cand['width']})")
+
+
 @app.command()
 def list_roms() -> None:
     """List ROMs in ~/.gbax/roms/."""
