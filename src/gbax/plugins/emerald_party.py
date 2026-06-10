@@ -1027,13 +1027,14 @@ def _advance_to_decision(runtime, max_iters=AUTO_MAX_ITERS):
     """Loop A/B/wait until phase becomes 2 (action menu) or in_battle goes
     False. Returns final phase or None on timeout / out-of-battle.
 
-    Phase 3 (secondary menu) inside this loop ALWAYS means we ended up in
-    a menu we didn't open ourselves — the auto-Yes Pokemon-change prompt or
-    a stray sub-menu. We press B unconditionally (no species check, since
-    gBattleMons[0] may be unreadable mid-party-menu). Capped consecutive B
-    presses prevent an infinite loop if B somehow doesn't escape.
+    Phase 3 (secondary menu) ALWAYS means we ended up in a menu we didn't
+    open — auto-Yes party menu or stray sub-menu. We press B with a long
+    settle. Capped consecutive B presses prevent infinite loops.
+
+    Unknown phases also get a B press as the safest default (Yes/No
+    prompts at unknown phase values, sub-sub-menus, etc.).
     """
-    consecutive_b_presses = 0
+    consecutive_b = 0
     for _ in range(max_iters):
         if not in_battle(runtime):
             return None
@@ -1041,20 +1042,25 @@ def _advance_to_decision(runtime, max_iters=AUTO_MAX_ITERS):
         if p == PHASE_ACTION_MENU:
             return p
         if p == PHASE_SECONDARY_MENU:
-            consecutive_b_presses += 1
-            if consecutive_b_presses > 6:
-                # B isn't escaping — give up, let caller decide
+            consecutive_b += 1
+            if consecutive_b > 8:
                 return p
-            _press_button(runtime, "b", settle_frames=40)
+            _press_button(runtime, "b", settle_frames=80)
             continue
-        consecutive_b_presses = 0
+        consecutive_b = 0
         if p in WAIT_PHASES:
             _wait_frames(runtime, 80)
             continue
         if p in ADVANCEABLE_PHASES:
             _press_button(runtime, "a", settle_frames=80)
             continue
-        return p
+        # Unknown phase — try B as the safer default rather than returning
+        # immediately. Many sub-prompts (Yes/No, "use which item?", etc.)
+        # close cleanly with B.
+        _press_button(runtime, "b", settle_frames=60)
+        consecutive_b += 1
+        if consecutive_b > 8:
+            return p
     return None
 
 
@@ -1168,8 +1174,7 @@ def _auto_one_turn(runtime) -> dict:
     p = _advance_to_decision(runtime)
     if p != PHASE_ACTION_MENU:
         return {
-            "decision": "noop",
-            "reason": f"could not reach action menu (phase={p})",
+            "decision": {"action": "noop", "reason": f"phase={p}"},
             "phase": p,
             "in_battle": in_battle(runtime),
         }
@@ -1177,7 +1182,8 @@ def _auto_one_turn(runtime) -> dict:
     active = _read_battle_mon(runtime, BMON_PLAYER_SLOT)
     opp = _read_battle_mon(runtime, OPP_SINGLES_SLOT)
     if not active or not opp:
-        return {"decision": "noop", "reason": "could not read battlers", "in_battle": in_battle(runtime)}
+        return {"decision": {"action": "noop", "reason": "could not read battlers"},
+                "in_battle": in_battle(runtime)}
 
     hp_frac = active["hp"] / max(1, active["max_hp"])
     active_data_slot = _active_party_data_slot(runtime, active["species"])
