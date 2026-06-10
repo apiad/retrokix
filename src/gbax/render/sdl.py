@@ -108,6 +108,19 @@ def play_loop(
     F11 toggles borderless-desktop fullscreen.
     F10 toggles the upscale filter between linear and nearest.
     """
+    import os
+
+    # wgpu's Mesa-Vulkan path leaks per-frame swapchain textures when SDL
+    # is in X11 mode on a Wayland host (XWayland). Forcing SDL to talk to
+    # the native Wayland compositor fixes it. Users can override by
+    # setting SDL_VIDEODRIVER themselves.
+    if (
+        renderer_kind == "wgpu"
+        and "SDL_VIDEODRIVER" not in os.environ
+        and os.environ.get("WAYLAND_DISPLAY")
+    ):
+        os.environ["SDL_VIDEODRIVER"] = "wayland"
+
     keymap = keymap if keymap is not None else default_keymap()
     held: set[Button] = set()
     fast_forward = False
