@@ -41,7 +41,7 @@ That's the headline: it's an emulator you can pipe.
 
 ## Status
 
-- **Alpha.** v0.8.0. Works on Linux x86_64 — the wheel bundles the
+- **Alpha.** v0.9.0. Works on Linux x86_64 — the wheel bundles the
   libretro core, so `pip install gbax` is a one-step setup. macOS /
   Windows / ARM are PR-welcome.
 - **MPL-2.0.** Same license as the underlying mGBA core.
@@ -275,6 +275,46 @@ communicate via a queue.
 
 A handler raising an exception prints the traceback but does not kill
 the plugin; subsequent handlers and the SDL loop continue.
+
+### Shaders (GPU renderer)
+
+For CRT scanlines, custom WGSL shaders, and a GPU-accelerated pixel
+pipeline, gbax ships an optional wgpu-based renderer:
+
+```
+pip install gbax[gpu]
+gbax play emerald --renderer=wgpu --shader=crt-lottes
+```
+
+Bundled shaders:
+
+- `linear` (default) — bilinear smooth upscale.
+- `nearest` — chunky retro pixels.
+- `crt-lottes` — single-pass CRT (scanlines + RGB phosphor mask). Still
+  tuning; expect some rough edges.
+
+Press **F10** in-game to cycle through them.
+
+**Custom WGSL shaders:**
+
+```
+gbax play emerald --renderer=wgpu --user-shader ~/my_shader.wgsl
+```
+
+Your shader must implement `fs_main` against the same bind group layout
+the bundled shaders use (texture binding 0, sampler binding 1, uniforms
+binding 2). Copy `linear.wgsl` as a starting point — it lives at
+`gbax/render/shaders/linear.wgsl` in the installed package.
+
+**Caveats:**
+
+- The wgpu renderer is opt-in via `--renderer=wgpu`; the default SDL
+  renderer (which works without `gbax[gpu]`) supports `linear` and
+  `nearest`.
+- On Wayland hosts, gbax auto-sets `SDL_VIDEODRIVER=wayland` when
+  `--renderer=wgpu` is active — the X11/XWayland path leaks swapchain
+  textures under Mesa Vulkan. Override by setting `SDL_VIDEODRIVER`
+  yourself if you need to.
 
 ### Automation: Controller, Scenarios, Tournaments
 
@@ -540,7 +580,8 @@ $ curl -s 'localhost:8420/memory?addr=33718916&len=4' | jq -r .data
 | ⏳      | Python `Controller.state` + HTTP `/state` endpoint |
 | ✅      | Bundled libretro core — `pip install gbax` ships a working emulator on Linux x86_64 |
 | ✅      | Fullscreen + GPU-accelerated linear upscale (F11), runtime filter toggle (F10) |
-| ⏳      | CRT / scanline / hqx shaders via wgpu                                         |
+| ✅      | wgpu renderer — CRT-Lottes + user-shader hook via `pip install gbax[gpu]` (see [Shaders](#shaders-gpu-renderer)) |
+| ⏳      | xBRZ + multi-pass CRT shaders, shader hot-reload, parameter UI                |
 | ⏳      | macOS / Windows / aarch64 wheels                                              |
 
 Full design at `vault/Atlas/Architecture/2026-06-09-gbax-design.md` (in the
