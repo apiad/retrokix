@@ -41,7 +41,7 @@ That's the headline: it's an emulator you can pipe.
 
 ## Status
 
-- **Alpha.** v0.3.0. Works on Linux x86_64 — the wheel bundles the
+- **Alpha.** v0.4.0. Works on Linux x86_64 — the wheel bundles the
   libretro core, so `pip install gbax` is a one-step setup. macOS /
   Windows / ARM are PR-welcome.
 - **MPL-2.0.** Same license as the underlying mGBA core.
@@ -53,12 +53,21 @@ That's the headline: it's an emulator you can pipe.
 ### Play
 
 `gbax play <rom>` opens an SDL window, wires the keyboard, plays audio.
+Pass `--fullscreen` (or `-f`) to skip straight to borderless-desktop
+fullscreen at launch.
 
 - D-pad: arrow keys · A: `X` · B: `Z` · L: `A` · R: `S` · Start: Enter · Select: Right-Shift
 - `Ctrl+1`…`Ctrl+9` — save state to slot N (auto-persisted to `~/.gbax/saves/<rom-sha1>/`)
 - `Shift+1`…`Shift+9` — load slot N
+- `F10` — toggle upscale filter (linear ↔ nearest)
+- `F11` — toggle borderless-desktop fullscreen
 - `F12` — screenshot to `~/.gbax/screenshots/`
 - `Tab` (hold) — fast-forward at 8×
+
+The window is resizable; SDL preserves the 3:2 aspect ratio with auto
+letterboxing, and the upscale runs through your GPU's bilinear sampler
+by default (looks smooth at any size). Hit `F10` for crisp nearest-
+neighbor pixels if you prefer the chunky look.
 
 Slots survive restarts. Open a game, save in slot 3, close the window, open the
 game again, `Shift+3` — you're back.
@@ -362,6 +371,8 @@ $ curl -s 'localhost:8420/memory?addr=33718916&len=4' | jq -r .data
 | ⏳      | Recording / replay — deterministic input log + divergence detection           |
 | ⏳      | Per-game plugins — Python plugins expose `/state` and `/actions` for Pokémon, etc. |
 | ✅      | Bundled libretro core — `pip install gbax` ships a working emulator on Linux x86_64 |
+| ✅      | Fullscreen + GPU-accelerated linear upscale (F11), runtime filter toggle (F10) |
+| ⏳      | CRT / scanline / hqx shaders via wgpu                                         |
 | ⏳      | macOS / Windows / aarch64 wheels                                              |
 
 Full design at `vault/Atlas/Architecture/2026-06-09-gbax-design.md` (in the
