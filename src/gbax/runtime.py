@@ -86,7 +86,10 @@ class EmulatorRuntime:
         # Per-ROM hotkey pins (F1..F9 → cheat slug), loaded from ~/.gbax/pins/<sha1>.json
         self._pins: dict[str, str] = pins_module.load(self._rom_sha1)
         # Concurrency: ticker thread (Mode.FREE) + API callers both touch the core
-        self._lock = threading.Lock()
+        # RLock so /action and /capture_state can hold the lock externally
+        # for the duration of an atomic sequence while internal step() /
+        # set_buttons() / read_memory() calls re-acquire freely.
+        self._lock = threading.RLock()
         self._tick_thread: threading.Thread | None = None
         self._tick_stop = threading.Event()
         # Macro recording / playback state.

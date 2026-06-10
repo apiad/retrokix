@@ -11,6 +11,7 @@ from gbax.runtime import EmulatorRuntime
 def create_app(runtime: EmulatorRuntime) -> FastAPI:
     from gbax.api.action import build_router as build_action_router
     from gbax.api.buttons import build_router as build_buttons_router
+    from gbax.api.capture_state import build_router as build_capture_state_router
     from gbax.api.cheats import build_router as build_cheats_router
     from gbax.api.control import build_router as build_control_router
     from gbax.api.frame import build_router as build_frame_router
@@ -24,4 +25,5 @@ def create_app(runtime: EmulatorRuntime) -> FastAPI:
     app.include_router(build_memory_router())
     app.include_router(build_cheats_router())
     app.include_router(build_action_router())
+    app.include_router(build_capture_state_router())
     return app

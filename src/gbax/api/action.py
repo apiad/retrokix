@@ -57,52 +57,60 @@ def build_router() -> APIRouter:
         memory_reads: list[dict] = []
         frames_advanced = 0
 
-        for step_idx, step in enumerate(body.steps):
-            try:
-                if step.release:
-                    runtime.set_buttons(set())
-                if step.hold is not None:
-                    held = {button_from_str(b) for b in step.hold}
-                    runtime.set_buttons(held)
-                if step.frames > 0:
-                    if step.frames > 60 * 60:
-                        raise HTTPException(
-                            status_code=400,
-                            detail=f"step {step_idx}: frames={step.frames} exceeds 3600 cap",
-                        )
-                    runtime.step(step.frames)
-                    frames_advanced += step.frames
-                if step.screenshot:
-                    from PIL import Image
-                    fb = runtime.framebuffer()
-                    img = Image.fromarray(fb)
-                    buf = io.BytesIO()
-                    img.save(buf, format="PNG")
-                    screenshots.append(base64.b64encode(buf.getvalue()).decode("ascii"))
-                if step.read_memory:
-                    for spec in step.read_memory:
-                        addr = int(spec.addr, 16) if spec.addr.startswith("0x") else int(spec.addr)
-                        if spec.len < 1 or spec.len > 4096:
+        # Hold the runtime lock for the whole action so SDL's per-frame
+        # step(1) blocks until we finish. RLock lets inner step() /
+        # set_buttons() / read_memory() calls re-acquire freely.
+        with runtime._lock:
+            frame_count_before = runtime.frame_count
+            for step_idx, step in enumerate(body.steps):
+                try:
+                    if step.release:
+                        runtime.set_buttons(set())
+                    if step.hold is not None:
+                        held = {button_from_str(b) for b in step.hold}
+                        runtime.set_buttons(held)
+                    if step.frames > 0:
+                        if step.frames > 60 * 60:
                             raise HTTPException(
                                 status_code=400,
-                                detail=f"step {step_idx}: read_memory len={spec.len} out of range",
+                                detail=f"step {step_idx}: frames={step.frames} exceeds 3600 cap",
                             )
-                        data = runtime.read_memory(addr, spec.len)
-                        memory_reads.append({
-                            "addr": hex(addr),
-                            "len": spec.len,
-                            "hex": data.hex(),
-                            # convenience decode for the common 1-byte case
-                            "u8": data[0] if spec.len == 1 else None,
-                        })
-            except HTTPException:
-                raise
-            except ValueError as exc:
-                raise HTTPException(status_code=400, detail=f"step {step_idx}: {exc}") from exc
+                        runtime.step(step.frames)
+                        frames_advanced += step.frames
+                    if step.screenshot:
+                        from PIL import Image
+                        fb = runtime.framebuffer()
+                        img = Image.fromarray(fb)
+                        buf = io.BytesIO()
+                        img.save(buf, format="PNG")
+                        screenshots.append(base64.b64encode(buf.getvalue()).decode("ascii"))
+                    if step.read_memory:
+                        for spec in step.read_memory:
+                            addr = int(spec.addr, 16) if spec.addr.startswith("0x") else int(spec.addr)
+                            if spec.len < 1 or spec.len > 4096:
+                                raise HTTPException(
+                                    status_code=400,
+                                    detail=f"step {step_idx}: read_memory len={spec.len} out of range",
+                                )
+                            data = runtime.read_memory(addr, spec.len)
+                            memory_reads.append({
+                                "addr": hex(addr),
+                                "len": spec.len,
+                                "hex": data.hex(),
+                                # convenience decode for the common 1-byte case
+                                "u8": data[0] if spec.len == 1 else None,
+                            })
+                except HTTPException:
+                    raise
+                except ValueError as exc:
+                    raise HTTPException(status_code=400, detail=f"step {step_idx}: {exc}") from exc
+            frame_count_after = runtime.frame_count
 
         return {
             "frames_advanced": frames_advanced,
-            "frame_count": runtime.frame_count,
+            "frame_count_before": frame_count_before,
+            "frame_count": frame_count_after,
+            "sdl_frames_inserted": frame_count_after - frame_count_before - frames_advanced,
             "screenshots": screenshots,
             "memory_reads": memory_reads,
         }
