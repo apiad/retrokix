@@ -162,6 +162,49 @@ def pins(
         typer.echo(f"  {key}  →  {current[key]}")
 
 
+macro_app = typer.Typer(help="Manage recorded input macros.")
+app.add_typer(macro_app, name="macro")
+
+
+@app.command()
+def macros(
+    rom: str = typer.Argument(..., help="ROM path or fuzzy query."),
+) -> None:
+    """List recorded macros for the given ROM."""
+    from gbax import macros as macros_module
+
+    _, sha1 = _resolve_rom_sha1(rom)
+    listed = macros_module.list_for_rom(sha1)
+    if not listed:
+        typer.echo("(no macros)")
+        return
+    for m in listed:
+        name = m.name or "(unnamed)"
+        typer.echo(
+            f"  {m.slot}  →  {name}  "
+            f"({m.total_frames} frames, recorded {m.recorded_at:%Y-%m-%d %H:%M})"
+        )
+
+
+@macro_app.command("delete")
+def macro_delete(
+    rom: str = typer.Argument(..., help="ROM path or fuzzy query."),
+    slot: str = typer.Argument(..., help="Slot to delete (F1..F9)."),
+) -> None:
+    """Delete a recorded macro."""
+    from gbax import macros as macros_module
+
+    _, sha1 = _resolve_rom_sha1(rom)
+    slot_upper = slot.upper()
+    existing = macros_module.load(sha1, slot_upper)
+    if existing is None:
+        typer.echo(f"no macro at {slot_upper}", err=True)
+        raise typer.Exit(code=1)
+    macros_module.delete(sha1, slot_upper)
+    label = existing.name or "(unnamed)"
+    typer.echo(f"deleted {slot_upper} ({label}).")
+
+
 @app.command()
 def list_roms() -> None:
     """List ROMs in ~/.gbax/roms/."""
