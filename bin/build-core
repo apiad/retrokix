@@ -45,6 +45,7 @@ fi
 mkdir -p "$BUILD_DIR/mgba/build"
 cd "$BUILD_DIR/mgba/build"
 cmake .. \
+  -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
   -DBUILD_QT=OFF \
   -DBUILD_SDL=OFF \
   -DBUILD_LIBRETRO=ON \

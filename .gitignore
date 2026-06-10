@@ -11,6 +11,10 @@ dist/
 # But ignore other stray .so files:
 *.so
 !tests/cores/*.so
+
+# Bundled-core artifacts staged by bin/build-core — only the release wheel
+# ships these. Both files are regenerable from .mgba-version.
+src/gbax/cores/LICENSE.mGBA
 tests/fixtures/*.sav
 tests/fixtures/*.state
 .coverage
