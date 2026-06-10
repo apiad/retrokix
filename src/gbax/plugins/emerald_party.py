@@ -276,9 +276,58 @@ def http_weaknesses(ctx, species_id: int):
     }
 
 
-# --- Opponent tracking (manual until in-battle reader lands in Slice 3+) ---
+# --- Battle state reader (Pokémon Emerald US v1.0) ---
+#
+# gBattleMons[4] sits in EWRAM as a fully-decoded BattlePokemon array
+# (88 bytes per battler). Singles: opponent is index 1.
+# Source: include/pokemon.h struct BattlePokemon, src/battle_main.c:164.
+#
+# Address is the well-known Emerald US v1.0 (rev 0) offset.
+# ROM SHA1 we expect: f3ae088181bf583e55daf962a92bb46f4f1d07b7
 
-_opponent: dict | None = None  # {"species": int, "level": int}
+EMERALD_US_V10_SHA1 = "f3ae088181bf583e55daf962a92bb46f4f1d07b7"
+GBATTLE_MONS_BASE = 0x02024084
+BATTLE_MON_SIZE = 88
+OPP_SINGLES_SLOT = 1
+
+# Offsets within a BattlePokemon, source: include/pokemon.h
+BMON_OFF_SPECIES = 0x00
+BMON_OFF_HP = 0x28
+BMON_OFF_LEVEL = 0x2A
+BMON_OFF_MAX_HP = 0x2C
+BMON_OFF_TYPES = 0x21  # u8 × 2
+
+
+def read_battle_opponent(runtime):
+    """Read gBattleMons[1]. Return a dict if it looks like a live Pokémon,
+    else None. Validation guards against reading garbage when not in battle."""
+    base = GBATTLE_MONS_BASE + OPP_SINGLES_SLOT * BATTLE_MON_SIZE
+    species = struct.unpack("<H", runtime.read_memory(base + BMON_OFF_SPECIES, 2))[0]
+    if species == 0 or species > 412:
+        return None
+    level = runtime.read_memory(base + BMON_OFF_LEVEL, 1)[0]
+    if level == 0 or level > 100:
+        return None
+    max_hp = struct.unpack("<H", runtime.read_memory(base + BMON_OFF_MAX_HP, 2))[0]
+    if max_hp == 0 or max_hp > 999:
+        return None
+    hp = struct.unpack("<H", runtime.read_memory(base + BMON_OFF_HP, 2))[0]
+    if hp > max_hp:
+        return None
+    return {
+        "species": species,
+        "species_name": SPECIES_NAMES.get(species, f"#{species}"),
+        "level": level,
+        "hp": hp,
+        "max_hp": max_hp,
+        "auto": True,
+    }
+
+
+# --- Opponent tracking — auto-detected in battle, overridable via POST ---
+
+_opponent: dict | None = None  # {"species": int, "level": int, "auto": bool?}
+_autodetect_enabled = False  # set at on_setup once we verify the ROM
 
 
 @p.route("/opponent", methods=["GET"])
@@ -307,11 +356,37 @@ def http_opponent_clear(ctx):
     return {"cleared": True}
 
 
+@p.on_frame(every=30)
+def _poll_battle_opponent(ctx):
+    """Auto-detect: when a battle Pokémon is live in gBattleMons[1], tag it.
+    When it goes away, clear (but only if the current tag was auto-set —
+    a manual POST takes precedence)."""
+    global _opponent
+    if not _autodetect_enabled:
+        return
+    try:
+        detected = read_battle_opponent(ctx.runtime)
+    except Exception:
+        detected = None
+    if detected is not None:
+        _opponent = detected
+        return
+    if _opponent is not None and _opponent.get("auto"):
+        _opponent = None
+
+
 @p.on_setup
 def setup(ctx):
-    global _live, _render_fn
+    global _live, _render_fn, _autodetect_enabled
     from rich.console import Console, Group
     from rich.live import Live
+
+    rom_sha = getattr(ctx.runtime, "rom_sha1", None)
+    if rom_sha == EMERALD_US_V10_SHA1:
+        _autodetect_enabled = True
+        ctx.log("emerald-party: auto-detect enabled (Emerald US v1.0)")
+    else:
+        ctx.log(f"emerald-party: auto-detect off (rom sha {rom_sha} != Emerald US v1.0); manual POST /opponent only")
 
     def render():
         party = _build_table(ctx.runtime)
