@@ -279,29 +279,32 @@ core is a single self-contained `.so`. See
 pip install gbax
 ```
 
-You also need the libretro mGBA core (`mgba_libretro.so`). The wheel doesn't
-bundle it yet — for now, build it from source:
+That's the whole install on Linux x86_64 — the wheel ships a prebuilt
+`mgba_libretro.so` inside it, so there's no separate cmake step.
 
-```bash
-git clone --depth=1 https://github.com/mgba-emu/mgba.git /tmp/mgba
-cd /tmp/mgba && mkdir build && cd build
-cmake .. \
-  -DBUILD_QT=OFF -DBUILD_SDL=OFF -DBUILD_LIBRETRO=ON \
-  -DBUILD_SHARED=OFF -DBUILD_STATIC=OFF \
-  -DUSE_LUA=OFF -DUSE_FREETYPE=OFF -DUSE_DISCORD_RPC=OFF \
-  -DUSE_LIBZIP=OFF -DBUILD_LTO=OFF -DCMAKE_BUILD_TYPE=Release
-make mgba_libretro -j$(nproc)
+### Bundled binaries
 
-mkdir -p ~/.gbax/cores
-cp mgba_libretro.so ~/.gbax/cores/
-export GBAX_CORE_PATH=~/.gbax/cores/mgba_libretro.so
-```
+The Linux x86_64 wheel includes a prebuilt `mgba_libretro.so` built from
+[mgba-emu/mgba](https://github.com/mgba-emu/mgba) at the tag pinned in
+[`.mgba-version`](.mgba-version) (currently `0.10.5`). The binary is
+licensed under the [Mozilla Public License 2.0](https://www.mozilla.org/MPL/2.0/);
+the upstream license text ships alongside it at `gbax/cores/LICENSE.mGBA`.
 
-System packages needed: `cmake build-essential libsdl2-dev libpng-dev
-libsqlite3-dev`. Then re-run `pip install gbax`.
+You can swap the bundled core for your own build (alternative cores,
+local mGBA patches, debug builds) by pointing `$GBAX_CORE_PATH` at your
+own `.so`. The env var always takes precedence over the bundled core.
 
-The full procedure (including why each flag matters) is in
-[`know-how/building-libretro-core.md`](know-how/building-libretro-core.md).
+The sdist (`gbax-X.Y.Z.tar.gz`) is what `pip install` uses on
+non-Linux-x86_64 platforms; it ships no binary, and `gbax play` will
+exit at startup with instructions to set `$GBAX_CORE_PATH`. macOS,
+Windows, and ARM Linux are not yet supported.
+
+### Building the core yourself
+
+For contributors hacking on the binding or bumping the pinned mGBA
+version, [`know-how/building-libretro-core.md`](know-how/building-libretro-core.md)
+walks through `bin/build-core` — one command that produces a fresh
+`mgba_libretro.so` and stages it where the wheel picks it up.
 
 ## Examples
 
