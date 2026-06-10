@@ -72,13 +72,25 @@ PARTY_BASE = 0x020244EC     # slot 0 start
 SLOT_SIZE = 100             # bytes per party slot
 SLOT_COUNT = 6
 
-# Offsets WITHIN a slot (slot+N):
+# Offsets WITHIN a 100-byte party slot. Source: include/pokemon.h (struct
+# BoxPokemon + Pokemon trailer). The first 32 bytes are clear-text BoxPokemon
+# header; offsets 0x20..0x4F are the encrypted 48-byte substructure block;
+# offsets 0x50..0x63 are the unencrypted Pokemon trailer with status + stats.
 OFF_PERSONALITY = 0x00      # u32
 OFF_OTID = 0x04             # u32
+OFF_NICKNAME = 0x08         # 10 bytes
+OFF_LANGUAGE = 0x12         # u8
+OFF_CHECKSUM = 0x1C         # u16
 OFF_ENC_BLOCK = 0x20        # 48 encrypted bytes (4 × 12-byte substructures)
+OFF_STATUS = 0x50           # u32 — sleep counter / poison / burn / freeze / para
 OFF_LEVEL = 0x54            # u8
 OFF_CURRENT_HP = 0x56       # u16_le
 OFF_MAX_HP = 0x58           # u16_le
+OFF_STAT_ATK = 0x5A         # u16_le
+OFF_STAT_DEF = 0x5C
+OFF_STAT_SPE = 0x5E
+OFF_STAT_SPA = 0x60
+OFF_STAT_SPD = 0x62
 
 # 24 permutations of (Growth, Attacks, EVs, Misc) within the encrypted block,
 # indexed by personality % 24.
@@ -102,44 +114,193 @@ def _u32(runtime, addr):
     return struct.unpack("<I", runtime.read_memory(addr, 4))[0]
 
 
-def _decrypt_growth(enc_block: bytes, key: int) -> dict:
-    """Return the Growth substructure as {species, held, exp, pp_bonus, friendship}."""
+def _decrypt_block(enc_block: bytes, key: int) -> bytes:
+    """XOR every u32 word in the 48-byte block with the (personality ^ otId)
+    key. Returns plaintext bytes in the same permuted order as the cipher."""
     dec = bytearray()
     for i in range(0, 48, 4):
         w = struct.unpack("<I", enc_block[i:i + 4])[0] ^ key
         dec.extend(struct.pack("<I", w))
-    # (We don't know the permutation yet — caller does.)
-    return dec
+    return bytes(dec)
+
+
+def _split_substructures(plain: bytes, personality: int) -> dict:
+    """Return dict with keys 'G', 'A', 'E', 'M' → 12-byte substructure each,
+    using the personality%24 permutation. Source: include/pokemon.h struct
+    BoxPokemon (the 24 substruct orders are documented in pokeemerald)."""
+    order = SUBSTRUCT_ORDERS[personality % 24]
+    return {letter: plain[i * 12:(i + 1) * 12] for i, letter in enumerate(order)}
+
+
+def _parse_growth(sub: bytes) -> dict:
+    """Source: src/pokemon.c::struct PokemonSubstruct0."""
+    species, held, exp = struct.unpack("<HHI", sub[:8])
+    pp_bonuses = sub[8]
+    friendship = sub[9]
+    return {
+        "species": species,
+        "held_item": held,
+        "experience": exp,
+        "pp_bonuses": pp_bonuses,
+        "friendship": friendship,
+    }
+
+
+def _parse_attacks(sub: bytes) -> dict:
+    """Source: src/pokemon.c::struct PokemonSubstruct1. 4 moves + 4 PPs."""
+    moves = list(struct.unpack("<HHHH", sub[:8]))
+    pp = list(sub[8:12])
+    return {"moves": moves, "pp": pp}
+
+
+def _parse_evs(sub: bytes) -> dict:
+    """Source: src/pokemon.c::struct PokemonSubstruct2. 6 EVs + 6 contest stats."""
+    hp_ev, atk_ev, def_ev, spe_ev, spa_ev, spd_ev = sub[:6]
+    return {
+        "hp": hp_ev, "atk": atk_ev, "def": def_ev,
+        "spe": spe_ev, "spa": spa_ev, "spd": spd_ev,
+        "contest": list(sub[6:12]),  # cool/beauty/cute/smart/tough/sheen
+    }
+
+
+def _parse_misc(sub: bytes) -> dict:
+    """Source: src/pokemon.c::struct PokemonSubstruct3.
+    Layout: pokerus(u8), metLocation(u8), originInfo(u16),
+            IVs+egg+abilityNum(u32), ribbons(u32)."""
+    pokerus = sub[0]
+    met_location = sub[1]
+    origin_info = struct.unpack("<H", sub[2:4])[0]
+    iv_word = struct.unpack("<I", sub[4:8])[0]
+    ribbons = struct.unpack("<I", sub[8:12])[0]
+    # originInfo: metLevel:7, originGame:4, pokeBall:4, otGender:1
+    met_level = origin_info & 0x7F
+    origin_game = (origin_info >> 7) & 0x0F
+    poke_ball = (origin_info >> 11) & 0x0F
+    ot_gender = (origin_info >> 15) & 0x01
+    # IVs: hp:5, atk:5, def:5, spe:5, spa:5, spd:5, isEgg:1, abilityNum:1
+    ivs = {
+        "hp": iv_word & 0x1F,
+        "atk": (iv_word >> 5) & 0x1F,
+        "def": (iv_word >> 10) & 0x1F,
+        "spe": (iv_word >> 15) & 0x1F,
+        "spa": (iv_word >> 20) & 0x1F,
+        "spd": (iv_word >> 25) & 0x1F,
+    }
+    is_egg = (iv_word >> 30) & 1
+    ability_num = (iv_word >> 31) & 1
+    return {
+        "pokerus": pokerus,
+        "met_location": met_location,
+        "met_level": met_level,
+        "origin_game": origin_game,
+        "poke_ball": poke_ball,
+        "ot_gender": ot_gender,
+        "ivs": ivs,
+        "is_egg": is_egg,
+        "ability_num": ability_num,
+        "ribbons": ribbons,
+    }
+
+
+# Status u32 layout (0x50): sleep counter in low 3 bits; poison, burn, freeze,
+# paralysis, toxic each as a flag. Source: include/pokemon.h STATUS1_* defines.
+STATUS_LABELS = [
+    (0x07, "sleep", lambda v: f"sleep ({v} turns)"),
+    (0x08, "poison", lambda v: "poison"),
+    (0x10, "burn", lambda v: "burn"),
+    (0x20, "freeze", lambda v: "freeze"),
+    (0x40, "paralysis", lambda v: "paralysis"),
+    (0x80, "toxic", lambda v: "toxic"),
+]
+
+
+def _decode_status(status_word: int) -> str | None:
+    sleep_turns = status_word & 0x07
+    if sleep_turns:
+        return f"sleep ({sleep_turns}T)"
+    if status_word & 0x08:
+        return "poison"
+    if status_word & 0x10:
+        return "burn"
+    if status_word & 0x20:
+        return "freeze"
+    if status_word & 0x40:
+        return "paralysis"
+    if status_word & 0x80:
+        return "toxic"
+    return None
+
+
+NATURE_NAMES_LOCAL = [
+    "Hardy", "Lonely", "Brave", "Adamant", "Naughty",
+    "Bold", "Docile", "Relaxed", "Impish", "Lax",
+    "Timid", "Hasty", "Serious", "Jolly", "Naive",
+    "Modest", "Mild", "Quiet", "Bashful", "Rash",
+    "Calm", "Gentle", "Sassy", "Careful", "Quirky",
+]
 
 
 def read_slot(runtime, slot_idx: int):
-    """Return a dict for the slot, or None if the slot is empty."""
+    """Return a dict for the slot, or None if the slot is empty. Decodes
+    all 4 substructures (Growth, Attacks, EVs, Misc) and surfaces the
+    Pokémon trailer (status + computed stats)."""
     base = PARTY_BASE + slot_idx * SLOT_SIZE
     personality = _u32(runtime, base + OFF_PERSONALITY)
     if personality == 0:
         return None
     otid = _u32(runtime, base + OFF_OTID)
     key = personality ^ otid
+
+    # Unencrypted trailer
     level = _u8(runtime, base + OFF_LEVEL)
     hp = _u16(runtime, base + OFF_CURRENT_HP)
     max_hp = _u16(runtime, base + OFF_MAX_HP)
+    status_word = _u32(runtime, base + OFF_STATUS)
+    stats = {
+        "atk": _u16(runtime, base + OFF_STAT_ATK),
+        "def": _u16(runtime, base + OFF_STAT_DEF),
+        "spe": _u16(runtime, base + OFF_STAT_SPE),
+        "spa": _u16(runtime, base + OFF_STAT_SPA),
+        "spd": _u16(runtime, base + OFF_STAT_SPD),
+    }
 
+    # Encrypted block (48 bytes), decrypt and split.
     enc = runtime.read_memory(base + OFF_ENC_BLOCK, 48)
-    dec = _decrypt_growth(enc, key)
-    order = SUBSTRUCT_ORDERS[personality % 24]
-    g_pos = order.index("G") * 12
-    species = struct.unpack("<H", dec[g_pos:g_pos + 2])[0]
-    held = struct.unpack("<H", dec[g_pos + 2:g_pos + 4])[0]
-    exp = struct.unpack("<I", dec[g_pos + 4:g_pos + 8])[0]
-    pp_bonus = dec[g_pos + 8]
-    friendship = dec[g_pos + 9]
+    plain = _decrypt_block(enc, key)
+    subs = _split_substructures(plain, personality)
+    growth_info = _parse_growth(subs["G"])
+    attacks_info = _parse_attacks(subs["A"])
+    evs_info = _parse_evs(subs["E"])
+    misc_info = _parse_misc(subs["M"])
 
-    growth = GROWTH_RATES.get(species, GROWTH_MEDIUM_FAST)
-    exp_cur_lv = exp_at_level(growth, level)
-    exp_next_lv = exp_at_level(growth, level + 1) if level < 100 else exp_cur_lv
+    species = growth_info["species"]
+    exp = growth_info["experience"]
+    growth_rate = GROWTH_RATES.get(species, GROWTH_MEDIUM_FAST)
+    exp_cur_lv = exp_at_level(growth_rate, level)
+    exp_next_lv = exp_at_level(growth_rate, level + 1) if level < 100 else exp_cur_lv
     span = max(1, exp_next_lv - exp_cur_lv)
     into = max(0, exp - exp_cur_lv)
     to_next = max(0, exp_next_lv - exp)
+
+    nature_id = personality % 25
+    nature_name = NATURE_NAMES_LOCAL[nature_id]
+
+    # Move names from the bundled moves table
+    from gbax.plugins.emerald_data import load_moves
+    moves_table = load_moves()
+    move_records = []
+    for i, mid in enumerate(attacks_info["moves"]):
+        if mid == 0:
+            continue
+        info = moves_table.get(str(mid)) or {}
+        move_records.append({
+            "id": mid,
+            "name": info.get("name", f"#{mid}"),
+            "type": info.get("type"),
+            "power": info.get("power"),
+            "accuracy": info.get("accuracy"),
+            "pp_current": attacks_info["pp"][i],
+        })
 
     return {
         "slot": slot_idx,
@@ -152,11 +313,23 @@ def read_slot(runtime, slot_idx: int):
         "exp_into_level": into,
         "exp_to_next_level": to_next,
         "exp_level_span": span,
-        "held": held,
-        "friendship": friendship,
-        "pp_bonus": pp_bonus,
+        "held": growth_info["held_item"],
+        "friendship": growth_info["friendship"],
+        "pp_bonus": growth_info["pp_bonuses"],
         "next_move": next_move_for(species, level),
         "next_evolution": next_evolution_for(species, level),
+        # Slice 3 additions:
+        "nature": nature_name,
+        "nature_id": nature_id,
+        "ability_num": misc_info["ability_num"],
+        "ivs": misc_info["ivs"],
+        "evs": {k: v for k, v in evs_info.items() if k != "contest"},
+        "stats": stats,
+        "status": _decode_status(status_word),
+        "moves": move_records,
+        "met_level": misc_info["met_level"],
+        "poke_ball": misc_info["poke_ball"],
+        "personality": personality,
     }
 
 
@@ -237,28 +410,36 @@ def _type_id_for_name(name: str) -> int | None:
     return None
 
 
-def _best_move_against(species: int, level: int, defender_types: list[int]):
+def _best_move_against(slot_data: dict, defender_types: list[int]):
     """Return (move_name, mul, power) for this slot's best move vs the
-    defender, or None if no damaging move."""
-    from gbax.plugins.emerald_data import load_moves
+    defender, or None if no damaging move. Uses the slot's REAL moves
+    when available (post-Slice-3); falls back to the level-up heuristic
+    when no moves are surfaced."""
     from gbax.plugins.emerald_formulas import type_effectiveness
-    moves = load_moves()
+    # Real moveset from substructure decode
+    real_moves = slot_data.get("moves") or []
+    if real_moves:
+        candidates = [(m["name"], m.get("type") or "NORMAL", m.get("power") or 0)
+                      for m in real_moves]
+    else:
+        from gbax.plugins.emerald_data import load_moves
+        moves_table = load_moves()
+        candidates = []
+        for m in _likely_moves(slot_data["species"], slot_data["level"]):
+            info = moves_table.get(str(m["move_id"])) or {}
+            candidates.append((m["move_name"], info.get("type", "NORMAL"), info.get("power", 0)))
     best = None
-    for m in _likely_moves(species, level):
-        move_info = moves.get(str(m["move_id"])) or {}
-        power = move_info.get("power", 0)
+    for name, type_name, power in candidates:
         if power == 0:
             continue
-        type_name = move_info.get("type", "NORMAL")
         type_id = _type_id_for_name(type_name)
         if type_id is None:
             continue
         mul = type_effectiveness(type_id, defender_types)
-        # Crude damage proxy: power × mul. Real calc waits for Slice 3.
         score = power * mul
         if best is None or score > best["score"]:
             best = {
-                "move_name": m["move_name"],
+                "move_name": name,
                 "type_name": type_name,
                 "mul": mul,
                 "power": power,
@@ -310,7 +491,7 @@ def _build_opponent_panel(runtime=None):
             slot = read_slot(runtime, i)
             if slot is None:
                 continue
-            best = _best_move_against(slot["species"], slot["level"], types)
+            best = _best_move_against(slot, types)
             if best is None:
                 rows.append((slot["species_name"], "(status only)", "—", 0))
                 continue
