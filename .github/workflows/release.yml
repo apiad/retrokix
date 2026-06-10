@@ -1,8 +1,10 @@
 name: release
 
-# Build the wheel + sdist on every GitHub release, publish to PyPI via
-# trusted publishing (OIDC). No tokens stored anywhere — the publish job
-# requests a short-lived token from PyPI using GitHub's identity claim.
+# Build the manylinux x86_64 wheel (with bundled mgba_libretro.so) +
+# sdist on every published GitHub release, then publish both to PyPI
+# via trusted publishing (OIDC). No tokens stored anywhere — the
+# publish job requests a short-lived token from PyPI using GitHub's
+# identity claim.
 #
 # Trusted publisher must be configured on PyPI first:
 #   https://pypi.org/manage/project/gbax/settings/publishing/
@@ -20,17 +22,26 @@ on:
 jobs:
   build:
     runs-on: ubuntu-24.04
+    container: quay.io/pypa/manylinux_2_28_x86_64
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
+      - name: Install build deps
+        run: yum install -y cmake gcc-c++ make git
 
-      - name: Build sdist + wheel
+      - name: Build mgba_libretro.so + stage into wheel
+        run: bin/build-core
+
+      - name: Build wheel + sdist
         run: |
-          python -m pip install --upgrade pip build
-          python -m build
+          /opt/python/cp311-cp311/bin/pip install --upgrade pip build auditwheel
+          /opt/python/cp311-cp311/bin/python -m build --wheel
+          /opt/python/cp311-cp311/bin/python -m build --sdist
+
+      - name: Inspect wheel platform tag
+        run: |
+          ls -la dist/
+          /opt/python/cp311-cp311/bin/auditwheel show dist/gbax-*.whl
 
       - uses: actions/upload-artifact@v4
         with:
