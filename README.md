@@ -41,7 +41,9 @@ That's the headline: it's an emulator you can pipe.
 
 ## Status
 
-- **Alpha.** v0.0.1. Works on Linux. macOS / Windows are PR-welcome.
+- **Alpha.** v0.3.0. Works on Linux x86_64 — the wheel bundles the
+  libretro core, so `pip install gbax` is a one-step setup. macOS /
+  Windows / ARM are PR-welcome.
 - **MPL-2.0.** Same license as the underlying mGBA core.
 - **No ROMs bundled.** `gbax download` pulls from the public No-Intro mirror
   at archive.org. Use it for games you own; respect your local laws.
@@ -279,32 +281,26 @@ core is a single self-contained `.so`. See
 pip install gbax
 ```
 
-That's the whole install on Linux x86_64 — the wheel ships a prebuilt
-`mgba_libretro.so` inside it, so there's no separate cmake step.
+One command on Linux x86_64 and you're done. The wheel ships a
+prebuilt `mgba_libretro.so` inside it, so there's no cmake, no
+apt-get, no `$GBAX_CORE_PATH` to set — `gbax play emerald` works on a
+fresh box.
 
-### Bundled binaries
-
-The Linux x86_64 wheel includes a prebuilt `mgba_libretro.so` built from
+The bundled core is built from
 [mgba-emu/mgba](https://github.com/mgba-emu/mgba) at the tag pinned in
-[`.mgba-version`](.mgba-version) (currently `0.10.5`). The binary is
-licensed under the [Mozilla Public License 2.0](https://www.mozilla.org/MPL/2.0/);
-the upstream license text ships alongside it at `gbax/cores/LICENSE.mGBA`.
+[`.mgba-version`](.mgba-version) — currently `0.10.5`, MPL-2.0,
+upstream license shipped alongside at `gbax/cores/LICENSE.mGBA`. Want
+to swap in a debug build, a different mGBA version, or another
+libretro core? Point `$GBAX_CORE_PATH` at your own `.so`; the env var
+always wins.
 
-You can swap the bundled core for your own build (alternative cores,
-local mGBA patches, debug builds) by pointing `$GBAX_CORE_PATH` at your
-own `.so`. The env var always takes precedence over the bundled core.
+Outside Linux x86_64 (macOS, Windows, ARM, ancient glibc) pip falls
+through to the sdist, which carries no binary. `gbax play` will exit
+at startup with instructions; bring your own core and set
+`$GBAX_CORE_PATH`. PRs adding more platform wheels are welcome.
 
-The sdist (`gbax-X.Y.Z.tar.gz`) is what `pip install` uses on
-non-Linux-x86_64 platforms; it ships no binary, and `gbax play` will
-exit at startup with instructions to set `$GBAX_CORE_PATH`. macOS,
-Windows, and ARM Linux are not yet supported.
-
-### Building the core yourself
-
-For contributors hacking on the binding or bumping the pinned mGBA
-version, [`know-how/building-libretro-core.md`](know-how/building-libretro-core.md)
-walks through `bin/build-core` — one command that produces a fresh
-`mgba_libretro.so` and stages it where the wheel picks it up.
+Full coverage in [`docs/installing.md`](docs/installing.md): lookup
+order, supported distros, version bumps, compliance.
 
 ## Examples
 
@@ -365,7 +361,8 @@ $ curl -s 'localhost:8420/memory?addr=33718916&len=4' | jq -r .data
 | ⏳      | YAML user scripts — `Ctrl+H` runs a sequence of presses + memory pokes        |
 | ⏳      | Recording / replay — deterministic input log + divergence detection           |
 | ⏳      | Per-game plugins — Python plugins expose `/state` and `/actions` for Pokémon, etc. |
-| ⏳      | macOS / Windows wheels                                                        |
+| ✅      | Bundled libretro core — `pip install gbax` ships a working emulator on Linux x86_64 |
+| ⏳      | macOS / Windows / aarch64 wheels                                              |
 
 Full design at `vault/Atlas/Architecture/2026-06-09-gbax-design.md` (in the
 companion vault, not this repo).
