@@ -999,8 +999,77 @@ def http_battle_switch(ctx, party_slot: int):
 
 # --- Auto-fight driver (policy B: HP-threshold switch + matchup-best bench) ---
 
-AUTO_HP_SWITCH_THRESHOLD = 0.25   # swap if active HP fraction below this
+AUTO_HP_SWITCH_THRESHOLD = 0.40   # swap if active HP fraction below this
 AUTO_MAX_ITERS = 400               # safety cap on advance loop per call
+
+
+def _confirm_out_of_battle(runtime, samples: int = 3, frames_between: int = 20) -> bool:
+    """Sample in_battle several times before believing False — gBattleTypeFlags
+    briefly clears to 0 during sub-menus and transitions."""
+    if in_battle(runtime):
+        return False
+    for _ in range(samples - 1):
+        _wait_frames(runtime, frames_between)
+        if in_battle(runtime):
+            return False
+    return True
+
+
+def _detect_forced_switch(runtime) -> bool:
+    """Forced switch = battle ongoing, but the active player Pokémon is
+    fainted. The party menu opens with no CANCEL button — we must pick."""
+    if not in_battle(runtime):
+        return False
+    active = _read_battle_mon(runtime, BMON_PLAYER_SLOT)
+    # If active reads ok with hp > 0, no forced switch
+    if active and active.get("hp", 1) > 0:
+        return False
+    # Active is fainted or unreadable. Check the party for any fainted.
+    party = _party_slots_full(runtime)
+    if not any(s and s.get("hp", 0) == 0 for s in party if s):
+        return False
+    return True
+
+
+def _handle_forced_switch(runtime) -> bool:
+    """Navigate party menu to pick best healthy bench by matchup against
+    the current opponent (or first healthy if opp unreadable). Returns
+    True if a swap sequence was sent."""
+    party = _party_slots_full(runtime)
+    # The fainted slot acts as the "active" position in the menu layout
+    fainted_slot = None
+    for i, s in enumerate(party):
+        if s and s.get("hp", 0) == 0:
+            fainted_slot = i
+            break
+    if fainted_slot is None:
+        return False
+    opp = _read_battle_mon(runtime, OPP_SINGLES_SLOT)
+    opp_types = opp["types"] if opp else None
+    best_idx = None
+    if opp_types:
+        best_idx = _bench_best_switch(runtime, fainted_slot, opp_types)
+    if best_idx is None:
+        for i, s in enumerate(party):
+            if i == fainted_slot:
+                continue
+            if s and s.get("hp", 0) > 0:
+                best_idx = i
+                break
+    if best_idx is None:
+        return False
+    vis_pos = _visual_position(best_idx, fainted_slot)
+    # Dismiss any "X has no energy" overlay first
+    _press_button(runtime, "a", settle_frames=40)
+    # Navigate: Right then Down × (vis_pos - 1)
+    _press_button(runtime, "right", settle_frames=20)
+    for _ in range(vis_pos - 1):
+        _press_button(runtime, "down", settle_frames=15)
+    # A on chosen Pokémon → "Send Out" or SHIFT/SUMMARY/CANCEL
+    _press_button(runtime, "a", settle_frames=60)
+    # A again to confirm send-out (or pick SHIFT from submenu)
+    _press_button(runtime, "a", settle_frames=200)
+    return True
 
 
 def _phase(runtime) -> int:
@@ -1036,9 +1105,15 @@ def _advance_to_decision(runtime, max_iters=AUTO_MAX_ITERS):
     """
     stuck_iters = 0
     cancel_attempted = False
+    forced_switch_attempted = False
     for _ in range(max_iters):
-        if not in_battle(runtime):
+        if _confirm_out_of_battle(runtime):
             return None
+        # Top-priority check: forced switch (our active fainted, party menu open)
+        if _detect_forced_switch(runtime) and not forced_switch_attempted:
+            forced_switch_attempted = True
+            _handle_forced_switch(runtime)
+            continue
         p = _phase(runtime)
         if p == PHASE_ACTION_MENU:
             return p
@@ -1353,7 +1428,7 @@ def _auto_opponent_handler(ctx):
         start_species = start["species"] if start else None
         noops = 0
         for _ in range(20):
-            if not in_battle(rt):
+            if _confirm_out_of_battle(rt):
                 break
             result = _auto_one_turn(rt)
             decision = result.get("decision") or {}
