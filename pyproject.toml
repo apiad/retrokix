@@ -75,6 +75,7 @@ packages = ["src/gbax"]
 "src/gbax/render/shaders/_vertex.wgsl" = "gbax/render/shaders/_vertex.wgsl"
 "src/gbax/render/shaders/nearest.wgsl" = "gbax/render/shaders/nearest.wgsl"
 "src/gbax/render/shaders/linear.wgsl" = "gbax/render/shaders/linear.wgsl"
+"src/gbax/render/shaders/crt_lottes.wgsl" = "gbax/render/shaders/crt_lottes.wgsl"
 
 [tool.hatch.build.targets.sdist]
 # Keep build artifacts out of the source tarball — only the platform
