@@ -1034,7 +1034,7 @@ def _advance_to_decision(runtime, max_iters=AUTO_MAX_ITERS):
     Unknown phases also get a B press as the safest default (Yes/No
     prompts at unknown phase values, sub-sub-menus, etc.).
     """
-    consecutive_b = 0
+    stuck_iters = 0
     cancel_attempted = False
     for _ in range(max_iters):
         if not in_battle(runtime):
@@ -1042,52 +1042,42 @@ def _advance_to_decision(runtime, max_iters=AUTO_MAX_ITERS):
         p = _phase(runtime)
         if p == PHASE_ACTION_MENU:
             return p
+
+        stuck_iters += 1
+
+        # If we've been stuck for 10+ iterations not reaching the action
+        # menu, the party menu is likely open in a mode that bounces
+        # between phase 1 (cursor-on-Pokemon, 'already in battle' text)
+        # and phase 3 (SHIFT/SUMMARY/CANCEL sub-menu) — neither of
+        # which our normal handlers escape. Actively navigate to the
+        # CANCEL button at the bottom-right of the party menu.
+        if stuck_iters >= 10 and not cancel_attempted:
+            cancel_attempted = True
+            # Step 1: press B a couple times to clear any submenu/text overlay
+            _press_button(runtime, "b", settle_frames=60)
+            _press_button(runtime, "b", settle_frames=60)
+            # Step 2: from left column (active), Right → bench top, then
+            # Down 5× to reach CANCEL at bottom-right.
+            _press_button(runtime, "right", settle_frames=20)
+            for _ in range(5):
+                _press_button(runtime, "down", settle_frames=15)
+            _press_button(runtime, "a", settle_frames=150)
+            continue
+
         if p == PHASE_SECONDARY_MENU:
-            consecutive_b += 1
-            # First 2 attempts: try plain B (closes most submenus).
-            if consecutive_b <= 2:
-                _press_button(runtime, "b", settle_frames=80)
-                continue
-            # B isn't escaping — the party menu was opened in a mode
-            # that doesn't accept B-cancel (Roxanne's swap-prompt does
-            # this on some builds). Actively navigate to the CANCEL
-            # button (bottom-right of the party menu screen) and press
-            # A to dismiss.
-            if not cancel_attempted:
-                cancel_attempted = True
-                # From left column (active), Right → bench top, then
-                # Down 5× to reach CANCEL at bottom-right.
-                _press_button(runtime, "right", settle_frames=20)
-                for _ in range(5):
-                    _press_button(runtime, "down", settle_frames=15)
-                _press_button(runtime, "a", settle_frames=120)
-                continue
-            if consecutive_b > 8:
-                return p
             _press_button(runtime, "b", settle_frames=80)
             continue
-        consecutive_b = 0
         if p in WAIT_PHASES:
             _wait_frames(runtime, 80)
             continue
         if p in ADVANCEABLE_PHASES:
             _press_button(runtime, "a", settle_frames=80)
-            # Defensive: if A accidentally confirmed the trainer's
-            # "Will you change Pokemon?" Yes/No prompt, the party menu
-            # opens. Back out immediately rather than waiting for the
-            # next loop iteration (which has a settle gap and may
-            # observe a transient).
             if _phase(runtime) == PHASE_SECONDARY_MENU:
                 _press_button(runtime, "b", settle_frames=80)
                 _press_button(runtime, "b", settle_frames=80)
             continue
-        # Unknown phase — try B as the safer default rather than returning
-        # immediately. Many sub-prompts (Yes/No, "use which item?", etc.)
-        # close cleanly with B.
+        # Unknown phase — try B as safest default
         _press_button(runtime, "b", settle_frames=60)
-        consecutive_b += 1
-        if consecutive_b > 8:
-            return p
     return None
 
 
