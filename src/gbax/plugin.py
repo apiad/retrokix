@@ -24,6 +24,9 @@ class Plugin:
         self.state_change_handlers: dict[str, list[tuple[Callable, Any]]] = {}
         # key_handlers: dict[slot, list[handler]]
         self.key_handlers: dict[str, list[Callable]] = {}
+        # http_routes: list of (path, methods, handler) tuples; mounted under
+        # /plugins/<plugin_name>/ when the play loop's --listen flag is set.
+        self.http_routes: list[tuple[str, list[str], Callable]] = []
 
     def on_setup(self, fn: Callable) -> Callable:
         self.setup_handlers.append(fn)
@@ -52,6 +55,20 @@ class Plugin:
         def decorator(fn: Callable) -> Callable:
             self.state_change_handlers.setdefault(tag, []).append((fn, to))
             return fn
+        return decorator
+
+    def route(self, path: str, methods: list[str] | None = None) -> Callable:
+        """Register an HTTP route mounted under ``/plugins/<name>/`` when --listen is on.
+
+        Handler signature: ``fn(ctx, **path_params)``. The path may use
+        FastAPI ``{param}`` syntax. The handler returns any JSON-able dict.
+        """
+        method_list = [m.upper() for m in (methods or ["GET"])]
+
+        def decorator(fn: Callable) -> Callable:
+            self.http_routes.append((path, method_list, fn))
+            return fn
+
         return decorator
 
     def on_key(self, key: str) -> Callable:

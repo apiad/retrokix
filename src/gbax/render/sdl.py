@@ -185,13 +185,61 @@ def play_loop(
 
     http_server_thread = None
     if listen:
+        import inspect
         import threading
 
         import uvicorn
+        from fastapi import APIRouter, HTTPException
 
         from gbax.api.server import create_app
 
         app = create_app(runtime)
+
+        plugin_summaries: list[dict] = []
+        if loaded_plugin is not None and plugin_ctx is not None and plugin_path is not None:
+            plugin_name = plugin_path.stem
+            plugin_router = APIRouter(prefix=f"/plugins/{plugin_name}", tags=[plugin_name])
+            for path_, methods_, handler_ in loaded_plugin.http_routes:
+                # Strip ctx from the FastAPI-visible signature so FastAPI's
+                # path/query param inspection only sees the user's extra params.
+                sig = inspect.signature(handler_)
+                params = list(sig.parameters.values())
+                if params and params[0].name == "ctx":
+                    fastapi_params = params[1:]
+                else:
+                    fastapi_params = params
+                fastapi_sig = sig.replace(parameters=fastapi_params)
+
+                def _make_endpoint(h):
+                    def endpoint(*args, **kwargs):
+                        try:
+                            with runtime._lock:
+                                return h(plugin_ctx, *args, **kwargs)
+                        except Exception as exc:
+                            raise HTTPException(
+                                status_code=500,
+                                detail=f"{type(exc).__name__}: {exc}",
+                            ) from exc
+                    return endpoint
+
+                ep = _make_endpoint(handler_)
+                ep.__signature__ = fastapi_sig
+                ep.__name__ = handler_.__name__
+                plugin_router.add_api_route(path_, ep, methods=methods_)
+            app.include_router(plugin_router)
+            plugin_summaries.append({
+                "name": plugin_name,
+                "path": str(plugin_path),
+                "routes": [
+                    {"path": f"/plugins/{plugin_name}{path_}", "methods": methods_}
+                    for path_, methods_, _ in loaded_plugin.http_routes
+                ],
+            })
+
+        @app.get("/plugins")
+        def _list_plugins():
+            return {"plugins": plugin_summaries}
+
         config = uvicorn.Config(
             app,
             host=listen_host,
@@ -207,6 +255,9 @@ def play_loop(
         http_server_thread = threading.Thread(target=_run_http, daemon=True)
         http_server_thread.start()
         print(f"gbax HTTP API listening on http://{listen_host}:{listen_port}")
+        for p_summary in plugin_summaries:
+            for r in p_summary["routes"]:
+                print(f"  plugin route: {','.join(r['methods'])} {r['path']}")
 
     sdl2.ext.init()
     sdl2.SDL_InitSubSystem(sdl2.SDL_INIT_AUDIO)
