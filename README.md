@@ -41,7 +41,7 @@ That's the headline: it's an emulator you can pipe.
 
 ## Status
 
-- **Alpha.** v0.6.0. Works on Linux x86_64 — the wheel bundles the
+- **Alpha.** v0.7.0. Works on Linux x86_64 — the wheel bundles the
   libretro core, so `pip install gbax` is a one-step setup. macOS /
   Windows / ARM are PR-welcome.
 - **MPL-2.0.** Same license as the underlying mGBA core.
@@ -60,6 +60,7 @@ fullscreen at launch.
 - `Ctrl+1`…`Ctrl+9` — save state to slot N (auto-persisted to `~/.gbax/saves/<rom-sha1>/`)
 - `Shift+1`…`Shift+9` — load slot N
 - `Ctrl+R` — toggle macro recording (see [Macros](#macros))
+- `Ctrl+F` — capture labeled state snapshot (see [State tracker](#state-tracker))
 - `F10` — toggle upscale filter (linear ↔ nearest)
 - `F11` — toggle borderless-desktop fullscreen
 - `F12` — screenshot to `~/.gbax/screenshots/`
@@ -158,6 +159,60 @@ you don't.
 Note: the record-stop prompt is plain `input()` on the terminal where
 you launched gbax. Alt-tab to the terminal to type the slot + name;
 the game pauses momentarily.
+
+### State tracker
+
+Teach gbax which memory addresses hold which gameplay values, by
+example. No per-game memory map ships with gbax — you label snapshots
+as you play (`hp=45, scene=fight-menu, money=12420`), gbax intersects
+the labels across captures and infers where each value lives.
+
+```
+[in-game]
+Ctrl+F                          # snapshot current state
+[alt-tab to terminal]
+capturing state — type labels (key=value, comma-separated):
+> scene=fight-menu, hp=45, max_hp=100, money=12420
+recording 30 frames…
+captured. (52,134 stable bytes)
+
+[move to a different scene, take damage, etc., and capture again]
+[repeat 5-10 times across the states you care about]
+
+[offline]
+$ gbax state compile emerald
+compiled → /home/you/.gbax/states/<sha1>/compiled.json
+
+$ gbax state list emerald
+captures: 7
+  hp        numeric      0x02024382  (u8)
+  max_hp    numeric      0x02024383  (u8)
+  money     numeric      0x02025e34  (u32_le)
+  scene     categorical  0x03000fa4  (3 values)
+
+[live readout, next time you play]
+$ gbax play emerald --watch-state
+┌─ state ────────────────────────────────────────────────────┐
+│ hp: 45    max_hp: 100    money: 12420    scene: fight-menu │
+└────────────────────────────────────────────────────────────┘
+```
+
+Refinement loop: if `money` shows the wrong value, that means
+inference picked a colliding address. Capture again at a unique
+money value (`gbax state ambiguous emerald` lists candidates),
+recompile, fixed.
+
+Currently:
+- **Numeric tags** (integer labels): supported widths are u8, u16-LE,
+  u32-LE.
+- **Categorical tags** (string labels): inferred via cross-group
+  discrimination. Need ≥2 distinct labels to discriminate.
+- **String tags** with custom in-game charsets aren't supported yet.
+
+Captures live at `~/.gbax/states/<rom-sha1>/captures/`; the compiled
+file at `~/.gbax/states/<rom-sha1>/compiled.json`. Use `gbax state
+list <rom>` to inspect and `gbax state ambiguous <rom>` to find tags
+that need more captures.
 
 ### Automation: Controller, Scenarios, Tournaments
 
@@ -417,7 +472,9 @@ $ curl -s 'localhost:8420/memory?addr=33718916&len=4' | jq -r .data
 | ✅      | Cheat codes — vendored libretro DB (~6700 codes), F1–F9 toggle, `/cheats` API |
 | ⏳      | YAML user scripts — `Ctrl+H` runs a sequence of presses + memory pokes        |
 | ✅      | Macros — record + replay input sequences via Ctrl+R, bound to any letter/digit/F-key (see [Macros](#macros)) |
-| ⏳      | Per-game plugins — Python plugins expose `/state` and `/actions` for Pokémon, etc. |
+| ✅      | State tracker — supervised memory inference + live Rich panel (see [State tracker](#state-tracker)) |
+| ⏳      | Triggers — bind macros to state changes (when scene=fight-menu, fire F3) |
+| ⏳      | Python `Controller.state` + HTTP `/state` endpoint |
 | ✅      | Bundled libretro core — `pip install gbax` ships a working emulator on Linux x86_64 |
 | ✅      | Fullscreen + GPU-accelerated linear upscale (F11), runtime filter toggle (F10) |
 | ⏳      | CRT / scanline / hqx shaders via wgpu                                         |
