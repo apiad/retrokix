@@ -67,6 +67,21 @@ packages = ["src/gbax"]
 "src/gbax/data/scenarios/__init__.py" = "gbax/data/scenarios/__init__.py"
 "src/gbax/data/scenarios/mk_arcade_easy.py" = "gbax/data/scenarios/mk_arcade_easy.py"
 "src/gbax/data/scenarios/smb3_world_1_1.py" = "gbax/data/scenarios/smb3_world_1_1.py"
+"src/gbax/cores/__init__.py" = "gbax/cores/__init__.py"
+"src/gbax/cores/mgba_libretro.so" = "gbax/cores/mgba_libretro.so"
+"src/gbax/cores/LICENSE.mGBA" = "gbax/cores/LICENSE.mGBA"
+
+[tool.hatch.build.targets.sdist]
+# Keep build artifacts out of the source tarball — only the platform
+# wheel ships the binary core. The sdist is the fallback for any
+# non-Linux-x86_64 install; runtime errors clearly when invoked.
+exclude = [
+  "src/gbax/cores/mgba_libretro.so",
+  "src/gbax/cores/LICENSE.mGBA",
+]
+
+[tool.hatch.build.hooks.custom]
+path = "hatch_build.py"
 
 [tool.ruff]
 line-length = 100
