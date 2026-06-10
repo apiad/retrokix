@@ -645,21 +645,36 @@ def in_battle(runtime) -> bool:
     return 0 < flags < 0x01000000
 
 
-# Battle phase detector — discovered via state-tracker capture diff across
-# (action_menu, move_menu, text) labelled snapshots. Single byte at this
-# address takes 2/3/5 in those phases. Iteratively expand as new phases
-# are encountered.
+# Battle phase detector — discovered via state-tracker capture diff +
+# live-poll exploration through wild encounter and Roxanne fight.
+# Mapping of byte values at 0x02024332:
+#
+#   0 = wild encounter intro / send-out animation
+#   2 = action menu (FIGHT/BAG/PKMN/RUN)
+#   3 = secondary selection menu (move menu OR party menu — same value;
+#       caller must distinguish via context, e.g. by sequence)
+#   5 = generic: text scroll, attack animation, Yes/No prompts,
+#       out-of-battle (overworld), battle outro
+#
+# Unknown: 1, 4 (likely trainer-battle intro, faint dialog, or
+# specific sub-states). Iteratively expand by labelling captures.
 BATTLE_PHASE_ADDR = 0x02024332
 
+PHASE_INTRO = 0
 PHASE_ACTION_MENU = 2
-PHASE_MOVE_MENU = 3
-PHASE_TEXT = 5
+PHASE_SECONDARY_MENU = 3   # move menu OR party menu
+PHASE_GENERIC = 5
 
 PHASE_NAMES = {
+    PHASE_INTRO: "intro",
     PHASE_ACTION_MENU: "action_menu",
-    PHASE_MOVE_MENU: "move_menu",
-    PHASE_TEXT: "text",
+    PHASE_SECONDARY_MENU: "secondary_menu",
+    PHASE_GENERIC: "generic",
 }
+
+# Phases where pressing A could accidentally confirm an interactive
+# selection — the high-level /battle/advance refuses these.
+INTERACTIVE_PHASES = {PHASE_ACTION_MENU, PHASE_SECONDARY_MENU}
 
 
 def battle_phase(runtime) -> tuple[int, str]:
@@ -886,7 +901,7 @@ def http_battle_advance(ctx):
 
     Returns the new state + screenshot."""
     raw, name = battle_phase(ctx.runtime)
-    if raw in (PHASE_ACTION_MENU, PHASE_MOVE_MENU):
+    if raw in INTERACTIVE_PHASES:
         return {
             "error": "refused",
             "reason": f"interactive menu open ({name}); use /battle/use_move or /battle/switch instead",
