@@ -645,6 +645,31 @@ def in_battle(runtime) -> bool:
     return 0 < flags < 0x01000000
 
 
+# Battle phase detector — discovered via state-tracker capture diff across
+# (action_menu, move_menu, text) labelled snapshots. Single byte at this
+# address takes 2/3/5 in those phases. Iteratively expand as new phases
+# are encountered.
+BATTLE_PHASE_ADDR = 0x02024332
+
+PHASE_ACTION_MENU = 2
+PHASE_MOVE_MENU = 3
+PHASE_TEXT = 5
+
+PHASE_NAMES = {
+    PHASE_ACTION_MENU: "action_menu",
+    PHASE_MOVE_MENU: "move_menu",
+    PHASE_TEXT: "text",
+}
+
+
+def battle_phase(runtime) -> tuple[int, str]:
+    """Return (raw_byte, human_name) for the current battle phase. Unknown
+    raw values get the name 'unknown:<n>' so callers can decide what to do."""
+    raw = runtime.read_memory(BATTLE_PHASE_ADDR, 1)[0]
+    name = PHASE_NAMES.get(raw, f"unknown:{raw}")
+    return raw, name
+
+
 def _read_battle_mon(runtime, slot: int) -> dict | None:
     """Read gBattleMons[slot]. Returns None if validation fails."""
     base = GBATTLE_MONS_BASE + slot * BATTLE_MON_SIZE
@@ -846,12 +871,35 @@ def _battle_state_dict(runtime):
     }
 
 
+@p.route("/battle/phase")
+def http_battle_phase(ctx):
+    """Return the current battle phase enum + name. {2: action_menu, 3: move_menu, 5: text}"""
+    raw, name = battle_phase(ctx.runtime)
+    return {"phase_id": raw, "phase": name}
+
+
 @p.route("/battle/advance", methods=["POST"])
 def http_battle_advance(ctx):
-    """Press A once, settle, return state + screenshot. Use to dismiss text
-    or accept Yes/No prompts (Yes is the default)."""
+    """Press A once and settle. SAFE BY DEFAULT: refuses to press A if we're
+    at an interactive menu (action_menu, move_menu) — would accidentally
+    confirm a selection. Pass ?force=true to override.
+
+    Returns the new state + screenshot."""
+    raw, name = battle_phase(ctx.runtime)
+    if raw in (PHASE_ACTION_MENU, PHASE_MOVE_MENU):
+        return {
+            "error": "refused",
+            "reason": f"interactive menu open ({name}); use /battle/use_move or /battle/switch instead",
+            "phase": name,
+            "phase_id": raw,
+            "state": _battle_state_dict(ctx.runtime),
+        }
     shots = _run_action(ctx.runtime, _press_a_steps(screenshot=True))
-    return {"state": _battle_state_dict(ctx.runtime), "screenshot_b64": shots[0] if shots else None}
+    return {
+        "state": _battle_state_dict(ctx.runtime),
+        "phase": battle_phase(ctx.runtime)[1],
+        "screenshot_b64": shots[0] if shots else None,
+    }
 
 
 @p.route("/battle/use_move/{slot}", methods=["POST"])
