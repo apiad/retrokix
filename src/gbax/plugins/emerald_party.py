@@ -6,11 +6,29 @@ Updates ~3 Hz to keep the SDL main thread responsive.
 """
 from __future__ import annotations
 
+import json
 import struct
+from importlib.resources import files
 
 import gbax
 
 p = gbax.plugin()
+
+
+def _load_species_table() -> dict[int, str]:
+    """Load the Hoenn-internal species index → name table.
+
+    Source: pokeemerald `include/constants/species.h` (412 entries).
+    Internal indices ≥252 do NOT match National Dex.
+    """
+    try:
+        raw = files("gbax.data").joinpath("emerald_species.json").read_text()
+        return {int(k): v for k, v in json.loads(raw).items()}
+    except Exception:
+        return {}
+
+
+SPECIES_NAMES = _load_species_table()
 
 
 # --- canonical Emerald layout ---
@@ -84,6 +102,7 @@ def read_slot(runtime, slot_idx: int):
     return {
         "slot": slot_idx,
         "species": species,
+        "species_name": SPECIES_NAMES.get(species, f"#{species}"),
         "level": level,
         "hp": hp,
         "max_hp": max_hp,
@@ -116,7 +135,7 @@ def _build_table(runtime):
         hp_color = "green" if slot["hp"] >= slot["max_hp"] * 0.5 else "yellow" if slot["hp"] >= slot["max_hp"] * 0.25 else "red"
         t.add_row(
             str(slot["slot"]),
-            str(slot["species"]),
+            slot["species_name"],
             str(slot["level"]),
             f"[{hp_color}]{slot['hp']}/{slot['max_hp']}[/{hp_color}]",
             str(slot["exp"]),

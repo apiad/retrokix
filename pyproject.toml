@@ -1,6 +1,6 @@
 [project]
 name = "gbax"
-version = "0.11.0"
+version = "0.11.1"
 description = "Hacker-first, scriptable GBA emulator with HTTP API"
 readme = "README.md"
 license = { text = "MPL-2.0" }
@@ -63,6 +63,7 @@ packages = ["src/gbax"]
 [tool.hatch.build.targets.wheel.force-include]
 "src/gbax/data/no_intro_gba.json" = "gbax/data/no_intro_gba.json"
 "src/gbax/data/libretro_cheats_gba.json" = "gbax/data/libretro_cheats_gba.json"
+"src/gbax/data/emerald_species.json" = "gbax/data/emerald_species.json"
 "src/gbax/data/bots/__init__.py" = "gbax/data/bots/__init__.py"
 "src/gbax/data/bots/press_a.py" = "gbax/data/bots/press_a.py"
 "src/gbax/data/bots/random.py" = "gbax/data/bots/random.py"
