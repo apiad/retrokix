@@ -89,6 +89,14 @@ class EmulatorRuntime:
         self._lock = threading.Lock()
         self._tick_thread: threading.Thread | None = None
         self._tick_stop = threading.Event()
+        # Macro recording / playback state.
+        self._recording: list[tuple[int, frozenset[Button]]] | None = None
+        self._record_start_frame: int = 0
+        self._last_recorded_held: frozenset[Button] = frozenset()
+        self._playing_macro: object | None = None  # gbax.macros.Macro
+        self._play_start_frame: int = 0
+        self._play_event_idx: int = 0
+        self._macro_held: frozenset[Button] = frozenset()
 
     def _hydrate_slots_from_disk(self) -> None:
         """Load every persisted slot from ~/.gbax/saves/<rom-sha1>/ into memory."""
@@ -126,8 +134,99 @@ class EmulatorRuntime:
             raise ValueError(f"frames must be >= 1, got {frames}")
         with self._lock:
             for _ in range(frames):
+                self._tick_macro_replay_locked()
+                effective = self._buttons_held | self._macro_held
+                self._core.set_buttons({int(b) for b in effective})
                 self._core.run()
                 self._frame_count += 1
+            # One final replay tick so effective_buttons_held() / is_playing_macro()
+            # reflect the state at the current (just-incremented) frame.
+            self._tick_macro_replay_locked()
+
+    def _tick_macro_replay_locked(self) -> None:
+        """If a macro is playing, advance any events due at the current frame."""
+        if self._playing_macro is None:
+            return
+        macro = self._playing_macro
+        elapsed = self._frame_count - self._play_start_frame
+        events = macro.events
+        while self._play_event_idx < len(events) and events[self._play_event_idx][0] <= elapsed:
+            self._macro_held = frozenset(events[self._play_event_idx][1])
+            self._play_event_idx += 1
+        if elapsed >= macro.total_frames:
+            self._playing_macro = None
+            self._macro_held = frozenset()
+            self._play_event_idx = 0
+            self._play_start_frame = 0
+
+    def _record_button_change_locked(self) -> None:
+        """Called from set_buttons() under the lock; records a delta if changed."""
+        if self._recording is None:
+            return
+        held_now = frozenset(self._buttons_held)
+        if held_now == self._last_recorded_held:
+            return
+        delta = self._frame_count - self._record_start_frame
+        self._recording.append((delta, held_now))
+        self._last_recorded_held = held_now
+
+    # ---- macros ----------------------------------------------------------
+
+    def is_recording_macro(self) -> bool:
+        return self._recording is not None
+
+    def is_playing_macro(self) -> bool:
+        return self._playing_macro is not None
+
+    def effective_buttons_held(self) -> set[Button]:
+        """Player held set ∪ active macro's held set. What the core sees."""
+        return set(self._buttons_held) | set(self._macro_held)
+
+    def start_recording_macro(self) -> None:
+        if self._playing_macro is not None:
+            raise RuntimeError("cannot start recording while a macro is playing")
+        with self._lock:
+            self._recording = []
+            self._record_start_frame = self._frame_count
+            initial = frozenset(self._buttons_held)
+            self._last_recorded_held = initial
+            self._recording.append((0, initial))
+
+    def stop_recording_macro(self):
+        """Return a gbax.macros.Macro, or None if no recording was active.
+
+        Caller fills in `slot` and `name` at bind time before persisting.
+        """
+        from datetime import datetime, timezone
+        from gbax.macros import Macro
+
+        if self._recording is None:
+            return None
+        with self._lock:
+            events = self._recording
+            total = self._frame_count - self._record_start_frame
+            self._recording = None
+            self._record_start_frame = 0
+            self._last_recorded_held = frozenset()
+        return Macro(
+            slot="",
+            name="",
+            rom_sha1=self._rom_sha1,
+            rom_name=self._rom_path.name,
+            recorded_at=datetime.now(timezone.utc),
+            total_frames=total,
+            events=events,
+        )
+
+    def play_macro(self, macro) -> None:
+        """Schedule the macro to start playing from the current frame."""
+        if self._recording is not None:
+            raise RuntimeError("cannot play a macro while recording")
+        with self._lock:
+            self._playing_macro = macro
+            self._play_start_frame = self._frame_count
+            self._play_event_idx = 0
+            self._macro_held = frozenset()
 
     def reset(self) -> None:
         with self._lock:
@@ -141,6 +240,7 @@ class EmulatorRuntime:
         with self._lock:
             self._buttons_held = set(buttons)
             self._core.set_buttons({int(b) for b in buttons})
+            self._record_button_change_locked()
 
     def framebuffer(self) -> np.ndarray:
         """(H, W, 3) uint8 RGB array. Copy of the most recent framebuffer."""
