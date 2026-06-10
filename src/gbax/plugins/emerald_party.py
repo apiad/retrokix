@@ -1035,6 +1035,7 @@ def _advance_to_decision(runtime, max_iters=AUTO_MAX_ITERS):
     prompts at unknown phase values, sub-sub-menus, etc.).
     """
     consecutive_b = 0
+    cancel_attempted = False
     for _ in range(max_iters):
         if not in_battle(runtime):
             return None
@@ -1043,6 +1044,24 @@ def _advance_to_decision(runtime, max_iters=AUTO_MAX_ITERS):
             return p
         if p == PHASE_SECONDARY_MENU:
             consecutive_b += 1
+            # First 2 attempts: try plain B (closes most submenus).
+            if consecutive_b <= 2:
+                _press_button(runtime, "b", settle_frames=80)
+                continue
+            # B isn't escaping — the party menu was opened in a mode
+            # that doesn't accept B-cancel (Roxanne's swap-prompt does
+            # this on some builds). Actively navigate to the CANCEL
+            # button (bottom-right of the party menu screen) and press
+            # A to dismiss.
+            if not cancel_attempted:
+                cancel_attempted = True
+                # From left column (active), Right → bench top, then
+                # Down 5× to reach CANCEL at bottom-right.
+                _press_button(runtime, "right", settle_frames=20)
+                for _ in range(5):
+                    _press_button(runtime, "down", settle_frames=15)
+                _press_button(runtime, "a", settle_frames=120)
+                continue
             if consecutive_b > 8:
                 return p
             _press_button(runtime, "b", settle_frames=80)
