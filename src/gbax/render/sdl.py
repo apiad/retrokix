@@ -181,6 +181,35 @@ def play_loop(
                     sym = event.key.keysym.sym
                     mod = event.key.keysym.mod
 
+                    # Ctrl+F — capture labeled state snapshot
+                    if sym == sdl2.SDLK_f and (mod & sdl2.KMOD_CTRL):
+                        try:
+                            label_input = input(
+                                "capturing state — type labels (key=value, comma-separated): "
+                            ).strip()
+                        except EOFError:
+                            label_input = ""
+                        if not label_input:
+                            print("no labels provided; discarded.")
+                            continue
+                        from gbax.state.storage import parse_labels
+                        try:
+                            labels = parse_labels(label_input)
+                        except ValueError as exc:
+                            print(f"label parse error: {exc}; discarded.")
+                            continue
+                        if not labels:
+                            print("no labels provided; discarded.")
+                            continue
+                        from datetime import datetime, timezone
+                        from gbax.state.capture import save_capture, sparse_capture
+                        print("recording 30 frames…")
+                        sparse = sparse_capture(runtime, n_frames=30)
+                        ts = datetime.now(timezone.utc)
+                        path = save_capture(runtime.rom_sha1, sparse, labels, ts)
+                        print(f"captured. ({len(sparse)} stable bytes) → {path}")
+                        continue
+
                     # Ctrl+R — toggle macro recording
                     if sym == sdl2.SDLK_r and (mod & sdl2.KMOD_CTRL):
                         if runtime.is_recording_macro():
