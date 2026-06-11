@@ -1,7 +1,7 @@
 """Anchor-point tests for emerald gen-3 formulas."""
 from __future__ import annotations
 
-from gbax.plugins.emerald_formulas import (
+from gbax.plugins.pokemon.shared.formulas import (
     calc_hp,
     calc_stat,
     crit_chance_pct,

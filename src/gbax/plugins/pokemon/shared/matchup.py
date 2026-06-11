@@ -8,12 +8,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from gbax.plugins.emerald_data import (
+from gbax.plugins.pokemon.shared.data import (
     load_moves,
     load_species_info,
     load_types,
 )
-from gbax.plugins.emerald_formulas import (
+from gbax.plugins.pokemon.shared.formulas import (
     calc_damage,
     type_effectiveness,
     weaknesses,

@@ -321,10 +321,10 @@ def test_load_plugin_syntax_error_propagates(tmp_path):
 
 
 def test_load_plugin_by_module_name():
-    """The bundled emerald_party plugin loads via dotted module name."""
+    """The bundled pokemon.emerald informational plugin loads via dotted module name."""
     from gbax.plugin import Plugin, load_plugin
 
-    plugin = load_plugin("gbax.plugins.emerald_party")
+    plugin = load_plugin("gbax.plugins.pokemon.emerald")
     assert isinstance(plugin, Plugin)
     # Should have @p.route entries we registered.
     assert any(r[0] == "/party" for r in plugin.http_routes)

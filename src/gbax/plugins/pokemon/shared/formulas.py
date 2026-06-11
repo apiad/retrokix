@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from functools import cache
 
-from gbax.plugins.emerald_data import (
+from gbax.plugins.pokemon.shared.data import (
     load_natures,
     load_species_info,
     load_type_chart,

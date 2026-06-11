@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import struct
 
-from gbax.plugins.emerald_party import (
+from gbax.plugins.pokemon.shared.party import (
     _decode_status,
     _decrypt_block,
     _parse_attacks,

@@ -1,6 +1,6 @@
 [project]
 name = "gbax"
-version = "0.15.10"
+version = "0.16.0"
 description = "Hacker-first, scriptable GBA emulator with HTTP API"
 readme = "README.md"
 license = { text = "MPL-2.0" }
@@ -90,7 +90,22 @@ packages = ["src/gbax"]
 "src/gbax/render/shaders/linear.wgsl" = "gbax/render/shaders/linear.wgsl"
 "src/gbax/render/shaders/crt_lottes.wgsl" = "gbax/render/shaders/crt_lottes.wgsl"
 "src/gbax/plugins/__init__.py" = "gbax/plugins/__init__.py"
-"src/gbax/plugins/emerald_party.py" = "gbax/plugins/emerald_party.py"
+"src/gbax/plugins/pokemon/__init__.py" = "gbax/plugins/pokemon/__init__.py"
+"src/gbax/plugins/pokemon/emerald.py" = "gbax/plugins/pokemon/emerald.py"
+"src/gbax/plugins/pokemon/emerald_driver.py" = "gbax/plugins/pokemon/emerald_driver.py"
+"src/gbax/plugins/pokemon/shared/__init__.py" = "gbax/plugins/pokemon/shared/__init__.py"
+"src/gbax/plugins/pokemon/shared/addresses.py" = "gbax/plugins/pokemon/shared/addresses.py"
+"src/gbax/plugins/pokemon/shared/bag.py" = "gbax/plugins/pokemon/shared/bag.py"
+"src/gbax/plugins/pokemon/shared/battle.py" = "gbax/plugins/pokemon/shared/battle.py"
+"src/gbax/plugins/pokemon/shared/data.py" = "gbax/plugins/pokemon/shared/data.py"
+"src/gbax/plugins/pokemon/shared/encounters.py" = "gbax/plugins/pokemon/shared/encounters.py"
+"src/gbax/plugins/pokemon/shared/formulas.py" = "gbax/plugins/pokemon/shared/formulas.py"
+"src/gbax/plugins/pokemon/shared/hints.py" = "gbax/plugins/pokemon/shared/hints.py"
+"src/gbax/plugins/pokemon/shared/matchup.py" = "gbax/plugins/pokemon/shared/matchup.py"
+"src/gbax/plugins/pokemon/shared/party.py" = "gbax/plugins/pokemon/shared/party.py"
+"src/gbax/plugins/pokemon/shared/pokedex.py" = "gbax/plugins/pokemon/shared/pokedex.py"
+"src/gbax/plugins/pokemon/shared/scene.py" = "gbax/plugins/pokemon/shared/scene.py"
+"src/gbax/plugins/pokemon/shared/world.py" = "gbax/plugins/pokemon/shared/world.py"
 
 [tool.hatch.build.targets.sdist]
 # Keep build artifacts out of the source tarball — only the platform
