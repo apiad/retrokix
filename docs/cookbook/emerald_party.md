@@ -203,6 +203,6 @@ to read them.
 
 ## See also
 
-- [plugins.md](plugins.md) — plugin authoring reference
-- [state-tracker.md](state-tracker.md) — finding canonical addresses
-- [concepts.md](concepts.md) — the cooperative loop story
+- [plugins.md](../plugins.md) — plugin authoring reference
+- [state-tracker.md](../state-tracker.md) — finding canonical addresses
+- [concepts.md](../concepts.md) — the cooperative loop story

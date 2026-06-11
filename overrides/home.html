@@ -1,0 +1,276 @@
+{% extends "main.html" %}
+
+{% block extrahead %}
+  {{ super() }}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+  <meta property="og:title" content="gbax — Game Boy Advance you can drive">
+  <meta property="og:description" content="Hacker-first GBA emulator. Pip-installable, native libretro core, HTTP API any LLM can reach. Bring a keyboard, bring an LLM, bring both.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+{% endblock %}
+
+{% block tabs %}
+  {{ super() }}
+  <section class="gx-hero">
+    <div class="gx-hero__inner">
+      <div class="gx-hero__copy">
+        <div class="gx-hero__eyebrow">
+          <span class="gx-pill gx-pill--accent">v0.16.0</span>
+          <span class="gx-pill">alpha</span>
+          <span class="gx-pill">MPL-2.0</span>
+          <span class="gx-pill">Linux x86_64</span>
+        </div>
+        <h1 class="gx-hero__title">
+          <span class="gx-wordmark" aria-hidden="true">gbax</span>
+          <span class="gx-hero__tagline">Game Boy Advance you can drive.</span>
+        </h1>
+        <p class="gx-hero__lead">
+          An emulator for hackers, speedrunners, and AI researchers. Plays
+          Pokémon Emerald in a window with sound and a keyboard — and in the
+          same session exposes the framebuffer, memory bus, and input as an
+          HTTP API any coding agent can reach.
+        </p>
+        <p class="gx-hero__lead gx-hero__lead--dim">
+          Same emulator. Same session. Same API. Whether you're the player
+          or the algorithm, you're in the loop together.
+        </p>
+        <div class="gx-hero__ctas">
+          <a class="gx-btn gx-btn--primary" href="concepts/">
+            Read the docs
+            <span class="gx-btn__arrow" aria-hidden="true">→</span>
+          </a>
+          <a class="gx-btn gx-btn--ghost" href="https://github.com/apiad/gbax">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor">
+              <path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.8 10.9.6.1.8-.2.8-.6v-2.2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.2 1.2.9-.3 1.9-.4 2.9-.4s2 .1 2.9.4c2.2-1.5 3.2-1.2 3.2-1.2.6 1.7.2 2.9.1 3.2.7.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6 4.5-1.5 7.8-5.8 7.8-10.9C23.5 5.7 18.3.5 12 .5z"/>
+            </svg>
+            GitHub
+          </a>
+        </div>
+      </div>
+
+      <div class="gx-hero__visual" aria-hidden="true">
+        <div class="gx-screen">
+          <div class="gx-screen__bezel">
+            <div class="gx-screen__lcd">
+              <div class="gx-screen__scanlines"></div>
+              <div class="gx-screen__scene">
+                <div class="gx-scene__sky"></div>
+                <div class="gx-scene__grass"></div>
+                <div class="gx-scene__trees"></div>
+                <div class="gx-scene__trainer"></div>
+                <div class="gx-scene__hud">
+                  <span class="gx-scene__hud-label">EMERALD</span>
+                  <span class="gx-scene__hud-pip"></span>
+                </div>
+              </div>
+              <div class="gx-screen__glow"></div>
+            </div>
+            <div class="gx-screen__dot gx-screen__dot--power"></div>
+            <div class="gx-screen__label">GAME BOY ADVANCE</div>
+          </div>
+        </div>
+
+        <div class="gx-terminal gx-terminal--curl">
+          <div class="gx-terminal__bar">
+            <span class="gx-terminal__dot"></span>
+            <span class="gx-terminal__dot"></span>
+            <span class="gx-terminal__dot"></span>
+            <span class="gx-terminal__title">$ curl localhost:8420/plugins/emerald_party/party</span>
+          </div>
+          <pre class="gx-terminal__body"><code><span class="t-p">{</span>
+  <span class="t-k">"slots"</span>: [
+    <span class="t-p">{</span> <span class="t-k">"species"</span>: <span class="t-n">280</span>,
+      <span class="t-k">"level"</span>: <span class="t-n">11</span>,
+      <span class="t-k">"hp"</span>: <span class="t-n">33</span>,
+      <span class="t-k">"max_hp"</span>: <span class="t-n">33</span>,
+      <span class="t-k">"friendship"</span>: <span class="t-n">113</span> <span class="t-p">}</span>
+  ]
+<span class="t-p">}</span><span class="gx-cursor">▍</span></code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="gx-section gx-section--start">
+    <div class="gx-section__inner">
+      <p class="gx-eyebrow">Three commands.</p>
+      <h2 class="gx-h2">Pokémon Emerald, in a window, with sound.</h2>
+      <pre class="gx-codeblock"><code><span class="t-pf">$</span> pip install gbax
+<span class="t-pf">$</span> gbax download <span class="t-s">"pokemon emerald"</span>
+<span class="t-pf">$</span> gbax play emerald</code></pre>
+      <p class="gx-section__caption">
+        The wheel ships a prebuilt <code>mgba_libretro.so</code>. No cmake.
+        No apt-get. No <code>$GBAX_CORE_PATH</code>.
+      </p>
+    </div>
+  </section>
+
+  <section class="gx-section gx-section--loop">
+    <div class="gx-section__inner">
+      <p class="gx-eyebrow">The cooperative loop.</p>
+      <h2 class="gx-h2">Bring a keyboard. Bring an LLM. Bring both.</h2>
+      <p class="gx-section__lead">
+        Launch gbax with the play surface <em>and</em> the HTTP API. Both
+        clients drive the same runtime via the same lock. Inputs combine
+        by set-union — neither blocks the other.
+      </p>
+      <div class="gx-loop">
+        <div class="gx-loop__player">
+          <div class="gx-loop__label">Human</div>
+          <div class="gx-loop__body">
+            <span class="gx-key">↑</span><span class="gx-key">↓</span><span class="gx-key">←</span><span class="gx-key">→</span>
+            <span class="gx-key">A</span><span class="gx-key">B</span>
+            <span class="gx-key">L</span><span class="gx-key">R</span>
+            <span class="gx-key">Select</span><span class="gx-key">Start</span>
+          </div>
+          <div class="gx-loop__row">
+            <span class="gx-key gx-key--mod">Ctrl</span>+<span class="gx-key">1</span>…<span class="gx-key">9</span>
+            <span class="gx-loop__hint">save slot</span>
+          </div>
+          <div class="gx-loop__row">
+            <span class="gx-key gx-key--mod">Shift</span>+<span class="gx-key">1</span>…<span class="gx-key">9</span>
+            <span class="gx-loop__hint">load slot</span>
+          </div>
+          <div class="gx-loop__row">
+            <span class="gx-key gx-key--mod">L-Shift</span>
+            <span class="gx-loop__hint">8× fast-forward</span>
+          </div>
+          <div class="gx-loop__row">
+            <span class="gx-key">F12</span>
+            <span class="gx-loop__hint">screenshot</span>
+          </div>
+          <div class="gx-loop__caption">SDL window · keyboard · macros · save states</div>
+        </div>
+        <div class="gx-loop__pipe">
+          <span class="gx-loop__pulse"></span>
+          <span class="gx-loop__pulse"></span>
+          <span class="gx-loop__pulse"></span>
+        </div>
+        <div class="gx-loop__agent">
+          <div class="gx-loop__label">Agent</div>
+          <div class="gx-loop__body gx-loop__body--code">
+            <code>POST /action</code>
+            <code>GET  /frame</code>
+            <code>GET  /memory/0x02024284</code>
+            <code>POST /buttons</code>
+            <code>POST /capture_state</code>
+            <code>GET  /savestate/3</code>
+            <code>GET  /plugins/emerald_party/party</code>
+          </div>
+          <div class="gx-loop__caption">HTTP · script · LLM · pipe</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="gx-section gx-section--cards">
+    <div class="gx-section__inner">
+      <p class="gx-eyebrow">What you get.</p>
+      <h2 class="gx-h2">One install. Six surfaces.</h2>
+      <div class="gx-cards">
+        <article class="gx-card">
+          <div class="gx-card__icon">🎮</div>
+          <h3 class="gx-card__title">3,555 ROMs</h3>
+          <p class="gx-card__body">
+            Fuzzy-searchable No-Intro index bundled. <code>gbax download</code>
+            pulls from the public archive.org mirror. Bring games you own.
+          </p>
+        </article>
+        <article class="gx-card">
+          <div class="gx-card__icon">🌐</div>
+          <h3 class="gx-card__title">HTTP API</h3>
+          <p class="gx-card__body">
+            Framebuffer, full memory bus, input, cheats, save states, and an
+            atomic <code>/action</code> for multi-step agent plans.
+          </p>
+        </article>
+        <article class="gx-card">
+          <div class="gx-card__icon">🧩</div>
+          <h3 class="gx-card__title">Plugins</h3>
+          <p class="gx-card__body">
+            Python files that hook the play loop <em>and</em> publish HTTP
+            routes under <code>/plugins/&lt;name&gt;/…</code>. Bundled Emerald
+            party plugin shows the pattern.
+          </p>
+        </article>
+        <article class="gx-card">
+          <div class="gx-card__icon">🧪</div>
+          <h3 class="gx-card__title">State tracker</h3>
+          <p class="gx-card__body">
+            Supervised memory inference. Label what's true
+            (<code>hp=22, scene=overworld</code>). gbax intersects across
+            captures and finds where each value lives.
+          </p>
+        </article>
+        <article class="gx-card">
+          <div class="gx-card__icon">⌨️</div>
+          <h3 class="gx-card__title">Macros &amp; cheats</h3>
+          <p class="gx-card__body">
+            <kbd>Ctrl+R</kbd> records, <kbd>F1</kbd>–<kbd>F9</kbd> replay.
+            ~6,700 cheat codes vendored from libretro-database; no network at
+            runtime.
+          </p>
+        </article>
+        <article class="gx-card">
+          <div class="gx-card__icon">📺</div>
+          <h3 class="gx-card__title">GPU shaders</h3>
+          <p class="gx-card__body">
+            <code>crt-lottes</code> out of the box, custom WGSL when you want
+            pretty, via the <code>[gpu]</code> extra.
+          </p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="gx-section gx-section--audiences">
+    <div class="gx-section__inner">
+      <p class="gx-eyebrow">Built for two.</p>
+      <h2 class="gx-h2">Same emulator. Two audiences.</h2>
+      <div class="gx-audiences">
+        <div class="gx-audience">
+          <div class="gx-audience__tag">The speedrunner</div>
+          <p>
+            You want to <em>play</em>. Hotkey save states, macros bound to
+            any letter, cheat codes that toggle in-game, 8× fast-forward on
+            <kbd>Left-Shift</kbd>. The agent layer stays out of your way
+            until you want it. <kbd>F12</kbd> screenshots.
+          </p>
+        </div>
+        <div class="gx-audience">
+          <div class="gx-audience__tag">The researcher</div>
+          <p>
+            You want a <em>laboratory</em>. 3,500+ hand-crafted GBA
+            environments. Atomic multi-step actions. Memory snapshots
+            labeled by claim. A plugin model where the agent can write
+            plugins for itself. The cooperative loop is the experiment.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="gx-section gx-section--cta">
+    <div class="gx-section__inner gx-section__inner--narrow">
+      <p class="gx-eyebrow">Take it for a spin.</p>
+      <h2 class="gx-h2">Three lines, and you're in.</h2>
+      <pre class="gx-codeblock gx-codeblock--cta"><code><span class="t-c"># Linux x86_64 — bundled core, no extra setup</span>
+<span class="t-pf">$</span> pip install gbax
+<span class="t-pf">$</span> gbax download <span class="t-s">"pokemon emerald"</span>
+<span class="t-pf">$</span> gbax play emerald --listen --plugin gbax.plugins.emerald_party</code></pre>
+      <div class="gx-cta-row">
+        <a class="gx-btn gx-btn--primary" href="installing/">Install guide</a>
+        <a class="gx-btn gx-btn--ghost" href="cookbook/emerald_party/">
+          Cookbook: Emerald party plugin
+        </a>
+      </div>
+    </div>
+  </section>
+{% endblock %}
+
+{% block content %}{% endblock %}
+{% block footer %}
+  {{ super() }}
+{% endblock %}

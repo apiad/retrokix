@@ -27,7 +27,7 @@ gbax-X.Y.Z-py3-none-manylinux_2_28_x86_64.whl
 
 The bundled `mgba_libretro.so` is built from
 [mgba-emu/mgba](https://github.com/mgba-emu/mgba) at the tag pinned in
-[`.mgba-version`](../.mgba-version) — currently `0.10.5`. You can check
+[`.mgba-version`](https://github.com/apiad/gbax/blob/main/.mgba-version) — currently `0.10.5`. You can check
 which mGBA your installed gbax is using:
 
 ```python
@@ -109,7 +109,7 @@ without a built core.
 ## Bumping the bundled mGBA version
 
 A new mGBA release lands → bump the bundled core in three steps.
-[`know-how/building-libretro-core.md`](../know-how/building-libretro-core.md)
+[`know-how/building-libretro-core.md`](https://github.com/apiad/gbax/blob/main/know-how/building-libretro-core.md)
 has the full procedure; the short version:
 
 1. Edit `.mgba-version` with the new tag.

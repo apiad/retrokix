@@ -1,0 +1,104 @@
+site_name: gbax
+site_description: Game Boy Advance you can drive — hacker-first GBA emulator with HTTP API.
+site_url: https://apiad.github.io/gbax/
+site_author: Alejandro Piad
+repo_url: https://github.com/apiad/gbax
+repo_name: apiad/gbax
+edit_uri: edit/main/docs/
+copyright: Copyright &copy; 2026 Alejandro Piad — MPL-2.0
+
+theme:
+  name: material
+  custom_dir: overrides
+  language: en
+  palette:
+    - scheme: gbax
+  font:
+    text: Inter
+    code: JetBrains Mono
+  features:
+    - navigation.instant
+    - navigation.instant.progress
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - content.code.copy
+    - content.code.annotate
+    - content.tooltips
+    - toc.follow
+    - search.suggest
+    - search.highlight
+  icon:
+    repo: fontawesome/brands/github
+    edit: material/pencil
+    logo: material/gamepad-variant
+  favicon: assets/favicon.svg
+
+extra_css:
+  - stylesheets/extra.css
+  - stylesheets/landing.css
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/apiad/gbax
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/gbax/
+  generator: false
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      permalink_title: Anchor link
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+  - pymdownx.caret
+  - pymdownx.mark
+  - pymdownx.keys
+  - pymdownx.smartsymbols
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+plugins:
+  - search
+
+watch:
+  - overrides
+
+nav:
+  - Home: index.md
+  - Concepts: concepts.md
+  - Install: installing.md
+  - CLI: cli.md
+  - HTTP API: api.md
+  - Plugins: plugins.md
+  - State tracker: state-tracker.md
+  - Automation: automation.md
+  - Shaders: shaders.md
+  - Cookbook:
+      - cookbook/emerald_party.md

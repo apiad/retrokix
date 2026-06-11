@@ -52,6 +52,10 @@ dev = [
   "mypy>=1.10",
 ]
 gpu = ["wgpu>=0.19", "rendercanvas>=2.0"]
+docs = [
+  "mkdocs-material>=9.5",
+  "pymdown-extensions>=10",
+]
 
 [build-system]
 requires = ["hatchling"]
