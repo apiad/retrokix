@@ -255,6 +255,19 @@ def _marker(owned: bool) -> str:
     return "[#34d399]●[/]" if owned else " "
 
 
+def _pretty_name(name: str) -> str:
+    """Strip the .zip suffix and dim the (region/language) tail so the
+    title carries the visual weight."""
+    if name.lower().endswith(".zip"):
+        name = name[:-4]
+    paren = name.find("(")
+    if paren > 0:
+        head = name[:paren].rstrip()
+        tail = name[paren:]
+        return f"{head} [dim]{tail}[/dim]"
+    return name
+
+
 class GroupRow(ListItem):
     """One row in the main list — represents a RomGroup.
 
@@ -295,7 +308,7 @@ class VariantRow(ListItem):
     def compose(self) -> ComposeResult:
         with Horizontal(classes="row"):
             yield Static(_marker(self.owned), classes="row-marker")
-            yield Static(self.entry.name, classes="row-name")
+            yield Static(_pretty_name(self.entry.name), classes="row-name")
             yield Static(
                 f"[dim]{_fmt_size(self.entry.size)}[/dim]",
                 classes="row-size",
