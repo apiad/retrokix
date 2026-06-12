@@ -532,6 +532,63 @@ body:has(.gx-hero) .md-sidebar {
   word-break: break-word;
 }
 
+/* Inline alt-path block under the three-commands section — the
+ * "or, just gbax browse" pitch. */
+.gx-alt {
+  margin: 2.25rem auto 0;
+  max-width: 680px;
+  padding-top: 1.75rem;
+  border-top: 1px dashed var(--gx-border-soft);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  text-align: center;
+}
+.gx-alt__label {
+  font-family: var(--gx-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gx-text-soft);
+}
+.gx-codeblock--inline {
+  margin: 0 !important;
+  padding: 0.7rem 1.2rem !important;
+  font-size: 0.96rem;
+  width: auto;
+  max-width: 100%;
+  display: inline-block;
+}
+.gx-alt__caption {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--gx-text-soft);
+  line-height: 1.6;
+  max-width: 52ch;
+}
+.gx-alt__caption strong {
+  color: var(--gx-text-dim);
+  font-weight: 600;
+}
+.gx-alt__caption kbd {
+  display: inline-block;
+  min-width: 22px;
+  padding: 0 0.4em;
+  font-family: var(--gx-mono);
+  font-size: 0.82em;
+  background: linear-gradient(180deg, #2a2849 0%, #1a1830 100%);
+  border: 1px solid var(--gx-border);
+  border-bottom-color: #0a0816;
+  box-shadow: 0 2px 0 #0a0816;
+  border-radius: 5px;
+  color: var(--gx-text);
+}
+.gx-alt__dot {
+  color: var(--gx-emerald);
+  font-weight: 700;
+}
+
 /* The cooperative loop */
 .gx-section--loop {
   background:
@@ -790,11 +847,11 @@ body:has(.gx-hero) .md-sidebar {
 .gx-audiences {
   margin-top: 3rem;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
 }
-@media (max-width: 800px) {
-  .gx-audiences { grid-template-columns: 1fr; }
+@media (max-width: 1100px) {
+  .gx-audiences { grid-template-columns: 1fr; max-width: 720px; margin-left: auto; margin-right: auto; }
 }
 .gx-audience {
   position: relative;
@@ -818,6 +875,17 @@ body:has(.gx-hero) .md-sidebar {
 }
 .gx-audience:nth-child(2) .gx-audience__tag {
   color: var(--gx-emerald);
+}
+.gx-audience:nth-child(3) .gx-audience__tag {
+  color: var(--gx-amber);
+}
+.gx-audience code {
+  font-size: 0.86em;
+  background: rgba(167, 139, 250, 0.08);
+  border: 1px solid rgba(167, 139, 250, 0.18);
+  color: var(--gx-accent);
+  padding: 0.08em 0.36em;
+  border-radius: 4px;
 }
 .gx-audience kbd {
   display: inline-block;
