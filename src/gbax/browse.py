@@ -30,6 +30,143 @@ if TYPE_CHECKING:
     from gbax.library import RomEntry, RomLibrary
 
 
+MAX_RESULTS = 100
+
+
+# Curated GBA hits shown when the search box is empty. Each entry is a
+# fuzzy query — all tokens must appear in the No-Intro filename. Order
+# roughly approximates fame; for ambiguous queries we pick USA/World
+# over Europe over Japan, then the shortest name (base game wins ties).
+# If the top match was already added under an earlier query, we fall
+# through to the next match instead of skipping the slot.
+_FAMOUS_QUERIES: tuple[str, ...] = (
+    # Pokémon
+    "Pokemon - Emerald",
+    "Pokemon - FireRed",
+    "Pokemon - LeafGreen",
+    "Pokemon - Ruby Version",
+    "Pokemon - Sapphire Version",
+    "Pokemon Mystery Dungeon - Red Rescue",
+    "Pokemon Pinball - Ruby",
+    # Zelda
+    "Legend of Zelda - The Minish Cap",
+    "Legend of Zelda - A Link to the Past",
+    # Metroid
+    "Metroid Fusion",
+    "Metroid - Zero Mission",
+    # Mario
+    "Super Mario Advance 4",
+    "Super Mario Advance 2",
+    "Super Mario Advance 3",
+    "Super Mario Advance (",
+    "Mario Kart - Super Circuit",
+    "Mario & Luigi - Superstar Saga",
+    "Mario Pinball Land",
+    "Mario Party Advance",
+    "Mario Golf - Advance Tour",
+    "Mario Tennis - Power Tour",
+    "Yoshi Topsy-Turvy",
+    # Wario / WarioWare
+    "Wario Land 4",
+    "WarioWare - Twisted",
+    "WarioWare, Inc.",
+    # Kirby
+    "Kirby & The Amazing Mirror",
+    "Kirby - Nightmare in Dream Land",
+    # Fire Emblem / Advance Wars
+    "Fire Emblem - The Sacred Stones",
+    "Fire Emblem (",
+    "Advance Wars 2",
+    "Advance Wars (",
+    # F-Zero
+    "F-Zero - Maximum Velocity",
+    "F-Zero - GP Legend",
+    "F-Zero Climax",
+    # Donkey Kong
+    "Donkey Kong Country (",
+    "Donkey Kong Country 2",
+    "Donkey Kong Country 3",
+    # Square Enix
+    "Final Fantasy VI Advance",
+    "Final Fantasy V Advance",
+    "Final Fantasy IV Advance",
+    "Final Fantasy I & II - Dawn of Souls",
+    "Final Fantasy Tactics Advance",
+    "Sword of Mana",
+    "Kingdom Hearts - Chain of Memories",
+    "Tactics Ogre",
+    "Riviera - The Promised Land",
+    # Castlevania
+    "Castlevania - Aria of Sorrow",
+    "Castlevania - Harmony of Dissonance",
+    "Castlevania - Circle of the Moon",
+    # Mega Man — Battle Network + Zero
+    "Mega Man Battle Network 3",
+    "Mega Man Battle Network 6",
+    "Mega Man Battle Network 5",
+    "Mega Man Battle Network 4",
+    "Mega Man Battle Network 2",
+    "Mega Man Battle Network (",
+    "Mega Man Zero 4",
+    "Mega Man Zero 3",
+    "Mega Man Zero 2",
+    "Mega Man Zero (",
+    "Mega Man & Bass",
+    # Golden Sun
+    "Golden Sun - The Lost Age",
+    "Golden Sun (",
+    # Sonic
+    "Sonic Advance 3",
+    "Sonic Advance 2",
+    "Sonic Advance (",
+    "Sonic Battle",
+    "Sonic Pinball Party",
+    # Boktai
+    "Boktai - The Sun Is in Your Hand",
+    "Boktai 2",
+    # FPS / action
+    "Doom (",
+    "Doom II",
+    "Duke Nukem Advance",
+    "Drill Dozer",
+    "Astro Boy - Omega Factor",
+    # Cult / classic
+    "Mother 3",
+    "Rhythm Tengoku",
+    "Ninja Five-0",
+    "Gunstar Super Heroes",
+    "Klonoa - Empire of Dreams",
+    "Klonoa 2",
+    "Iridion 3D",
+    "Pinball of the Dead",
+    "Final Fight One",
+    "Street Fighter Alpha 3",
+    # Tony Hawk
+    "Tony Hawk's Pro Skater 2",
+    "Tony Hawk's Pro Skater 3",
+    "Tony Hawk's Pro Skater 4",
+    # Licensed blockbusters
+    "Harry Potter and the Chamber of Secrets",
+    "Harry Potter and the Prisoner of Azkaban",
+    "Lord of the Rings - The Two Towers",
+    "Lord of the Rings - The Return",
+    "Spider-Man (",
+    "Spider-Man 2",
+    "Spider-Man 3",
+    "X-Men - The Official Game",
+    "Yu-Gi-Oh! - The Eternal Duelist Soul",
+    # JRPG odds
+    "Breath of Fire (",
+    "Breath of Fire II",
+    "Lufia - The Ruins of Lore",
+    # Classic NES Series
+    "Classic NES Series - Super Mario Bros",
+    "Classic NES Series - The Legend of Zelda",
+    "Classic NES Series - Metroid",
+    "Classic NES Series - Donkey Kong",
+)
+
+
 def _fmt_size(b: int) -> str:
     mb = b / 1_048_576
     if mb < 1:
@@ -121,6 +258,49 @@ class BrowseApp(App):
         self._initial_query = initial_query
         self._results: list["RomEntry"] = []
         self._downloading = False
+        self._famous_cache: list["RomEntry"] | None = None
+
+    def _famous_entries(self) -> list["RomEntry"]:
+        """Resolve the curated famous-games queries to concrete entries.
+        Cached after first call — the No-Intro index is frozen."""
+        if self._famous_cache is not None:
+            return self._famous_cache
+
+        all_entries = self.lib.entries()
+
+        def region_score(name_lower: str) -> int:
+            if "(usa" in name_lower or "(world" in name_lower:
+                return 0
+            if "(europe" in name_lower:
+                return 1
+            return 2
+
+        seen: set[str] = set()
+        out: list["RomEntry"] = []
+        for q in _FAMOUS_QUERIES:
+            tokens = [t for t in q.lower().split() if t]
+            if not tokens:
+                continue
+            matches = [
+                e for e in all_entries
+                if all(t in e.name.lower() for t in tokens)
+            ]
+            if not matches:
+                continue
+            # Prefer USA/World, then shortest name (base game wins ties).
+            matches.sort(key=lambda e: (region_score(e.name.lower()), len(e.name)))
+            # If the top match was already claimed by an earlier query,
+            # try the next-best match rather than skipping the slot.
+            for candidate in matches:
+                if candidate.name not in seen:
+                    seen.add(candidate.name)
+                    out.append(candidate)
+                    break
+            if len(out) >= MAX_RESULTS:
+                break
+
+        self._famous_cache = out
+        return out
 
     def compose(self) -> ComposeResult:
         yield Header()
@@ -151,26 +331,37 @@ class BrowseApp(App):
 
     def _refresh(self) -> None:
         q = self.query_text.strip()
+        is_default = not q
         if q:
             entries = self.lib.search(q)
         else:
-            entries = self.lib.entries()
-        self._results = entries
+            entries = self._famous_entries()
+        self._results = entries[:MAX_RESULTS]
 
         listv = self.query_one("#results", ListView)
         listv.clear()
-        for e in entries[:500]:  # 500 cap keeps initial render snappy
+        for e in self._results:
             listv.append(RomRow(e))
         # Pre-select the first row so Enter works without an arrow press.
-        if entries:
+        if self._results:
             listv.index = 0
 
-        truncated = " (top 500 shown)" if len(entries) > 500 else ""
-        total_size = sum(e.size for e in entries)
-        self._set_status(
-            f"{len(entries)} match{'es' if len(entries) != 1 else ''}{truncated} · "
-            f"total {_fmt_size(total_size)}"
-        )
+        shown = len(self._results)
+        total_size = sum(e.size for e in self._results)
+        if is_default:
+            full_count = len(self.lib.entries())
+            label = f"{shown} famous picks · type to search {full_count:,} ROMs"
+        else:
+            full_count = len(entries)
+            matched_word = "match" if full_count == 1 else "matches"
+            truncated = (
+                f" (top {MAX_RESULTS} shown)" if full_count > MAX_RESULTS else ""
+            )
+            label = (
+                f"{full_count} {matched_word}{truncated} · "
+                f"total {_fmt_size(total_size)}"
+            )
+        self._set_status(label)
 
     def _set_status(self, text: str) -> None:
         self.query_one("#status", Static).update(text)

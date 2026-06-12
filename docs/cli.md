@@ -45,6 +45,11 @@ Interactive ROM browser — search-as-you-type, ↑/↓ to navigate, Enter
 to download. Pure-TUI complement to `search` + `download`; those
 stay agent-friendly, this one is for humans.
 
+Empty search box shows a curated list of ~100 famous GBA hits so
+you land on something recognizable instead of "007 — Everything or
+Nothing" alphabetical. Any keystroke replaces that with live fuzzy
+matches against the full 3,555-entry index (capped at the top 100).
+
 ```
 $ gbax browse zelda
 

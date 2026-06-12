@@ -44,14 +44,29 @@ def stub_lib(monkeypatch):
     return lib
 
 
-async def test_browse_initial_state_shows_all(stub_lib):
+async def test_browse_default_shows_famous_subset(stub_lib):
+    """Empty query → famous-games picks resolved against the stub index.
+    Stub has Emerald, FireRed, Minish Cap, etc. that match famous queries;
+    Mario Kart isn't famously curated under that exact slug — still fine,
+    we just check that the famous resolver returned a non-empty subset of
+    the stub entries."""
     app = BrowseApp(lib=stub_lib)
     async with app.run_test() as pilot:
         await pilot.pause()
-        assert len(app._results) == 5
-        # ListView should have all 5 rows mounted
-        listv = app.query_one("#results")
-        assert len(list(listv.children)) == 5
+        assert app._results, "famous resolver should return at least one stub entry"
+        assert all(r.name in {e.name for e in stub_lib.entries()} for r in app._results)
+
+
+async def test_browse_caps_results_at_max(stub_lib):
+    """Searching for 'pokemon' against a stub with 3 pokemon entries returns
+    all 3, and the cap doesn't truncate when under the limit."""
+    from gbax.browse import MAX_RESULTS
+
+    app = BrowseApp(lib=stub_lib, initial_query="pokemon")
+    async with app.run_test() as pilot:
+        await pilot.pause()
+        assert len(app._results) == 3
+        assert len(app._results) <= MAX_RESULTS
 
 
 async def test_browse_filters_as_you_type(stub_lib):
@@ -114,4 +129,6 @@ async def test_browse_escape_clears_query(stub_lib):
         await pilot.press("escape")
         await pilot.pause()
         assert app.query_text == ""
-        assert len(app._results) == 5
+        # Default view now uses the famous resolver, which yields some
+        # subset of the stub index (≥1 entry).
+        assert app._results
