@@ -271,6 +271,7 @@ def play_loop(
 
     sdl2.ext.init()
     sdl2.SDL_InitSubSystem(sdl2.SDL_INIT_AUDIO)
+    sdl2.SDL_InitSubSystem(sdl2.SDL_INIT_GAMECONTROLLER)
     try:
         from gbax.render.sdl_renderer import SDLRenderer
 
@@ -325,6 +326,34 @@ def play_loop(
             # Hook the libretro core's audio callback. `runtime._core` is gbax-internal.
             runtime._core.on_audio = _on_audio
 
+        # Gamepads — open everything attached at startup; hot-plug events
+        # below add/remove pads live. Set-union into the same `held` set
+        # that keyboard + agent use, so all input sources combine cleanly.
+        from gbax.render.gamepad import PadManager
+
+        def _set_fast_forward(on: bool) -> None:
+            nonlocal fast_forward
+            fast_forward = on
+
+        def _pad_plugin_slot(slot: str, down: bool) -> None:
+            if loaded_plugin is None or plugin_ctx is None or not down:
+                return
+            handlers = loaded_plugin.key_handlers.get(slot, ())
+            for fn in handlers:
+                try:
+                    fn(plugin_ctx)
+                except Exception:
+                    import traceback
+                    traceback.print_exc()
+
+        pad_manager = PadManager(
+            on_fast_forward=_set_fast_forward,
+            on_plugin_slot=_pad_plugin_slot,
+        )
+        opened = pad_manager.open_attached()
+        for name in opened:
+            print(f"gamepad: {name}")
+
         running = True
         event = sdl2.SDL_Event()
         last_frame = time.monotonic()
@@ -334,6 +363,36 @@ def play_loop(
                 if event.type == sdl2.SDL_QUIT:
                     running = False
                     break
+
+                if event.type == sdl2.SDL_CONTROLLERDEVICEADDED:
+                    name = pad_manager.handle_device_added(event.cdevice.which)
+                    if name is not None:
+                        print(f"gamepad attached: {name}")
+                    continue
+                if event.type == sdl2.SDL_CONTROLLERDEVICEREMOVED:
+                    name = pad_manager.handle_device_removed(event.cdevice.which, held)
+                    if name is not None:
+                        print(f"gamepad removed: {name}")
+                        runtime.set_buttons(held)
+                    continue
+                if event.type == sdl2.SDL_CONTROLLERBUTTONDOWN:
+                    pad_manager.handle_button(
+                        event.cbutton.which, event.cbutton.button, True, held,
+                    )
+                    runtime.set_buttons(held)
+                    continue
+                if event.type == sdl2.SDL_CONTROLLERBUTTONUP:
+                    pad_manager.handle_button(
+                        event.cbutton.which, event.cbutton.button, False, held,
+                    )
+                    runtime.set_buttons(held)
+                    continue
+                if event.type == sdl2.SDL_CONTROLLERAXISMOTION:
+                    pad_manager.handle_axis(
+                        event.caxis.which, event.caxis.axis, event.caxis.value, held,
+                    )
+                    runtime.set_buttons(held)
+                    continue
 
                 if event.type == sdl2.SDL_KEYDOWN:
                     sym = event.key.keysym.sym
@@ -592,4 +651,8 @@ def play_loop(
         if watch_panel is not None:
             watch_panel.__exit__(None, None, None)
         runtime._core.on_audio = None
+        try:
+            pad_manager.close_all()
+        except NameError:
+            pass  # never reached open_attached() — e.g. early init failure
         sdl2.ext.quit()

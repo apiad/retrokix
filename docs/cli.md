@@ -133,6 +133,29 @@ library — `gbax play emerald` resolves to
 | Screenshot   | `F12` — saves to `~/.gbax/screenshots/` |
 | Toggle cheat | `F1` … `F9` — toggle the Nth active cheat |
 
+### Gamepad
+
+Plug in a USB or Bluetooth controller and it Just Works — SDL2's
+GameController DB recognises most XInput, DualShock/DualSense,
+8BitDo, Steam Controller, and generic clone pads. Multiple pads
+combine via set-union (couch co-op for free). Hot-plug supported.
+
+| GBA | Pad |
+| --- | --- |
+| A | A (south face button) |
+| B | B (east face button) |
+| L | Left shoulder (L1/LB) |
+| R | Right shoulder (R1/RB) |
+| START | Start |
+| SELECT | Back / Select / Share |
+| D-pad | D-pad or left analog stick (25% deadzone) |
+| Fast-forward | Left trigger (LT/L2) — held |
+
+X / Y face buttons, right stick, right trigger, and guide are
+intentionally unbound — reserved for plugin hotkeys via the
+`on_key` decorator with synthetic slot names: `PAD_X`, `PAD_Y`,
+`PAD_L1`, `PAD_R1`, `PAD_START`, `PAD_SELECT`, `PAD_DPAD_UP`, etc.
+
 ### Flags
 
 | Flag | Default | Purpose |
