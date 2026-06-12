@@ -39,7 +39,7 @@ body:has(.gx-hero) .md-sidebar {
   margin: 0 auto;
 }
 .gx-section__inner--narrow {
-  max-width: 760px;
+  max-width: 980px;
   text-align: center;
 }
 .gx-eyebrow {
@@ -500,7 +500,7 @@ body:has(.gx-hero) .md-sidebar {
   border-radius: var(--gx-radius);
   padding: 1.4rem 1.6rem;
   margin: 1.5rem auto 0;
-  max-width: 680px;
+  max-width: 920px;
   text-align: left;
   font-family: var(--gx-mono);
   font-size: 1.04rem;
