@@ -877,14 +877,49 @@ body:has(.gx-hero) .md-sidebar {
   width: 100%;
 }
 
-/* Collapsed state for each card: only the tag visible. */
+/* Collapsed state for each card: only the hero (icon + tag) visible.
+ * .is-revealed expands the body via grid-template-rows transition.
+ * The audiences carousel keeps exactly one card open at a time. */
 .gx-audience {
+  position: relative;
   display: grid;
   grid-template-rows: auto 0fr;
-  transition: grid-template-rows 0.55s ease, opacity 0.45s ease;
+  transition: grid-template-rows 0.55s ease, opacity 0.45s ease,
+              border-color 0.4s ease, background 0.4s ease;
   opacity: 0.45;
 }
-.gx-audience > p {
+.gx-audience.is-revealed {
+  grid-template-rows: auto 1fr;
+  opacity: 1;
+  border-color: rgba(167, 139, 250, 0.35);
+  background: var(--gx-bg-2);
+}
+
+.gx-audience__hero {
+  display: flex;
+  align-items: center;
+  gap: 0.95rem;
+  padding: 0;
+  margin: 0;
+}
+.gx-audience__icon {
+  font-size: 2.6rem;
+  line-height: 1;
+  display: inline-block;
+  transition: transform 0.5s ease;
+  transform: translateY(0) scale(1);
+  filter: grayscale(0.4);
+}
+.gx-audience.is-revealed .gx-audience__icon {
+  transform: translateY(-2px) scale(1.05);
+  filter: grayscale(0);
+}
+.gx-audience .gx-audience__tag {
+  margin: 0 !important;
+  font-size: 0.78rem;
+}
+
+.gx-audience__body {
   overflow: hidden;
   min-height: 0;
   margin: 0;
@@ -892,19 +927,57 @@ body:has(.gx-hero) .md-sidebar {
   transform: translateY(6px);
   transition: opacity 0.4s ease 0.05s, transform 0.5s ease 0.05s;
 }
-.gx-audience.is-revealed {
-  grid-template-rows: auto 1fr;
-  opacity: 1;
-}
-.gx-audience.is-revealed > p {
+.gx-audience.is-revealed .gx-audience__body {
   opacity: 1;
   transform: translateY(0);
 }
+.gx-audience.is-revealed .gx-audience__hero {
+  margin-bottom: 1.1rem;
+}
 
-/* When transitions complete (grid-rows reaches 1fr) the paragraph
- * needs visible space — open a small top gap once revealed. */
-.gx-audience.is-revealed .gx-audience__tag {
-  margin-bottom: 0.85rem;
+.gx-audience__lead {
+  margin: 0 0 0.85rem !important;
+  font-size: 1.04rem;
+  color: var(--gx-text);
+  font-weight: 500;
+}
+.gx-audience__lead em {
+  color: var(--gx-accent);
+  font-style: italic;
+  font-weight: 600;
+}
+.gx-audience:nth-child(2) .gx-audience__lead em { color: var(--gx-emerald); }
+.gx-audience:nth-child(3) .gx-audience__lead em { color: var(--gx-amber); }
+
+.gx-audience__list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+.gx-audience__list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  font-size: 0.96rem;
+  line-height: 1.55;
+  color: var(--gx-text-dim);
+}
+.gx-li__icon {
+  flex: 0 0 1.5rem;
+  font-size: 1.1rem;
+  line-height: 1.4;
+  text-align: center;
+}
+.gx-audience__tail {
+  margin: 0 !important;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--gx-border-soft);
+  font-size: 0.92rem;
+  color: var(--gx-text-soft);
+  font-style: italic;
 }
 
 @media (max-width: 800px) {

@@ -364,8 +364,12 @@
  * are CSS-revealed). We bail early so we don't fight the styles.
  * ========================================================= */
 (() => {
-  const NARROW_BREAKPOINT = 1100;
-  const REVEAL_AT = [0.15, 0.4, 0.65];
+  const NARROW_BREAKPOINT = 800;
+  // Boundaries for which card is "active". Three equal-ish buckets:
+  // progress [0, 0.34) → card 0
+  // progress [0.34, 0.67) → card 1
+  // progress [0.67, 1] → card 2
+  const STEP_BOUNDARIES = [0.34, 0.67];
 
   function init() {
     if (window.__gxAudInited) return;
@@ -389,6 +393,14 @@
       cards.forEach((c) => c.classList.add("is-revealed"));
     }
 
+    function activeIndex(progress) {
+      let i = 0;
+      while (i < STEP_BOUNDARIES.length && progress >= STEP_BOUNDARIES[i]) {
+        i++;
+      }
+      return Math.min(i, cards.length - 1);
+    }
+
     function update() {
       if (!isPinningActive()) {
         revealAll();
@@ -401,42 +413,22 @@
         totalScrollable,
       );
       const progress = scrolled / totalScrollable;
+      const active = activeIndex(progress);
       cards.forEach((card, i) => {
-        const threshold = REVEAL_AT[i] ?? 1;
-        card.classList.toggle("is-revealed", progress >= threshold);
+        card.classList.toggle("is-revealed", i === active);
       });
     }
 
-    // Drive update via a rAF loop while the section is in the viewport.
-    // Scroll events aren't reliably emitted for programmatic scrolls and
-    // can be debounced by the user agent — running every frame here is
-    // cheap (one getBoundingClientRect, three classList toggles) and
-    // guarantees we stay in sync with whatever the scroll position is.
-    let running = false;
-    function loop() {
-      if (!running) return;
+    // Continuous rAF loop. The work per frame is tiny (one
+    // getBoundingClientRect + three classList toggles, mostly no-op
+    // after the first call). Cheaper and more reliable than chasing
+    // scroll events — those can be missed for programmatic scrolls
+    // and debounced by the UA on touch devices.
+    function tick() {
       update();
-      requestAnimationFrame(loop);
+      requestAnimationFrame(tick);
     }
-    function start() {
-      if (running) return;
-      running = true;
-      requestAnimationFrame(loop);
-    }
-    function stop() {
-      running = false;
-    }
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting) start();
-          else stop();
-        }
-      },
-      { threshold: 0 },
-    );
-    observer.observe(scroller);
-
+    requestAnimationFrame(tick);
     window.addEventListener("resize", update);
     update();
   }
