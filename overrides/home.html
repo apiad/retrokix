@@ -6,7 +6,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Grotesk:wght@400;500;600;700&display=swap">
   <meta property="og:title" content="gbax — Game Boy Advance you can drive">
-  <meta property="og:description" content="Hacker-first GBA emulator. Pip-installable, native libretro core, HTTP API any LLM can reach. Bring a keyboard, bring an LLM, bring both.">
+  <meta property="og:description" content="Hacker-first GBA emulator. Pip-installable, native libretro core, HTTP API any LLM can reach. Bring your keyboard, your gamepad, and your AI — they all work together.">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
 {% endblock %}
@@ -106,11 +106,12 @@
   <section class="gx-section gx-section--loop">
     <div class="gx-section__inner">
       <p class="gx-eyebrow">The cooperative loop.</p>
-      <h2 class="gx-h2">Bring a keyboard. Bring an LLM. Bring both.</h2>
+      <h2 class="gx-h2">Bring a keyboard. Bring a gamepad. Bring an LLM.</h2>
       <p class="gx-section__lead">
-        Launch gbax with the play surface <em>and</em> the HTTP API. Both
-        clients drive the same runtime via the same lock. Inputs combine
-        by set-union — neither blocks the other.
+        Every input source — keyboard, controller, HTTP — drives the
+        same runtime via the same lock. They combine by set-union; none
+        of them blocks the others. Plug in two pads, plug in an agent,
+        keep your hand on the keyboard. All of it works together.
       </p>
       <div class="gx-loop">
         <div class="gx-loop__player">
@@ -137,7 +138,11 @@
             <span class="gx-key">F12</span>
             <span class="gx-loop__hint">screenshot</span>
           </div>
-          <div class="gx-loop__caption">SDL window · keyboard · macros · save states</div>
+          <div class="gx-loop__row">
+            <span class="gx-key gx-key--mod">🎮</span>
+            <span class="gx-loop__hint">USB / Bluetooth pad — XInput, DualShock, 8BitDo, Steam, clones</span>
+          </div>
+          <div class="gx-loop__caption">SDL window · keyboard · gamepad · macros · save states</div>
         </div>
         <div class="gx-loop__pipe">
           <span class="gx-loop__pulse"></span>
@@ -235,8 +240,9 @@
             <p class="gx-audience__lead">You want to <em>remember</em>.</p>
             <ul class="gx-audience__list">
               <li><span class="gx-li__icon">🎮</span> Browse the cartridges from your shelf — <code>gbax browse</code></li>
+              <li><span class="gx-li__icon">🕹️</span> Plug in any USB or Bluetooth pad — XInput, DualShock, 8BitDo, generic clones</li>
               <li><span class="gx-li__icon">💾</span> Save state anywhere — even mid-boss</li>
-              <li><span class="gx-li__icon">⏩</span> Fast-forward the grind on <kbd>Left-Shift</kbd></li>
+              <li><span class="gx-li__icon">⏩</span> Fast-forward the grind on <kbd>Left-Shift</kbd> or the left trigger</li>
               <li><span class="gx-li__icon">🍀</span> Pin a cheat to <kbd>F1</kbd> when you're stuck</li>
             </ul>
             <p class="gx-audience__tail">The agent layer doesn't even have to be running.</p>
@@ -255,7 +261,7 @@
               <li><span class="gx-li__icon">🎚️</span> Hotkey save slots, 8× on <kbd>Left-Shift</kbd></li>
               <li><span class="gx-li__icon">🤖</span> Bring an AI companion — Claude Code, OpenAI Codex, OpenCode</li>
             </ul>
-            <p class="gx-audience__tail">Same HTTP API. You just use it to coach.</p>
+            <p class="gx-audience__tail">Keyboard, gamepad, and the agent — all in the same loop, never blocking each other.</p>
           </div>
         </article>
         <article class="gx-audience">

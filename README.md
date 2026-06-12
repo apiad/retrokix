@@ -1,6 +1,6 @@
 # gbax — Game Boy Advance you can drive.
 
-**Bring a keyboard, bring an LLM, bring both.**
+**Bring your keyboard, your gamepad, and your AI. They all work together.**
 
 [![PyPI](https://img.shields.io/pypi/v/gbax.svg?logo=pypi&logoColor=white)](https://pypi.org/project/gbax/)
 [![Python](https://img.shields.io/pypi/pyversions/gbax.svg?logo=python&logoColor=white)](https://pypi.org/project/gbax/)
@@ -115,6 +115,11 @@ For the human-first reader. Each entry links to its details.
   are documented in [docs/cli.md](docs/cli.md). Headlines: `Ctrl+1..9`
   saves a slot, `Shift+1..9` loads, `Left-Shift` is 8× fast-forward,
   `F12` screenshots.
+- **Controllers** — plug in any USB or Bluetooth pad (XInput,
+  DualShock/DualSense, 8BitDo, Steam Controller, generic clones —
+  SDL's GameController DB recognises them all). Multiple pads + the
+  keyboard + the HTTP API combine via set-union. Hot-plug works.
+  Layout in [docs/cli.md#gamepad](docs/cli.md).
 - **Cheats** — `gbax cheats <rom>` lists; `gbax pin <rom> F1
   max-money` binds; `F1`-`F9` toggle in-game. Pins persist per ROM.
 - **Macros** — record a button sequence with `Ctrl+R`, bind to any
