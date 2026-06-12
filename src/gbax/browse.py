@@ -23,7 +23,7 @@ from typing import TYPE_CHECKING, Callable
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.containers import Container, Vertical
+from textual.containers import Container, Horizontal, Vertical
 from textual.reactive import reactive
 from textual.screen import ModalScreen
 from textual.widgets import Footer, Header, Input, ListItem, ListView, Static
@@ -251,31 +251,37 @@ def _trim_name(name: str, width: int) -> str:
     return name[: width - 1] + "…"
 
 
+def _marker(owned: bool) -> str:
+    return "[#34d399]●[/]" if owned else " "
+
+
 class GroupRow(ListItem):
     """One row in the main list — represents a RomGroup.
 
-    Visible: owned-marker + title + (+N) badge when extras exist + size
-    of the primary variant. We use the primary's size (the canonical
-    release) rather than summing variants, since you'll only download
-    one of them.
+    Three columns laid out by CSS so they fill the terminal width:
+    fixed-width owned marker · name (1fr, expands) · size (auto, right).
+    Size belongs to the canonical variant since downloading the group
+    only downloads one variant.
     """
 
     def __init__(self, group: RomGroup, owned: bool = False) -> None:
         self.group = group
         self.owned = owned
-        super().__init__(Static(self._label()))
+        super().__init__()
 
-    def _label(self) -> str:
-        marker = "[#34d399]●[/]" if self.owned else " "
+    def compose(self) -> ComposeResult:
         extra = (
             f" [dim](+{self.group.extra_count})[/dim]"
             if self.group.extra_count
             else ""
         )
-        size = _fmt_size(self.group.primary.size)
-        # Title space budgeted to ~64 cols so (+N) and size fit on one line.
-        title = _trim_name(self.group.title, 60)
-        return f"{marker} {title}{extra}"+ " " * max(1, 64 - len(title) - len(extra)) + f"[dim]{size:>8}[/dim]"
+        with Horizontal(classes="row"):
+            yield Static(_marker(self.owned), classes="row-marker")
+            yield Static(f"{self.group.title}{extra}", classes="row-name")
+            yield Static(
+                f"[dim]{_fmt_size(self.group.primary.size)}[/dim]",
+                classes="row-size",
+            )
 
 
 class VariantRow(ListItem):
@@ -284,13 +290,16 @@ class VariantRow(ListItem):
     def __init__(self, entry: "RomEntry", owned: bool = False) -> None:
         self.entry = entry
         self.owned = owned
-        super().__init__(Static(self._label()))
+        super().__init__()
 
-    def _label(self) -> str:
-        marker = "[#34d399]●[/]" if self.owned else " "
-        name = _trim_name(self.entry.name, 68)
-        size = _fmt_size(self.entry.size)
-        return f"{marker} {name:<68}  [dim]{size:>8}[/dim]"
+    def compose(self) -> ComposeResult:
+        with Horizontal(classes="row"):
+            yield Static(_marker(self.owned), classes="row-marker")
+            yield Static(self.entry.name, classes="row-name")
+            yield Static(
+                f"[dim]{_fmt_size(self.entry.size)}[/dim]",
+                classes="row-size",
+            )
 
 
 class VariantPicker(ModalScreen[Path | None]):
@@ -419,9 +428,31 @@ class BrowseApp(App):
     }
     ListView > ListItem {
         padding: 0 2;
+        height: 1;
     }
     ListView > ListItem.--highlight {
         background: $accent 30%;
+    }
+
+    .row {
+        height: 1;
+        width: 1fr;
+    }
+    .row-marker {
+        width: 2;
+        height: 1;
+    }
+    .row-name {
+        width: 1fr;
+        height: 1;
+        text-overflow: ellipsis;
+    }
+    .row-size {
+        width: auto;
+        min-width: 8;
+        height: 1;
+        padding: 0 0 0 2;
+        text-align: right;
     }
 
     #status {
