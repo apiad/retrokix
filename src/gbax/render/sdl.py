@@ -10,6 +10,7 @@ Single event-loop client of EmulatorRuntime:
 
 from __future__ import annotations
 
+import queue
 import time
 from pathlib import Path
 from typing import Optional
@@ -161,6 +162,59 @@ def play_loop(
             except Exception:
                 import traceback
                 traceback.print_exc()
+
+    # Couch — if this plugin declared either emits or receive-handlers,
+    # spin up a broker (or attach to an existing one) and connect a
+    # CouchHandle. Receive events are queued onto a thread-safe queue
+    # and drained on the SDL main thread once per play-loop tick so
+    # plugin handlers can touch the runtime safely.
+    couch_handle = None
+    couch_broker = None
+    couch_inbox: "queue.Queue[tuple[str, object, dict]]" = queue.Queue()
+    if (
+        loaded_plugin is not None
+        and plugin_ctx is not None
+        and (loaded_plugin.couch_emits or loaded_plugin.couch_event_handlers)
+    ):
+        import getpass as _getpass
+
+        from gbax.couch import (
+            DEFAULT_SOCK as _COUCH_DEFAULT_SOCK,
+            CouchHandle,
+            ensure_local_broker,
+        )
+        try:
+            couch_broker = ensure_local_broker(_COUCH_DEFAULT_SOCK)
+        except OSError as exc:
+            print(f"couch: broker bind failed: {exc} — plugin couch disabled")
+            couch_broker = None
+        if couch_broker is not None or _COUCH_DEFAULT_SOCK.exists():
+            user_id = _getpass.getuser()
+            try:
+                couch_handle = CouchHandle(
+                    peer_id=f"{user_id}@{os.getpid()}",
+                    name=user_id,
+                    emits=list(loaded_plugin.couch_emits),
+                    receives=list(loaded_plugin.couch_event_handlers.keys()),
+                )
+                couch_handle.connect_unix(str(_COUCH_DEFAULT_SOCK))
+            except (FileNotFoundError, ConnectionRefusedError, TimeoutError, OSError) as exc:
+                print(f"couch: connect failed: {exc} — plugin couch disabled")
+                couch_handle = None
+        if couch_handle is not None:
+            print(f"couch: connected as {couch_handle.peer_id}  ({len(couch_handle.peers())} peer(s))")
+
+            # Wire each declared receive into a queue feeder. Plugin
+            # handlers are invoked by the play loop on its own thread.
+            def _make_feeder(_event_type: str):
+                def _enqueue(_handle, evt):
+                    couch_inbox.put((_event_type, evt.sender, evt.payload))
+                return _enqueue
+
+            for event_type in loaded_plugin.couch_event_handlers:
+                couch_handle.on(event_type, _make_feeder(event_type))
+
+            plugin_ctx.couch = couch_handle
 
     watch_panel = None
     state_reader = None
@@ -599,6 +653,30 @@ def play_loop(
             runtime.step(frames=frames_this_iteration)
 
             if loaded_plugin is not None and plugin_ctx is not None:
+                # Drain incoming couch events on the SDL thread so plugin
+                # handlers can safely write to the runtime.
+                while not couch_inbox.empty():
+                    try:
+                        event_type, sender_id, payload = couch_inbox.get_nowait()
+                    except Exception:
+                        break
+                    handlers = loaded_plugin.couch_event_handlers.get(event_type, ())
+                    if not handlers:
+                        continue
+                    peer = (
+                        couch_handle.peer(sender_id) if couch_handle is not None else None
+                    )
+                    if peer is None:
+                        # Fall back to a placeholder so handlers can still log.
+                        from gbax.couch import PeerInfo as _PeerInfo
+                        peer = _PeerInfo(id=sender_id, name=sender_id)
+                    for fn in handlers:
+                        try:
+                            fn(plugin_ctx, peer, payload)
+                        except Exception:
+                            import traceback
+                            traceback.print_exc()
+
                 plugin_ctx.refresh_state()
                 new_state = plugin_ctx.state
                 for tag, new_val in new_state.items():
@@ -655,4 +733,14 @@ def play_loop(
             pad_manager.close_all()
         except NameError:
             pass  # never reached open_attached() — e.g. early init failure
+        if couch_handle is not None:
+            try:
+                couch_handle.close()
+            except Exception:
+                pass
+        if couch_broker is not None:
+            try:
+                couch_broker.close()
+            except Exception:
+                pass
         sdl2.ext.quit()

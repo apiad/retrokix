@@ -23,11 +23,54 @@ process it in the next play-loop tick.
 from __future__ import annotations
 
 import asyncio
+import os
+import socket
 import threading
 from collections.abc import Callable
+from pathlib import Path
 from typing import Any
 
 from gbax.couch.session import Broker, Client, Event, PeerInfo
+
+
+DEFAULT_SOCK = Path.home() / ".gbax" / "couch" / "default.sock"
+
+
+def is_broker_alive(sock_path: str | Path) -> bool:
+    """True iff a Unix socket at `sock_path` accepts a connection right now."""
+    p = str(sock_path)
+    s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    s.settimeout(0.25)
+    try:
+        s.connect(p)
+        s.close()
+        return True
+    except (FileNotFoundError, ConnectionRefusedError, OSError):
+        try:
+            s.close()
+        except Exception:
+            pass
+        return False
+
+
+def ensure_local_broker(sock_path: str | Path = DEFAULT_SOCK) -> "BrokerHandle | None":
+    """If no broker is alive at `sock_path`, spawn one in-process and
+    return its handle (caller must close on shutdown). If an external
+    broker is already serving the socket, return None — caller just
+    connects to it."""
+    p = Path(sock_path)
+    if is_broker_alive(p):
+        return None
+    p.parent.mkdir(parents=True, exist_ok=True)
+    # Clean up a stale socket file if the previous broker died ungracefully.
+    if p.exists() and p.is_socket():
+        try:
+            os.unlink(p)
+        except OSError:
+            pass
+    handle = BrokerHandle()
+    handle.serve_unix(str(p))
+    return handle
 
 
 class CouchHandle:

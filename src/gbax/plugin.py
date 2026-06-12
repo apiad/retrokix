@@ -31,6 +31,15 @@ class Plugin:
         # name string OR None to fall through. Invoked as Strategy A (highest
         # priority) by the StateReader before memory-vote / pHash.
         self.scene_resolvers: list[Callable] = []
+        # Couch — peer-to-peer plugin events. See gbax.couch.
+        # `couch_emits` — every event type this plugin may send. Calls to
+        # `ctx.couch.send(event=…)` whose event is not in this set are
+        # refused by the CouchHandle.
+        # `couch_event_handlers` — event type → list of (ctx, peer, payload)
+        # handlers, fired on the SDL play-loop thread (NOT the asyncio
+        # thread), so plugin code can touch the runtime safely.
+        self.couch_emits: list[str] = []
+        self.couch_event_handlers: dict[str, list[Callable]] = {}
 
     def on_setup(self, fn: Callable) -> Callable:
         self.setup_handlers.append(fn)
@@ -102,6 +111,35 @@ class Plugin:
 
         return decorator
 
+    def emit_couch(self, *event_types: str) -> None:
+        """Declare event types this plugin will emit. Required before
+        ``ctx.couch.send(event=…)`` will accept them."""
+        for et in event_types:
+            if not isinstance(et, str) or not et:
+                raise ValueError(f"event type must be a non-empty string: {et!r}")
+            if et not in self.couch_emits:
+                self.couch_emits.append(et)
+
+    def on_couch_event(self, event_type: str) -> Callable:
+        """Register a receive handler for one couch event type.
+
+        Handler signature: ``fn(ctx, peer, payload)`` — runs on the
+        SDL play-loop thread, NOT the asyncio bus thread. Safe to touch
+        the runtime / write memory.
+        """
+        if not isinstance(event_type, str) or not event_type:
+            raise ValueError(f"event_type must be a non-empty string: {event_type!r}")
+
+        def decorator(fn: Callable) -> Callable:
+            self.couch_event_handlers.setdefault(event_type, []).append(fn)
+            return fn
+
+        return decorator
+
+    @property
+    def couch_receives(self) -> list[str]:
+        return list(self.couch_event_handlers.keys())
+
 
 _WIDTH_TO_BYTES = {"u8": 1, "u16_le": 2, "u32_le": 4}
 _WIDTH_MAX = {"u8": 0xFF, "u16_le": 0xFFFF, "u32_le": 0xFFFFFFFF}
@@ -138,6 +176,10 @@ class PluginContext:
         self._compiled = dict(compiled_tags)
         self._log_fn = log_fn if log_fn is not None else print
         self._state_snapshot: dict[str, int | str] = {}
+        # ctx.couch is set by the play loop after a CouchHandle has been
+        # connected. Plugins that declared neither couch_emits nor
+        # couch_event_handlers see ctx.couch == None.
+        self.couch = None  # type: ignore[var-annotated]
 
     @property
     def frame_count(self) -> int:

@@ -12,14 +12,26 @@ glue. Enough to prove the round-trip and validate the ontology
 abstraction before we wire it into the SDL play loop.
 """
 
+from gbax.couch.handle import (
+    DEFAULT_SOCK,
+    BrokerHandle,
+    CouchHandle,
+    ensure_local_broker,
+    is_broker_alive,
+)
 from gbax.couch.session import Broker, Client, Event, PeerInfo
 from gbax.couch.wire import read_frame, write_frame
 
 __all__ = [
     "Broker",
+    "BrokerHandle",
     "Client",
+    "CouchHandle",
+    "DEFAULT_SOCK",
     "Event",
     "PeerInfo",
+    "ensure_local_broker",
+    "is_broker_alive",
     "read_frame",
     "write_frame",
 ]
