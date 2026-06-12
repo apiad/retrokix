@@ -837,29 +837,9 @@ body:has(.gx-hero) .md-sidebar {
   color: var(--gx-text);
 }
 
-/* Audiences — scroll-pinned reveal.
- *
- * The outer .gx-audiences-scroll is 300vh tall; the inner
- * .gx-audiences-pin is sticky and pinned for that whole range.
- * JS in landing.js toggles .is-revealed on each card at progress
- * thresholds [0.15, 0.4, 0.65]. Cards transition via grid-template-rows
- * (auto 0fr → auto 1fr), which lets the body grow from 0 to its
- * natural height with a smooth animation.
- *
- * Narrow viewports and reduced-motion: pin is off, all revealed. */
-.gx-audiences-scroll {
-  position: relative;
-  height: 300vh;        /* 100vh per reveal step */
-  padding: 0 !important;
-}
-.gx-audiences-pin {
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  padding: 4rem 1.25rem;
-}
+/* Audiences — three stacked cards in a left-staircase: each card
+ * sits 10% further to the right than the one above. No reveal
+ * animation, no pin. On narrow viewports the staircase flattens. */
 .gx-section--audiences .gx-eyebrow,
 .gx-section--audiences .gx-h2 {
   text-align: center;
@@ -868,31 +848,18 @@ body:has(.gx-hero) .md-sidebar {
 }
 .gx-audiences {
   margin-top: 2.5rem;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
-  max-width: 760px;
-  margin-left: auto;
-  margin-right: auto;
-  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
 }
-
-/* Collapsed state for each card: only the hero (icon + tag) visible.
- * .is-revealed expands the body via grid-template-rows transition.
- * The audiences carousel keeps exactly one card open at a time. */
 .gx-audience {
-  position: relative;
-  display: grid;
-  grid-template-rows: auto 0fr;
-  transition: grid-template-rows 0.55s ease, opacity 0.45s ease,
-              border-color 0.4s ease, background 0.4s ease;
-  opacity: 0.45;
+  width: 80%;
 }
-.gx-audience.is-revealed {
-  grid-template-rows: auto 1fr;
-  opacity: 1;
-  border-color: rgba(167, 139, 250, 0.35);
-  background: var(--gx-bg-2);
+.gx-audience:nth-child(1) { margin-left: 0; }
+.gx-audience:nth-child(2) { margin-left: 10%; }
+.gx-audience:nth-child(3) { margin-left: 20%; }
+@media (max-width: 800px) {
+  .gx-audience { width: 100%; margin-left: 0 !important; }
 }
 
 .gx-audience__hero {
@@ -900,39 +867,19 @@ body:has(.gx-hero) .md-sidebar {
   align-items: center;
   gap: 0.95rem;
   padding: 0;
-  margin: 0;
+  margin: 0 0 1.1rem 0;
 }
 .gx-audience__icon {
   font-size: 2.6rem;
   line-height: 1;
   display: inline-block;
-  transition: transform 0.5s ease;
-  transform: translateY(0) scale(1);
-  filter: grayscale(0.4);
-}
-.gx-audience.is-revealed .gx-audience__icon {
-  transform: translateY(-2px) scale(1.05);
-  filter: grayscale(0);
 }
 .gx-audience .gx-audience__tag {
   margin: 0 !important;
   font-size: 0.78rem;
 }
-
 .gx-audience__body {
-  overflow: hidden;
-  min-height: 0;
   margin: 0;
-  opacity: 0;
-  transform: translateY(6px);
-  transition: opacity 0.4s ease 0.05s, transform 0.5s ease 0.05s;
-}
-.gx-audience.is-revealed .gx-audience__body {
-  opacity: 1;
-  transform: translateY(0);
-}
-.gx-audience.is-revealed .gx-audience__hero {
-  margin-bottom: 1.1rem;
 }
 
 .gx-audience__lead {
@@ -980,22 +927,6 @@ body:has(.gx-hero) .md-sidebar {
   font-style: italic;
 }
 
-@media (max-width: 800px) {
-  .gx-audiences-scroll { height: auto; padding: 4.5rem 1.25rem !important; }
-  .gx-audiences-pin { position: static; height: auto; padding: 0; }
-  .gx-audience,
-  .gx-audience > p {
-    opacity: 1;
-    grid-template-rows: auto auto;
-    transform: none;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .gx-audiences-scroll { height: auto; padding: 4.5rem 1.25rem !important; }
-  .gx-audiences-pin { position: static; height: auto; padding: 0; }
-  .gx-audience { opacity: 1; grid-template-rows: auto auto; transition: none; }
-  .gx-audience > p { opacity: 1; transform: none; transition: none; }
-}
 .gx-audience {
   position: relative;
   background: var(--gx-bg-1);
