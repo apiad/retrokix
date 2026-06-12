@@ -179,6 +179,10 @@ macro_app = typer.Typer(help="Manage recorded input macros.")
 app.add_typer(macro_app, name="macro")
 
 
+from gbax.couch.cli import app as couch_app  # noqa: E402
+app.add_typer(couch_app, name="couch")
+
+
 @app.command()
 def macros(
     rom: str = typer.Argument(..., help="ROM path or fuzzy query."),
