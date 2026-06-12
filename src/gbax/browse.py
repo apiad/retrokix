@@ -186,14 +186,16 @@ def _trim_name(name: str, width: int) -> str:
 class RomRow(ListItem):
     """One row in the results list — holds a reference to its RomEntry."""
 
-    def __init__(self, entry: "RomEntry") -> None:
+    def __init__(self, entry: "RomEntry", owned: bool = False) -> None:
         self.entry = entry
+        self.owned = owned
         super().__init__(Static(self._label()))
 
     def _label(self) -> str:
-        name = _trim_name(self.entry.name, 70)
+        marker = "[#34d399]●[/]" if self.owned else " "
+        name = _trim_name(self.entry.name, 68)
         size = _fmt_size(self.entry.size)
-        return f"{name:<70}  [dim]{size:>8}[/dim]"
+        return f"{marker} {name:<68}  [dim]{size:>8}[/dim]"
 
 
 class BrowseApp(App):
@@ -259,6 +261,26 @@ class BrowseApp(App):
         self._results: list["RomEntry"] = []
         self._downloading = False
         self._famous_cache: list["RomEntry"] | None = None
+        self._local_stems: set[str] = set()
+
+    def _refresh_local(self) -> None:
+        """Re-scan the on-disk ROM folder. Stems (filename minus suffix)
+        are the matching key against archive entry names."""
+        from gbax.library import list_local_roms
+
+        try:
+            paths = list_local_roms(self.lib.roms_dir)
+        except (FileNotFoundError, OSError):
+            paths = []
+        self._local_stems = {p.stem for p in paths}
+
+    @staticmethod
+    def _entry_stem(name: str) -> str:
+        """Strip the archive extension (.zip / .gba) for ownership matching."""
+        for suffix in (".zip", ".gba"):
+            if name.lower().endswith(suffix):
+                return name[: -len(suffix)]
+        return name
 
     def _famous_entries(self) -> list["RomEntry"]:
         """Resolve the curated famous-games queries to concrete entries.
@@ -315,6 +337,7 @@ class BrowseApp(App):
 
     def on_mount(self) -> None:
         self.title = "gbax browse"
+        self._refresh_local()
         inp = self.query_one("#q", Input)
         inp.value = self._initial_query
         inp.focus()
@@ -341,7 +364,8 @@ class BrowseApp(App):
         listv = self.query_one("#results", ListView)
         listv.clear()
         for e in self._results:
-            listv.append(RomRow(e))
+            owned = self._entry_stem(e.name) in self._local_stems
+            listv.append(RomRow(e, owned=owned))
         # Pre-select the first row so Enter works without an arrow press.
         if self._results:
             listv.index = 0
@@ -421,6 +445,9 @@ class BrowseApp(App):
             self._downloading = False
             path: Path = event.worker.result
             self._set_status(f"saved → {path}")
+            # Refresh the owned-marker — the new ROM now exists on disk.
+            self._refresh_local()
+            self._refresh()
         elif state == WorkerState.ERROR:
             self._downloading = False
             err = event.worker.error

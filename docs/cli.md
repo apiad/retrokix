@@ -50,6 +50,10 @@ you land on something recognizable instead of "007 — Everything or
 Nothing" alphabetical. Any keystroke replaces that with live fuzzy
 matches against the full 3,555-entry index (capped at the top 100).
 
+ROMs already in `~/.gbax/roms/` show a green `●` marker on the
+left so you can tell at a glance what's downloaded. The marker
+updates immediately after a download finishes.
+
 ```
 $ gbax browse zelda
 

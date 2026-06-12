@@ -121,6 +121,26 @@ async def test_browse_enter_triggers_download_on_selected(stub_lib, tmp_path):
         }
 
 
+async def test_browse_marks_owned_roms(stub_lib, tmp_path):
+    """ROMs whose .gba stem matches an archive entry name (minus .zip)
+    should render the row as owned."""
+    from gbax.browse import RomRow
+
+    # Drop a fake .gba into a temp roms dir that matches one stub entry.
+    stub_lib.roms_dir = tmp_path
+    (tmp_path / "Pokemon - Emerald Version (USA, Europe).gba").write_bytes(b"")
+
+    app = BrowseApp(lib=stub_lib, initial_query="pokemon")
+    async with app.run_test() as pilot:
+        await pilot.pause()
+        listv = app.query_one("#results")
+        rows = [child for child in listv.children if isinstance(child, RomRow)]
+        owned = {r.entry.name: r.owned for r in rows}
+        assert owned["Pokemon - Emerald Version (USA, Europe).zip"] is True
+        assert owned["Pokemon - Emerald Version (Japan).zip"] is False
+        assert owned["Pokemon - FireRed Version (USA).zip"] is False
+
+
 async def test_browse_escape_clears_query(stub_lib):
     app = BrowseApp(lib=stub_lib, initial_query="emerald")
     async with app.run_test() as pilot:
