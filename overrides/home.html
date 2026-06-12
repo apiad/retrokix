@@ -54,18 +54,12 @@
         <div class="gx-screen">
           <div class="gx-screen__bezel">
             <div class="gx-screen__lcd">
-              <div class="gx-screen__scanlines"></div>
-              <div class="gx-screen__scene">
-                <div class="gx-scene__sky"></div>
-                <div class="gx-scene__grass"></div>
-                <div class="gx-scene__trees"></div>
-                <div class="gx-scene__trainer"></div>
-                <div class="gx-scene__hud">
-                  <span class="gx-scene__hud-label">EMERALD</span>
-                  <span class="gx-scene__hud-pip"></span>
-                </div>
-              </div>
-              <div class="gx-screen__glow"></div>
+              <img
+              class="gx-screen__img"
+              src="{{ 'gbax.png' | url }}"
+              alt="gbax running Pokémon Emerald — Combusken vs Nosepass battle screen">
+            <div class="gx-screen__scanlines"></div>
+            <div class="gx-screen__glow"></div>
             </div>
             <div class="gx-screen__dot gx-screen__dot--power"></div>
             <div class="gx-screen__label">GAME BOY ADVANCE</div>
@@ -81,11 +75,12 @@
           </div>
           <pre class="gx-terminal__body"><code><span class="t-p">{</span>
   <span class="t-k">"slots"</span>: [
-    <span class="t-p">{</span> <span class="t-k">"species"</span>: <span class="t-n">280</span>,
-      <span class="t-k">"level"</span>: <span class="t-n">11</span>,
-      <span class="t-k">"hp"</span>: <span class="t-n">33</span>,
-      <span class="t-k">"max_hp"</span>: <span class="t-n">33</span>,
-      <span class="t-k">"friendship"</span>: <span class="t-n">113</span> <span class="t-p">}</span>
+    <span class="t-p">{</span> <span class="t-k">"species"</span>: <span class="t-n">281</span>,
+      <span class="t-k">"nickname"</span>: <span class="t-s">"COMBUSKEN"</span>,
+      <span class="t-k">"level"</span>: <span class="t-n">16</span>,
+      <span class="t-k">"hp"</span>: <span class="t-n">50</span>,
+      <span class="t-k">"max_hp"</span>: <span class="t-n">50</span>,
+      <span class="t-k">"friendship"</span>: <span class="t-n">73</span> <span class="t-p">}</span>
   ]
 <span class="t-p">}</span><span class="gx-cursor">▍</span></code></pre>
         </div>
