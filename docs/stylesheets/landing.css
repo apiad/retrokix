@@ -298,7 +298,12 @@ body:has(.gx-hero) .md-sidebar {
     inset 0 0 0 6px #0a0612,
     inset 0 6px 22px rgba(0, 0, 0, 0.8);
 }
-/* Real screenshot rendered into the LCD */
+/* Real screenshot(s) rendered into the LCD. Two stacked <img>s so the
+ * rotation can cross-fade — only the .is-visible layer shows. */
+.gx-screen__img-stack {
+  position: absolute;
+  inset: 0;
+}
 .gx-screen__img {
   position: absolute;
   inset: 0;
@@ -308,6 +313,42 @@ body:has(.gx-hero) .md-sidebar {
   image-rendering: pixelated;
   image-rendering: crisp-edges;
   display: block;
+  opacity: 0;
+  transition: opacity 320ms ease;
+}
+.gx-screen__img.is-visible {
+  opacity: 1;
+}
+
+/* Text rotators (title, install tokens, plugin slug, curl JSON body)
+ * cross-fade in place. */
+.gx-rot {
+  display: inline;
+  transition: opacity 320ms ease;
+}
+.gx-rot--title {
+  color: var(--gx-accent);
+}
+.gx-rot-fade-out {
+  opacity: 0;
+}
+[data-gx-rot="json"] {
+  white-space: pre;
+  display: inline-block;
+  min-height: 9.6em; /* lock height so layout doesn't jump between games */
+}
+[data-gx-rot="title"],
+[data-gx-rot="download"],
+[data-gx-rot="rom"],
+[data-gx-rot="plugin"],
+[data-gx-rot="route"] {
+  display: inline-block; /* needed for opacity transition on inline text */
+}
+@media (prefers-reduced-motion: reduce) {
+  .gx-screen__img,
+  .gx-rot {
+    transition: none !important;
+  }
 }
 
 .gx-screen__scanlines {

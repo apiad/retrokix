@@ -28,9 +28,10 @@
         </h1>
         <p class="gx-hero__lead">
           An emulator for hackers, speedrunners, and AI researchers. Plays
-          Pokémon Emerald in a window with sound and a keyboard — and in the
-          same session exposes the framebuffer, memory bus, and input as an
-          HTTP API any coding agent can reach.
+          <span class="gx-rot gx-rot--title" data-gx-rot="title">Pokémon Emerald</span>
+          in a window with sound and a keyboard — and in the same session
+          exposes the framebuffer, memory bus, and input as an HTTP API any
+          coding agent can reach.
         </p>
         <p class="gx-hero__lead gx-hero__lead--dim">
           Same emulator. Same session. Same API. Whether you're the player
@@ -54,10 +55,10 @@
         <div class="gx-screen">
           <div class="gx-screen__bezel">
             <div class="gx-screen__lcd">
-              <img
-              class="gx-screen__img"
-              src="{{ 'gbax.png' | url }}"
-              alt="gbax running Pokémon Emerald — Combusken vs Nosepass battle screen">
+              <div class="gx-screen__img-stack" data-base="{{ 'games/' | url }}">
+              <img class="gx-screen__img is-visible" alt="">
+              <img class="gx-screen__img" alt="">
+            </div>
             <div class="gx-screen__scanlines"></div>
             <div class="gx-screen__glow"></div>
             </div>
@@ -71,18 +72,9 @@
             <span class="gx-terminal__dot"></span>
             <span class="gx-terminal__dot"></span>
             <span class="gx-terminal__dot"></span>
-            <span class="gx-terminal__title">$ curl localhost:8420/plugins/emerald_party/party</span>
+            <span class="gx-terminal__title">$ curl localhost:8420<span class="gx-rot" data-gx-rot="route">/plugins/emerald_party/party</span></span>
           </div>
-          <pre class="gx-terminal__body"><code><span class="t-p">{</span>
-  <span class="t-k">"slots"</span>: [
-    <span class="t-p">{</span> <span class="t-k">"species"</span>: <span class="t-n">281</span>,
-      <span class="t-k">"nickname"</span>: <span class="t-s">"COMBUSKEN"</span>,
-      <span class="t-k">"level"</span>: <span class="t-n">16</span>,
-      <span class="t-k">"hp"</span>: <span class="t-n">50</span>,
-      <span class="t-k">"max_hp"</span>: <span class="t-n">50</span>,
-      <span class="t-k">"friendship"</span>: <span class="t-n">73</span> <span class="t-p">}</span>
-  ]
-<span class="t-p">}</span><span class="gx-cursor">▍</span></code></pre>
+          <pre class="gx-terminal__body"><code><span class="gx-rot" data-gx-rot="json"></span><span class="gx-cursor">▍</span></code></pre>
         </div>
       </div>
     </div>
@@ -91,10 +83,10 @@
   <section class="gx-section gx-section--start">
     <div class="gx-section__inner">
       <p class="gx-eyebrow">Three commands.</p>
-      <h2 class="gx-h2">Pokémon Emerald, in a window, with sound.</h2>
+      <h2 class="gx-h2"><span class="gx-rot gx-rot--title" data-gx-rot="title">Pokémon Emerald</span>, in a window, with sound.</h2>
       <pre class="gx-codeblock"><code><span class="t-pf">$</span> pip install gbax
-<span class="t-pf">$</span> gbax download <span class="t-s">"pokemon emerald"</span>
-<span class="t-pf">$</span> gbax play emerald</code></pre>
+<span class="t-pf">$</span> gbax download <span class="t-s">"<span class="gx-rot" data-gx-rot="download">pokemon emerald</span>"</span>
+<span class="t-pf">$</span> gbax play <span class="gx-rot" data-gx-rot="rom">emerald</span></code></pre>
       <p class="gx-section__caption">
         The wheel ships a prebuilt <code>mgba_libretro.so</code>. No cmake.
         No apt-get. No <code>$GBAX_CORE_PATH</code>.
@@ -253,8 +245,8 @@
       <h2 class="gx-h2">Three lines, and you're in.</h2>
       <pre class="gx-codeblock gx-codeblock--cta"><code><span class="t-c"># Linux x86_64 — bundled core, no extra setup</span>
 <span class="t-pf">$</span> pip install gbax
-<span class="t-pf">$</span> gbax download <span class="t-s">"pokemon emerald"</span>
-<span class="t-pf">$</span> gbax play emerald --listen --plugin gbax.plugins.emerald_party</code></pre>
+<span class="t-pf">$</span> gbax download <span class="t-s">"<span class="gx-rot" data-gx-rot="download">pokemon emerald</span>"</span>
+<span class="t-pf">$</span> gbax play <span class="gx-rot" data-gx-rot="rom">emerald</span> --listen --plugin <span class="gx-rot" data-gx-rot="plugin">gbax.plugins.emerald_party</span></code></pre>
       <div class="gx-cta-row">
         <a class="gx-btn gx-btn--primary" href="installing/">Install guide</a>
         <a class="gx-btn gx-btn--ghost" href="cookbook/emerald_party/">
