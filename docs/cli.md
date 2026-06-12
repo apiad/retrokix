@@ -39,6 +39,47 @@ Flags:
 - `--dest <dir>` — save somewhere other than `~/.gbax/roms/`.
 - `--refresh` — same as `search --refresh`.
 
+## `gbax browse [<query>]`
+
+Interactive ROM browser — search-as-you-type, ↑/↓ to navigate, Enter
+to download. Pure-TUI complement to `search` + `download`; those
+stay agent-friendly, this one is for humans.
+
+```
+$ gbax browse zelda
+
+┌─ gbax browse ──────────────────────────────────────────┐
+│ search ROMs — type any tokens, e.g. 'zelda minish'     │
+│ > zelda                                                │
+├────────────────────────────────────────────────────────┤
+│ ▌ Legend of Zelda, The - The Minish Cap (USA)   8.0 MB │
+│   Legend of Zelda, The - The Minish Cap (Europe) 8.0 MB │
+│   Legend of Zelda, The - A Link to the Past Four … MB │
+│   …                                                    │
+├────────────────────────────────────────────────────────┤
+│ 12 matches · total 92.4 MB                             │
+└────────────────────────────────────────────────────────┘
+  enter download · esc clear/quit · ctrl+q quit
+```
+
+Keymap:
+- type — live filter (same fuzzy semantics as `gbax search`)
+- `↑` / `↓` — navigate the result list
+- `PgUp` / `PgDn` — jump 10 rows
+- `Enter` — download the highlighted entry
+- `Esc` — clear the search box; press again to quit
+- `Ctrl+Q` / `Ctrl+C` — quit
+
+Flags:
+- `<query>` (positional, optional) — pre-fills the search input so
+  `gbax browse zelda` opens already filtered.
+- `--refresh` — same as `search --refresh`.
+
+Use `gbax browse` when you don't remember the exact No-Intro name
+or when several regional variants exist and you want to eyeball the
+list. For scripts and agents, prefer `gbax search` (machine-readable
+output) and `gbax download` (one-shot, no terminal).
+
 ## `gbax list-roms`
 
 Show ROMs in `~/.gbax/roms/` with size and SHA-1 prefix.

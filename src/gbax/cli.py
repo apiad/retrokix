@@ -71,6 +71,19 @@ def download(
 
 
 @app.command()
+def browse(
+    query: str = typer.Argument("", help="Optional initial filter — same fuzzy semantics as `gbax search`."),
+    refresh: bool = typer.Option(False, "--refresh", help="Force-fetch the latest metadata from archive.org."),
+) -> None:
+    """Interactive ROM browser. Search-as-you-type, arrows to navigate, Enter to download."""
+    from gbax.browse import run
+    from gbax.library import RomLibrary
+
+    lib = RomLibrary(refresh=refresh)
+    raise typer.Exit(code=run(lib=lib, initial_query=query))
+
+
+@app.command()
 def cheats(
     rom: str = typer.Argument(..., help="Path to a .gba, or a fuzzy query against ~/.gbax/roms/."),
 ) -> None:
