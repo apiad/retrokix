@@ -17,13 +17,15 @@ Design notes:
 
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.containers import Vertical
+from textual.containers import Container, Vertical
 from textual.reactive import reactive
+from textual.screen import ModalScreen
 from textual.widgets import Footer, Header, Input, ListItem, ListView, Static
 
 if TYPE_CHECKING:
@@ -167,6 +169,72 @@ _FAMOUS_QUERIES: tuple[str, ...] = (
 )
 
 
+def _title_key(name: str) -> str:
+    """Group key for No-Intro names — everything before the first '('.
+
+    e.g. 'Pokemon - Emerald Version (USA, Europe).zip' →
+         'Pokemon - Emerald Version'
+
+    This collapses regional/language/version variants of the same
+    title into one group. If a name has no parenthetical, we strip
+    the .zip/.gba suffix and use what remains.
+    """
+    paren = name.find("(")
+    if paren > 0:
+        return name[:paren].rstrip()
+    if name.lower().endswith((".zip", ".gba")):
+        return name.rsplit(".", 1)[0].rstrip()
+    return name.rstrip()
+
+
+def _region_score(name_lower: str) -> int:
+    """Lower is more canonical. USA/World > Europe > Japan/other."""
+    if "(usa" in name_lower or "(world" in name_lower:
+        return 0
+    if "(europe" in name_lower:
+        return 1
+    return 2
+
+
+@dataclass
+class RomGroup:
+    """A title with one or more regional/version variants.
+
+    `variants` is sorted USA/World → Europe → Japan/other, then
+    shortest name (so the canonical base release ends up first).
+    """
+
+    title: str
+    variants: list["RomEntry"] = field(default_factory=list)
+
+    @property
+    def primary(self) -> "RomEntry":
+        return self.variants[0]
+
+    @property
+    def extra_count(self) -> int:
+        return len(self.variants) - 1
+
+
+def _group_entries(entries: list["RomEntry"]) -> list[RomGroup]:
+    """Collapse a flat entry list into per-title groups, preserving the
+    relative order of first appearance."""
+    by_title: dict[str, RomGroup] = {}
+    order: list[str] = []
+    for e in entries:
+        key = _title_key(e.name)
+        g = by_title.get(key)
+        if g is None:
+            g = RomGroup(title=key, variants=[])
+            by_title[key] = g
+            order.append(key)
+        g.variants.append(e)
+    # Canonicalize variant order within each group.
+    for g in by_title.values():
+        g.variants.sort(key=lambda e: (_region_score(e.name.lower()), len(e.name)))
+    return [by_title[k] for k in order]
+
+
 def _fmt_size(b: int) -> str:
     mb = b / 1_048_576
     if mb < 1:
@@ -183,8 +251,35 @@ def _trim_name(name: str, width: int) -> str:
     return name[: width - 1] + "…"
 
 
-class RomRow(ListItem):
-    """One row in the results list — holds a reference to its RomEntry."""
+class GroupRow(ListItem):
+    """One row in the main list — represents a RomGroup.
+
+    Visible: owned-marker + title + (+N) badge when extras exist + size
+    of the primary variant. We use the primary's size (the canonical
+    release) rather than summing variants, since you'll only download
+    one of them.
+    """
+
+    def __init__(self, group: RomGroup, owned: bool = False) -> None:
+        self.group = group
+        self.owned = owned
+        super().__init__(Static(self._label()))
+
+    def _label(self) -> str:
+        marker = "[#34d399]●[/]" if self.owned else " "
+        extra = (
+            f" [dim](+{self.group.extra_count})[/dim]"
+            if self.group.extra_count
+            else ""
+        )
+        size = _fmt_size(self.group.primary.size)
+        # Title space budgeted to ~64 cols so (+N) and size fit on one line.
+        title = _trim_name(self.group.title, 60)
+        return f"{marker} {title}{extra}"+ " " * max(1, 64 - len(title) - len(extra)) + f"[dim]{size:>8}[/dim]"
+
+
+class VariantRow(ListItem):
+    """One row inside the variant picker — a single RomEntry."""
 
     def __init__(self, entry: "RomEntry", owned: bool = False) -> None:
         self.entry = entry
@@ -196,6 +291,105 @@ class RomRow(ListItem):
         name = _trim_name(self.entry.name, 68)
         size = _fmt_size(self.entry.size)
         return f"{marker} {name:<68}  [dim]{size:>8}[/dim]"
+
+
+class VariantPicker(ModalScreen[Path | None]):
+    """Modal that shows a group's variants and dismisses with the picked
+    entry (or None on cancel). The picked entry is downloaded by the
+    parent app after the modal closes."""
+
+    CSS = """
+    VariantPicker {
+        align: center middle;
+    }
+    #picker-box {
+        width: 90%;
+        max-width: 110;
+        height: auto;
+        max-height: 80%;
+        background: $boost;
+        border: round $accent;
+        padding: 1 2;
+    }
+    #picker-title {
+        height: auto;
+        padding: 0 0 1 0;
+        color: $text;
+        text-style: bold;
+    }
+    #picker-list {
+        height: auto;
+        max-height: 24;
+    }
+    #picker-hint {
+        height: 1;
+        padding: 1 0 0 0;
+        color: $text-muted;
+    }
+    """
+
+    BINDINGS = [
+        Binding("enter", "pick", "Download", priority=True),
+        Binding("escape", "cancel", "Back"),
+        Binding("down", "list_cursor('down')", "Down", show=False, priority=True),
+        Binding("up", "list_cursor('up')", "Up", show=False, priority=True),
+    ]
+
+    def __init__(
+        self,
+        group: RomGroup,
+        local_stems: set[str],
+        on_picked: Callable[["RomEntry"], None],
+    ) -> None:
+        super().__init__()
+        self.group = group
+        self.local_stems = local_stems
+        self._on_picked = on_picked
+
+    def compose(self) -> ComposeResult:
+        rows = []
+        for v in self.group.variants:
+            owned = BrowseApp._entry_stem(v.name) in self.local_stems
+            rows.append(VariantRow(v, owned=owned))
+        yield Container(
+            Static(
+                f"Variants — [b]{self.group.title}[/b]  ({len(self.group.variants)} total)",
+                id="picker-title",
+            ),
+            ListView(*rows, id="picker-list"),
+            Static("enter download · esc back", id="picker-hint"),
+            id="picker-box",
+        )
+
+    def on_mount(self) -> None:
+        listv = self.query_one("#picker-list", ListView)
+        if self.group.variants:
+            listv.index = 0
+        listv.focus()
+
+    def action_list_cursor(self, direction: str) -> None:
+        listv = self.query_one("#picker-list", ListView)
+        if direction == "down":
+            listv.action_cursor_down()
+        else:
+            listv.action_cursor_up()
+
+    def action_pick(self) -> None:
+        listv = self.query_one("#picker-list", ListView)
+        idx = listv.index if listv.index is not None else 0
+        if not (0 <= idx < len(self.group.variants)):
+            return
+        chosen = self.group.variants[idx]
+        self._on_picked(chosen)
+        self.dismiss(None)
+
+    def on_list_view_selected(self, event: ListView.Selected) -> None:
+        """Enter pressed on a focused variant row → pick it."""
+        if event.list_view.id == "picker-list":
+            self.action_pick()
+
+    def action_cancel(self) -> None:
+        self.dismiss(None)
 
 
 class BrowseApp(App):
@@ -242,7 +436,10 @@ class BrowseApp(App):
     BINDINGS = [
         Binding("ctrl+q", "quit", "Quit", priority=True),
         Binding("ctrl+c", "quit", "Quit", priority=True, show=False),
-        Binding("enter", "download_selected", "Download", priority=True),
+        # 'enter' is intentionally NOT bound at the App level — we wire
+        # it via Input.Submitted / ListView.Selected event handlers so
+        # the variant-picker modal's own 'enter' binding wins when it's
+        # on top of the screen stack.
         Binding("escape", "clear_or_quit", "Clear/Quit"),
         # Forward up/down/page-up/page-down to the list even when
         # the search Input has focus — that's the whole point.
@@ -258,9 +455,9 @@ class BrowseApp(App):
         super().__init__()
         self.lib = lib
         self._initial_query = initial_query
-        self._results: list["RomEntry"] = []
+        self._results: list[RomGroup] = []
         self._downloading = False
-        self._famous_cache: list["RomEntry"] | None = None
+        self._famous_cache: list[RomGroup] | None = None
         self._local_stems: set[str] = set()
 
     def _refresh_local(self) -> None:
@@ -282,23 +479,23 @@ class BrowseApp(App):
                 return name[: -len(suffix)]
         return name
 
-    def _famous_entries(self) -> list["RomEntry"]:
-        """Resolve the curated famous-games queries to concrete entries.
-        Cached after first call — the No-Intro index is frozen."""
+    def _famous_groups(self) -> list[RomGroup]:
+        """Resolve the curated famous-games queries to grouped variants.
+
+        For each query, find its best-matching title and add the whole
+        group (all regional/version variants) to the famous list.
+        Cached after first call — the No-Intro index is frozen.
+        """
         if self._famous_cache is not None:
             return self._famous_cache
 
         all_entries = self.lib.entries()
+        # Map title → all entries with that title.
+        groups_by_title = _group_entries(all_entries)
+        title_to_group = {g.title: g for g in groups_by_title}
 
-        def region_score(name_lower: str) -> int:
-            if "(usa" in name_lower or "(world" in name_lower:
-                return 0
-            if "(europe" in name_lower:
-                return 1
-            return 2
-
-        seen: set[str] = set()
-        out: list["RomEntry"] = []
+        seen_titles: set[str] = set()
+        out: list[RomGroup] = []
         for q in _FAMOUS_QUERIES:
             tokens = [t for t in q.lower().split() if t]
             if not tokens:
@@ -309,14 +506,14 @@ class BrowseApp(App):
             ]
             if not matches:
                 continue
-            # Prefer USA/World, then shortest name (base game wins ties).
-            matches.sort(key=lambda e: (region_score(e.name.lower()), len(e.name)))
-            # If the top match was already claimed by an earlier query,
-            # try the next-best match rather than skipping the slot.
+            matches.sort(key=lambda e: (_region_score(e.name.lower()), len(e.name)))
+            # Take the title of the canonical match; fall through to
+            # alternatives if it was already used.
             for candidate in matches:
-                if candidate.name not in seen:
-                    seen.add(candidate.name)
-                    out.append(candidate)
+                title = _title_key(candidate.name)
+                if title not in seen_titles and title in title_to_group:
+                    seen_titles.add(title)
+                    out.append(title_to_group[title])
                     break
             if len(out) >= MAX_RESULTS:
                 break
@@ -352,38 +549,54 @@ class BrowseApp(App):
         if event.input.id == "q":
             self.query_text = event.value
 
+    def on_input_submitted(self, event: Input.Submitted) -> None:
+        """Enter pressed in the search input → behave as 'download
+        highlighted'. Input absorbs the keypress; this is how we hear
+        about it without a priority binding."""
+        if event.input.id == "q":
+            self.action_download_selected()
+
+    def on_list_view_selected(self, event: ListView.Selected) -> None:
+        """Enter pressed on a focused list row → same."""
+        if event.list_view.id == "results":
+            self.action_download_selected()
+
+    def _group_is_owned(self, group: RomGroup) -> bool:
+        return any(
+            self._entry_stem(v.name) in self._local_stems for v in group.variants
+        )
+
     def _refresh(self) -> None:
         q = self.query_text.strip()
         is_default = not q
         if q:
-            entries = self.lib.search(q)
+            groups = _group_entries(self.lib.search(q))
         else:
-            entries = self._famous_entries()
-        self._results = entries[:MAX_RESULTS]
+            groups = self._famous_groups()
+        self._results = groups[:MAX_RESULTS]
 
         listv = self.query_one("#results", ListView)
         listv.clear()
-        for e in self._results:
-            owned = self._entry_stem(e.name) in self._local_stems
-            listv.append(RomRow(e, owned=owned))
+        for g in self._results:
+            listv.append(GroupRow(g, owned=self._group_is_owned(g)))
         # Pre-select the first row so Enter works without an arrow press.
         if self._results:
             listv.index = 0
 
         shown = len(self._results)
-        total_size = sum(e.size for e in self._results)
         if is_default:
             full_count = len(self.lib.entries())
             label = f"{shown} famous picks · type to search {full_count:,} ROMs"
         else:
-            full_count = len(entries)
-            matched_word = "match" if full_count == 1 else "matches"
+            full_count = len(groups)
+            matched_word = "title" if full_count == 1 else "titles"
             truncated = (
                 f" (top {MAX_RESULTS} shown)" if full_count > MAX_RESULTS else ""
             )
+            variant_total = sum(len(g.variants) for g in self._results)
             label = (
                 f"{full_count} {matched_word}{truncated} · "
-                f"total {_fmt_size(total_size)}"
+                f"{variant_total} variants total"
             )
         self._set_status(label)
 
@@ -391,6 +604,9 @@ class BrowseApp(App):
         self.query_one("#status", Static).update(text)
 
     def action_list_cursor(self, direction: str) -> None:
+        # Don't fight the modal's own arrow bindings.
+        if isinstance(self.screen, ModalScreen):
+            return
         listv = self.query_one("#results", ListView)
         if direction == "down":
             listv.action_cursor_down()
@@ -415,13 +631,25 @@ class BrowseApp(App):
     def action_download_selected(self) -> None:
         if self._downloading:
             return
+        # A modal (e.g. the variant picker) is on top — let it handle Enter.
+        if isinstance(self.screen, ModalScreen):
+            return
         listv = self.query_one("#results", ListView)
         idx = listv.index
         if idx is None or idx < 0 or idx >= len(self._results):
             self._set_status("nothing selected")
             return
-        entry = self._results[idx]
-        self._download(entry)
+        group = self._results[idx]
+        if len(group.variants) == 1:
+            self._download(group.primary)
+        else:
+            self.push_screen(
+                VariantPicker(
+                    group=group,
+                    local_stems=self._local_stems,
+                    on_picked=self._download,
+                )
+            )
 
     def _download(self, entry: "RomEntry") -> None:
         self._downloading = True

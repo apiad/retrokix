@@ -54,6 +54,12 @@ ROMs already in `~/.gbax/roms/` show a green `●` marker on the
 left so you can tell at a glance what's downloaded. The marker
 updates immediately after a download finishes.
 
+Regional/version variants of the same title collapse into one row
+with a `(+N)` badge for the extra count. Enter on a single-variant
+row downloads it directly; Enter on a multi-variant row opens a
+modal listing every variant (USA/World first, then Europe, then
+Japan/other) where Enter picks one and Esc backs out.
+
 ```
 $ gbax browse zelda
 
