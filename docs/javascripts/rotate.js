@@ -349,3 +349,101 @@
     init();
   }
 })();
+
+
+/* =========================================================
+ * Scroll-pinned audiences reveal.
+ *
+ * .gx-audiences-scroll is 300vh tall; its .gx-audiences-pin
+ * stays sticky inside. We read the scroll progress through the
+ * outer container and toggle .is-revealed on each card at the
+ * thresholds in REVEAL_AT.
+ *
+ * Disabled on narrow viewports and when prefers-reduced-motion
+ * is set — both paths rely on CSS (the pin is static, all cards
+ * are CSS-revealed). We bail early so we don't fight the styles.
+ * ========================================================= */
+(() => {
+  const NARROW_BREAKPOINT = 1100;
+  const REVEAL_AT = [0.15, 0.4, 0.65];
+
+  function init() {
+    if (window.__gxAudInited) return;
+    window.__gxAudInited = true;
+
+    const scroller = document.querySelector(".gx-audiences-scroll");
+    if (!scroller) return;
+
+    const cards = Array.from(scroller.querySelectorAll(".gx-audience"));
+    if (!cards.length) return;
+
+    const prefersReduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+
+    function isPinningActive() {
+      return window.innerWidth > NARROW_BREAKPOINT && !prefersReduced;
+    }
+
+    function revealAll() {
+      cards.forEach((c) => c.classList.add("is-revealed"));
+    }
+
+    function update() {
+      if (!isPinningActive()) {
+        revealAll();
+        return;
+      }
+      const rect = scroller.getBoundingClientRect();
+      const totalScrollable = Math.max(1, rect.height - window.innerHeight);
+      const scrolled = Math.min(
+        Math.max(0, -rect.top),
+        totalScrollable,
+      );
+      const progress = scrolled / totalScrollable;
+      cards.forEach((card, i) => {
+        const threshold = REVEAL_AT[i] ?? 1;
+        card.classList.toggle("is-revealed", progress >= threshold);
+      });
+    }
+
+    // Drive update via a rAF loop while the section is in the viewport.
+    // Scroll events aren't reliably emitted for programmatic scrolls and
+    // can be debounced by the user agent — running every frame here is
+    // cheap (one getBoundingClientRect, three classList toggles) and
+    // guarantees we stay in sync with whatever the scroll position is.
+    let running = false;
+    function loop() {
+      if (!running) return;
+      update();
+      requestAnimationFrame(loop);
+    }
+    function start() {
+      if (running) return;
+      running = true;
+      requestAnimationFrame(loop);
+    }
+    function stop() {
+      running = false;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) start();
+          else stop();
+        }
+      },
+      { threshold: 0 },
+    );
+    observer.observe(scroller);
+
+    window.addEventListener("resize", update);
+    update();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();

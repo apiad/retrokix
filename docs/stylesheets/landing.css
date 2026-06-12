@@ -837,7 +837,29 @@ body:has(.gx-hero) .md-sidebar {
   color: var(--gx-text);
 }
 
-/* Audiences */
+/* Audiences — scroll-pinned reveal.
+ *
+ * The outer .gx-audiences-scroll is 300vh tall; the inner
+ * .gx-audiences-pin is sticky and pinned for that whole range.
+ * JS in landing.js toggles .is-revealed on each card at progress
+ * thresholds [0.15, 0.4, 0.65]. Cards transition via grid-template-rows
+ * (auto 0fr → auto 1fr), which lets the body grow from 0 to its
+ * natural height with a smooth animation.
+ *
+ * Narrow viewports and reduced-motion: pin is off, all revealed. */
+.gx-audiences-scroll {
+  position: relative;
+  height: 300vh;        /* 100vh per reveal step */
+  padding: 0 !important;
+}
+.gx-audiences-pin {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: 4rem 1.25rem;
+}
 .gx-section--audiences .gx-eyebrow,
 .gx-section--audiences .gx-h2 {
   text-align: center;
@@ -845,13 +867,61 @@ body:has(.gx-hero) .md-sidebar {
   margin-right: auto;
 }
 .gx-audiences {
-  margin-top: 3rem;
+  margin-top: 2.5rem;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
 }
-@media (max-width: 1100px) {
-  .gx-audiences { grid-template-columns: 1fr; max-width: 720px; margin-left: auto; margin-right: auto; }
+
+/* Collapsed state for each card: only the tag visible. */
+.gx-audience {
+  display: grid;
+  grid-template-rows: auto 0fr;
+  transition: grid-template-rows 0.55s ease, opacity 0.45s ease;
+  opacity: 0.45;
+}
+.gx-audience > p {
+  overflow: hidden;
+  min-height: 0;
+  margin: 0;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.4s ease 0.05s, transform 0.5s ease 0.05s;
+}
+.gx-audience.is-revealed {
+  grid-template-rows: auto 1fr;
+  opacity: 1;
+}
+.gx-audience.is-revealed > p {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* When transitions complete (grid-rows reaches 1fr) the paragraph
+ * needs visible space — open a small top gap once revealed. */
+.gx-audience.is-revealed .gx-audience__tag {
+  margin-bottom: 0.85rem;
+}
+
+@media (max-width: 800px) {
+  .gx-audiences-scroll { height: auto; padding: 4.5rem 1.25rem !important; }
+  .gx-audiences-pin { position: static; height: auto; padding: 0; }
+  .gx-audience,
+  .gx-audience > p {
+    opacity: 1;
+    grid-template-rows: auto auto;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gx-audiences-scroll { height: auto; padding: 4.5rem 1.25rem !important; }
+  .gx-audiences-pin { position: static; height: auto; padding: 0; }
+  .gx-audience { opacity: 1; grid-template-rows: auto auto; transition: none; }
+  .gx-audience > p { opacity: 1; transform: none; transition: none; }
 }
 .gx-audience {
   position: relative;
