@@ -30,6 +30,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
+from gbax.couch.naming import DEFAULT_ROOM
 from gbax.couch.session import Broker, Client, Event, PeerInfo
 
 
@@ -82,11 +83,13 @@ class CouchHandle:
         name: str,
         emits: list[str] | None = None,
         receives: list[str] | None = None,
+        room: str = DEFAULT_ROOM,
     ) -> None:
         self.peer_id = peer_id
         self.name = name
         self.emits = list(emits or [])
         self.receives = list(receives or [])
+        self.room = room or DEFAULT_ROOM
         self._loop: asyncio.AbstractEventLoop | None = None
         self._thread: threading.Thread | None = None
         self._client: Client | None = None
@@ -110,6 +113,7 @@ class CouchHandle:
                 name=self.name,
                 emits=self.emits,
                 receives=self.receives,
+                room=self.room,
             )
             try:
                 self._loop.run_until_complete(self._client.connect_unix(sock_path))

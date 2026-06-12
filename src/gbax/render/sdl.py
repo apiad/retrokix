@@ -106,6 +106,7 @@ def play_loop(
     listen: bool = False,
     listen_host: str = "127.0.0.1",
     listen_port: int = 8420,
+    couch_room: str | None = None,
 ) -> None:
     """Run the emulator in a window until the user closes it.
 
@@ -176,33 +177,39 @@ def play_loop(
         and plugin_ctx is not None
         and (loaded_plugin.couch_emits or loaded_plugin.couch_event_handlers)
     ):
-        import getpass as _getpass
-
         from gbax.couch import (
             DEFAULT_SOCK as _COUCH_DEFAULT_SOCK,
             CouchHandle,
             ensure_local_broker,
         )
+        from gbax.couch.identity import load_or_generate as _load_couch_identity
+        from gbax.couch.naming import DEFAULT_ROOM as _DEFAULT_ROOM
+
         try:
             couch_broker = ensure_local_broker(_COUCH_DEFAULT_SOCK)
         except OSError as exc:
             print(f"couch: broker bind failed: {exc} — plugin couch disabled")
             couch_broker = None
         if couch_broker is not None or _COUCH_DEFAULT_SOCK.exists():
-            user_id = _getpass.getuser()
+            identity = _load_couch_identity()
             try:
                 couch_handle = CouchHandle(
-                    peer_id=f"{user_id}@{os.getpid()}",
-                    name=user_id,
+                    peer_id=identity.id,
+                    name=identity.name,
                     emits=list(loaded_plugin.couch_emits),
                     receives=list(loaded_plugin.couch_event_handlers.keys()),
+                    room=couch_room or _DEFAULT_ROOM,
                 )
                 couch_handle.connect_unix(str(_COUCH_DEFAULT_SOCK))
             except (FileNotFoundError, ConnectionRefusedError, TimeoutError, OSError) as exc:
                 print(f"couch: connect failed: {exc} — plugin couch disabled")
                 couch_handle = None
         if couch_handle is not None:
-            print(f"couch: connected as {couch_handle.peer_id}  ({len(couch_handle.peers())} peer(s))")
+            print(
+                f"couch: connected as {couch_handle.peer_id[:8]}…  "
+                f"name={couch_handle.name}  room={couch_handle.room}  "
+                f"({len(couch_handle.peers())} peer(s))"
+            )
 
             # Wire each declared receive into a queue feeder. Plugin
             # handlers are invoked by the play loop on its own thread.

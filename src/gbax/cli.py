@@ -320,6 +320,7 @@ def play(
     listen_port: int = typer.Option(8420, "--listen-port", help="HTTP API bind port. Implies --listen."),
     core_path: Path | None = typer.Option(None, "--core", help="Path to libretro core .so."),
     cheats: str | None = typer.Option(None, "--cheats", help="Comma-separated cheat slugs to enable at boot."),
+    couch_room: str | None = typer.Option(None, "--couch-room", help="Couch room code to join (default 'default'). Generate one with `gbax couch room-code`."),
 ) -> None:
     """Boot ROM in free-run mode with an SDL window."""
     from gbax.library import resolve_rom
@@ -355,6 +356,7 @@ def play(
             listen=listen_enabled,
             listen_host=listen_host,
             listen_port=listen_port,
+            couch_room=couch_room,
         )
     finally:
         runtime.close()

@@ -9,7 +9,7 @@ which is the only place that has the typed knowledge anyway.
 Protocol (length-prefixed JSON frames over a stream):
 
   client → broker (once at connect):
-    {"type": "hello", "peer_id": str, "name": str,
+    {"type": "hello", "peer_id": str, "name": str, "room": str,
      "emits": [str], "receives": [str]}
 
   broker → client (right after hello):
@@ -40,6 +40,7 @@ from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from typing import Any
 
+from gbax.couch.naming import DEFAULT_ROOM
 from gbax.couch.wire import read_frame, write_frame
 
 
@@ -49,6 +50,7 @@ class PeerInfo:
     name: str
     emits: list[str] = field(default_factory=list)
     receives: list[str] = field(default_factory=list)
+    room: str = DEFAULT_ROOM
 
     @classmethod
     def from_dict(cls, d: dict[str, Any]) -> "PeerInfo":
@@ -57,10 +59,15 @@ class PeerInfo:
             name=d.get("name", d["id"]),
             emits=list(d.get("emits", [])),
             receives=list(d.get("receives", [])),
+            room=d.get("room", DEFAULT_ROOM) or DEFAULT_ROOM,
         )
 
     def to_dict(self) -> dict[str, Any]:
-        return {"id": self.id, "name": self.name, "emits": self.emits, "receives": self.receives}
+        return {
+            "id": self.id, "name": self.name,
+            "emits": self.emits, "receives": self.receives,
+            "room": self.room,
+        }
 
 
 @dataclass
@@ -111,6 +118,7 @@ class Broker:
                 name=hello.get("name", hello["peer_id"]),
                 emits=list(hello.get("emits", [])),
                 receives=list(hello.get("receives", [])),
+                room=hello.get("room", DEFAULT_ROOM) or DEFAULT_ROOM,
             )
             peer_id = info.id
 
@@ -120,12 +128,20 @@ class Broker:
                     await write_frame(writer, {"type": "error", "reason": "duplicate_peer_id"})
                     writer.close()
                     return
-                existing = [p.to_dict() for p, _ in self._peers.values()]
+                # Existing list and notifications scoped to this peer's room.
+                existing = [
+                    p.to_dict()
+                    for p, _ in self._peers.values()
+                    if p.room == info.room
+                ]
                 self._peers[peer_id] = (info, writer)
-                others = [w for pid, (_, w) in self._peers.items() if pid != peer_id]
+                roommates = [
+                    w for pid, (p, w) in self._peers.items()
+                    if pid != peer_id and p.room == info.room
+                ]
 
             await write_frame(writer, {"type": "peer_list", "peers": existing})
-            for w in others:
+            for w in roommates:
                 await write_frame(w, {"type": "peer_joined", "peer": info.to_dict()})
 
             while True:
@@ -138,9 +154,18 @@ class Broker:
             pass
         finally:
             if peer_id is not None:
+                room_of_departed = None
                 async with self._lock:
-                    self._peers.pop(peer_id, None)
-                    remaining = list(self._peers.values())
+                    departed = self._peers.pop(peer_id, None)
+                    if departed is not None:
+                        room_of_departed = departed[0].room
+                    if room_of_departed is None:
+                        remaining = []
+                    else:
+                        remaining = [
+                            (p, w) for p, w in self._peers.values()
+                            if p.room == room_of_departed
+                        ]
                 for _info, w in remaining:
                     try:
                         await write_frame(w, {"type": "peer_left", "peer_id": peer_id})
@@ -160,11 +185,21 @@ class Broker:
         }
         target = msg.get("to")
         async with self._lock:
+            sender = self._peers.get(sender_id)
+            if sender is None:
+                return
+            sender_room = sender[0].room
             if target is None:
-                writers = [w for pid, (_, w) in self._peers.items() if pid != sender_id]
+                writers = [
+                    w for pid, (p, w) in self._peers.items()
+                    if pid != sender_id and p.room == sender_room
+                ]
             else:
                 entry = self._peers.get(target)
-                writers = [entry[1]] if entry else []
+                if entry is not None and entry[0].room == sender_room:
+                    writers = [entry[1]]
+                else:
+                    writers = []
         for w in writers:
             try:
                 await write_frame(w, forward)
@@ -185,11 +220,13 @@ class Client:
         name: str,
         emits: list[str] | None = None,
         receives: list[str] | None = None,
+        room: str = DEFAULT_ROOM,
     ) -> None:
         self.peer_id = peer_id
         self.name = name
         self.emits = list(emits or [])
         self.receives = list(receives or [])
+        self.room = room or DEFAULT_ROOM
 
         self._reader: asyncio.StreamReader | None = None
         self._writer: asyncio.StreamWriter | None = None
@@ -206,6 +243,7 @@ class Client:
             "type": "hello",
             "peer_id": self.peer_id,
             "name": self.name,
+            "room": self.room,
             "emits": self.emits,
             "receives": self.receives,
         })
