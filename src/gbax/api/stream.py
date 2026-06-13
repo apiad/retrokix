@@ -582,31 +582,31 @@ _VIEWER_HTML = """<!doctype html>
    * not a GBA face button. */
   .turbo-btn {
     position: absolute;
-    bottom: -6%;
-    left: 4%;
+    bottom: -12%;
+    left: -4%;
     transform: rotate(18deg);  /* unrotate against .abxy's parent rotate */
     border: 1px solid #1a0c2e;
     background:
       linear-gradient(180deg, #fbbf24 0%, #b45309 100%);
     color: #1a0c2e;
     font-family: "Press Start 2P", monospace;
-    font-size: 8px;
-    letter-spacing: 0.14em;
-    padding: 0.6em 1.05em;
+    font-size: clamp(11px, 1.4vmin, 14px);
+    letter-spacing: 0.16em;
+    padding: 0.85em 1.5em;
     border-radius: 999px;
     cursor: pointer;
     box-shadow:
       inset 0 1px 0 rgba(255,255,255,0.4),
-      0 3px 0 rgba(0,0,0,0.45);
+      0 4px 0 rgba(0,0,0,0.45);
     transition: transform 0.06s ease, box-shadow 0.06s ease,
                 background 0.1s ease, filter 0.1s ease;
   }
   .turbo-btn.is-pressed {
-    transform: rotate(18deg) translateY(2px);
+    transform: rotate(18deg) translateY(3px);
     box-shadow: 0 0 0 rgba(0,0,0,0.45),
-                inset 0 0 12px rgba(255,255,255,0.5),
-                0 0 24px rgba(251,191,36,0.6);
-    filter: brightness(1.15);
+                inset 0 0 14px rgba(255,255,255,0.5),
+                0 0 28px rgba(251,191,36,0.65);
+    filter: brightness(1.18);
   }
 
   /* Start / Select pills (and Shoulder L/R for reachable layout). */
