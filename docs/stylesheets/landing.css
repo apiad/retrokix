@@ -761,8 +761,32 @@ body:has(.gx-hero) .md-sidebar {
 .gx-cards {
   margin-top: 3rem;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1.1rem;
+}
+/* If the last row has a single orphan card (7 cards in a 3-col
+ * grid: row 3 holds only card #7), centre it under the middle
+ * column instead of letting it dangle on the left. */
+.gx-cards > .gx-card:last-child:nth-child(3n+1) {
+  grid-column: 2;
+}
+@media (max-width: 960px) {
+  .gx-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* Same idea at 2-col: a final odd card spans full width so the
+   * row doesn't read as a half-finished thought. */
+  .gx-cards > .gx-card:last-child:nth-child(3n+1) {
+    grid-column: auto;
+  }
+  .gx-cards > .gx-card:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 620px) {
+  .gx-cards { grid-template-columns: minmax(0, 1fr); }
+  .gx-cards > .gx-card:last-child:nth-child(odd),
+  .gx-cards > .gx-card:last-child:nth-child(3n+1) {
+    grid-column: auto;
+  }
 }
 .gx-card {
   background: var(--gx-bg-1);
