@@ -85,10 +85,13 @@ discover the next memory address, build the next algorithm.
   network at runtime.
 - **GPU shaders** (`crt-lottes`, custom WGSL) when you want pretty.
 - **Browser stream** — `gbax play --listen` then open
-  `http://localhost:8420/stream` in any browser. Pristine RGBA frames
-  over WebSocket; add `?mode=controller` for an on-screen GBA-bezel
-  with D-pad + A/B + L/R + Select/Start. Play from a phone, a
-  laptop, or any window in between.
+  `http://localhost:8420/stream` in any browser. Pristine raw RGBA
+  frames over WebSocket plus a separate audio WebSocket for live
+  PCM. Add `?mode=controller` for an on-screen GBA-bezel with D-pad
+  + A/B + L/R + Select/Start + TURBO, dock-layout that flips between
+  portrait and landscape. Play from a phone, a laptop, or any window
+  in between. Pass `--no-sdl` to skip the SDL window entirely — the
+  browser tab becomes the console.
 - One `pip install`, one MPL-2.0 license, Linux x86_64 today.
 
 ## Discovery toolkit
@@ -126,6 +129,12 @@ For the human-first reader. Each entry links to its details.
   SDL's GameController DB recognises them all). Multiple pads + the
   keyboard + the HTTP API combine via set-union. Hot-plug works.
   Layout in [docs/cli.md#gamepad](docs/cli.md).
+- **Browser play** — `gbax play <rom> --no-sdl` boots the runtime
+  headless and pops a browser tab to a GBA-bezel viewer with
+  on-screen controls. Touch / pointer drives the D-pad + A/B + L/R
+  + Select/Start + TURBO; keyboard shortcuts mirror the SDL play
+  loop's defaults (arrows + X / Z / A / S / Enter); audio streams
+  live over WebSocket and plays through an AudioWorklet in the page.
 - **Cheats** — `gbax cheats <rom>` lists; `gbax pin <rom> F1
   max-money` binds; `F1`-`F9` toggle in-game. Pins persist per ROM.
 - **Macros** — record a button sequence with `Ctrl+R`, bind to any
@@ -198,7 +207,7 @@ and need `$GBAX_CORE_PATH` set. Full coverage in
 
 ## Status
 
-- **Alpha.** v0.10.0. Works on Linux x86_64. macOS / Windows / ARM
+- **Alpha.** v0.17.0. Works on Linux x86_64. macOS / Windows / ARM
   are PR-welcome.
 - **MPL-2.0.** Same license as the underlying mGBA core.
 - **No ROMs bundled.** `gbax download` pulls from the public No-Intro

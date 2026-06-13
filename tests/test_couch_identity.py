@@ -5,8 +5,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import pytest
-
 from gbax.couch.identity import Identity, load_or_generate
 from gbax.couch.naming import (
     DEFAULT_ROOM,
