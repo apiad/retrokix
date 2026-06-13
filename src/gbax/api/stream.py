@@ -230,12 +230,24 @@ _VIEWER_HTML = """<!doctype html>
   footer a:hover { color: var(--accent); }
 
   /* ============================================================
-   * The GBA console.
+   * The GBA console — responsive dock layout.
+   *
+   * Portrait (default):
+   *   shoulders L/R poke out the top edge
+   *   screen
+   *   GAME BOY ADVANCE label
+   *   row of [D-pad] [Select/Start] [A/B]
+   *
+   * Landscape (min-aspect-ratio 5/4): the controls dock into the
+   *   left/right columns so the screen sits in the middle. Shoulders
+   *   stay anchored to the top corners. Buttons never overlap the
+   *   screen — the screen column is a flex track that takes
+   *   whatever space the auto-sized dock columns leave.
    * ============================================================ */
   .gba {
     position: relative;
     width: 100%;
-    max-width: 980px;
+    max-width: 1180px;
     padding: clamp(18px, 3vw, 30px) clamp(20px, 4vw, 38px);
     border-radius: 32px;
     background:
@@ -246,16 +258,30 @@ _VIEWER_HTML = """<!doctype html>
       inset 0 -4px 0 rgba(0,0,0,0.4),
       0 30px 80px rgba(0,0,0,0.55),
       0 0 60px rgba(124,58,237,0.22);
+
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "shoulders"
+      "screen"
+      "label"
+      "controls";
+    gap: clamp(0.8rem, 2vw, 1.4rem);
+    align-items: center;
+    justify-items: center;
   }
+
   .gba__shoulders {
+    grid-area: shoulders;
     position: relative;
+    width: 100%;
     height: 0;
   }
   .gba__shoulder {
     position: absolute;
-    top: -8px;
-    width: clamp(70px, 14vw, 110px);
-    height: 18px;
+    top: -28px;
+    width: clamp(72px, 14vw, 120px);
+    height: 22px;
     border-radius: 8px 8px 4px 4px;
     background: linear-gradient(180deg, #14062a 0%, #2a153f 100%);
     border: 1px solid #1a0c2e;
@@ -272,8 +298,8 @@ _VIEWER_HTML = """<!doctype html>
       inset 0 1px 0 rgba(255,255,255,0.06),
       0 2px 0 rgba(0,0,0,0.5);
   }
-  .gba__shoulder--l { left: 6%; }
-  .gba__shoulder--r { right: 6%; }
+  .gba__shoulder--l { left: 4%; }
+  .gba__shoulder--r { right: 4%; }
   .gba__shoulder.is-pressed {
     transform: translateY(2px);
     box-shadow: 0 0 0 rgba(0,0,0,0.5),
@@ -282,10 +308,10 @@ _VIEWER_HTML = """<!doctype html>
   }
 
   .gba__screen {
+    grid-area: screen;
     position: relative;
-    margin: 14px auto 0;
     width: 100%;
-    max-width: 580px;
+    max-width: min(580px, calc(70vh * 1.5));
     aspect-ratio: 3 / 2;
     background: #0a0612;
     border-radius: 6px;
@@ -294,6 +320,7 @@ _VIEWER_HTML = """<!doctype html>
       inset 0 0 0 6px #0a0612,
       inset 0 8px 28px rgba(0,0,0,0.8);
     overflow: hidden;
+    justify-self: center;
   }
   .gba__screen canvas {
     display: block;
@@ -320,8 +347,8 @@ _VIEWER_HTML = """<!doctype html>
       radial-gradient(ellipse at 50% 50%, transparent 60%, rgba(0,0,0,0.4) 100%);
   }
   .gba__label {
+    grid-area: label;
     text-align: center;
-    margin-top: 0.9rem;
     color: rgba(255,255,255,0.3);
     font-family: "Press Start 2P", monospace;
     font-size: 8px;
@@ -329,25 +356,63 @@ _VIEWER_HTML = """<!doctype html>
   }
 
   /* ============================================================
-   * The controls (visible only when mode=controller).
+   * Controls — visible only when mode=controller. In portrait
+   * they sit on a row beneath the screen; in landscape they dock
+   * into the left + right columns flanking the screen.
    * ============================================================ */
   body[data-mode="viewer"] .gba__controls { display: none; }
   .gba__controls {
-    margin-top: clamp(1rem, 2.5vw, 1.6rem);
+    grid-area: controls;
+    width: 100%;
     display: grid;
     grid-template-columns: 1fr auto 1fr;
-    grid-template-rows: auto auto;
-    grid-template-areas:
-      "dpad meta abxy"
-      ".    .    .";
+    grid-template-areas: "dpad meta abxy";
     align-items: center;
     gap: clamp(0.6rem, 2vw, 1.4rem);
   }
+  .dpad-wrap, .abxy-wrap { display: contents; }
+
+  /* Landscape: dock columns. We flip the entire .gba grid to a
+   * 3-column shape with the screen as the flex middle, and let
+   * display:contents on .gba__controls hoist the dpad/meta/abxy
+   * children into the parent grid. */
+  @media (min-aspect-ratio: 5/4) and (min-width: 760px) {
+    .gba {
+      grid-template-columns: minmax(180px, 1fr) minmax(360px, 3fr) minmax(180px, 1fr);
+      grid-template-areas:
+        "shoulders shoulders shoulders"
+        "dpad      screen    abxy"
+        ".         label     ."
+        ".         meta      .";
+      gap: clamp(0.8rem, 1.5vw, 1.4rem) clamp(1rem, 2vw, 2rem);
+      align-items: center;
+    }
+    .gba__screen {
+      max-width: min(620px, calc(75vh * 1.5));
+      max-height: 75vh;
+    }
+    .gba__controls {
+      display: contents;
+    }
+    .dpad {
+      grid-area: dpad;
+      justify-self: center;
+    }
+    .abxy {
+      grid-area: abxy;
+      justify-self: center;
+    }
+    .meta {
+      grid-area: meta;
+      justify-self: center;
+    }
+  }
+
   /* D-pad */
   .dpad {
     grid-area: dpad;
     position: relative;
-    width: clamp(120px, 22vw, 170px);
+    width: clamp(120px, 22vmin, 180px);
     aspect-ratio: 1;
     margin: 0 auto;
   }
@@ -393,15 +458,15 @@ _VIEWER_HTML = """<!doctype html>
   .abxy {
     grid-area: abxy;
     position: relative;
-    width: clamp(120px, 22vw, 170px);
-    height: clamp(110px, 20vw, 150px);
+    width: clamp(120px, 22vmin, 180px);
+    height: clamp(110px, 20vmin, 160px);
     margin: 0 auto;
     transform: rotate(-18deg);
   }
   .ab-btn {
     position: absolute;
-    width: clamp(56px, 10vw, 80px);
-    height: clamp(56px, 10vw, 80px);
+    width: clamp(56px, 10vmin, 84px);
+    height: clamp(56px, 10vmin, 84px);
     border-radius: 50%;
     border: none;
     cursor: pointer;
@@ -466,13 +531,15 @@ _VIEWER_HTML = """<!doctype html>
     color: var(--accent-hot);
   }
 
-  @media (max-width: 600px) {
-    .gba { padding: 16px 14px; }
+  /* Very narrow / tall — give Select+Start their own row beneath
+   * the screen so D-pad and A/B don't get squeezed. */
+  @media (max-aspect-ratio: 5/4) and (max-width: 520px) {
     .gba__controls {
       grid-template-columns: 1fr 1fr;
       grid-template-areas:
         "dpad abxy"
         "meta meta";
+      row-gap: 1rem;
     }
   }
 </style>
