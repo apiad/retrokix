@@ -321,6 +321,7 @@ def play(
     core_path: Path | None = typer.Option(None, "--core", help="Path to libretro core .so."),
     cheats: str | None = typer.Option(None, "--cheats", help="Comma-separated cheat slugs to enable at boot."),
     couch_room: str | None = typer.Option(None, "--couch-room", help="Couch room code to join (default 'default'). Generate one with `gbax couch room-code`."),
+    no_sdl: bool = typer.Option(False, "--no-sdl", help="Skip the SDL window — run headless and play in a browser tab. Implies --listen and auto-opens http://127.0.0.1:<port>/stream?mode=controller."),
 ) -> None:
     """Boot ROM in free-run mode with an SDL window."""
     from gbax.library import resolve_rom
@@ -342,6 +343,16 @@ def play(
             except KeyError as exc:
                 typer.echo(f"warning: {exc}", err=True)
     try:
+        if no_sdl:
+            from gbax.api.headless import run_headless
+            run_headless(
+                runtime,
+                host=listen_host,
+                port=listen_port,
+                open_browser=True,
+            )
+            return
+
         # --listen-host / --listen-port imply --listen.
         listen_enabled = listen or listen_host != "127.0.0.1" or listen_port != 8420
         play_loop(

@@ -38,6 +38,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import queue as _stdlib_queue
 from io import BytesIO
 
 import numpy as np
@@ -61,6 +62,36 @@ def build_router() -> APIRouter:
     def viewer() -> HTMLResponse:
         return HTMLResponse(_VIEWER_HTML)
 
+    @router.websocket("/stream/audio/ws")
+    async def audio_ws(websocket: WebSocket) -> None:
+        """Stream raw PCM audio from the AudioBus to the browser.
+
+        Format: signed 16-bit little-endian, 2 channels interleaved,
+        32_768 Hz. Each WebSocket message is one libretro audio chunk
+        (size varies by core but is on the order of milliseconds).
+
+        Browsers use AudioWorklet for low-latency playback. See the
+        worklet inlined in /stream.
+        """
+        await websocket.accept()
+        bus = websocket.app.state.audio_bus
+        q = bus.subscribe()
+        try:
+            while True:
+                try:
+                    chunk = await asyncio.to_thread(q.get, True, 1.0)
+                except _stdlib_queue.Empty:
+                    # No audio this window — keep waiting. Disconnects
+                    # are detected the moment we try to send_bytes.
+                    continue
+                if not chunk:
+                    continue
+                await websocket.send_bytes(chunk)
+        except (WebSocketDisconnect, RuntimeError):
+            return
+        finally:
+            bus.unsubscribe(q)
+
     @router.websocket("/stream/ws")
     async def stream_ws(
         websocket: WebSocket,
@@ -79,26 +110,34 @@ def build_router() -> APIRouter:
         loop = asyncio.get_event_loop()
 
         async def _receive_loop() -> None:
-            """Parse `{"type":"buttons","buttons":[...]}` text messages
-            from the client and replace the runtime's held set. Bad
-            payloads are dropped silently — easier to debug client-side
-            than to wire an error channel back."""
+            """Parse text messages from the client.
+
+            Two message types today:
+              {"type":"buttons", "buttons":[...]}     — replace held set
+              {"type":"fast_forward", "on": true}     — turbo on/off
+
+            Bad payloads / unknown types / out-of-range values are
+            dropped silently. Easier to debug client-side than to
+            wire an error channel back."""
+            app = websocket.app
             while True:
                 msg = await websocket.receive_text()
                 try:
                     parsed = json.loads(msg)
                 except json.JSONDecodeError:
                     continue
-                if parsed.get("type") != "buttons":
-                    continue
-                names = parsed.get("buttons", [])
-                if not isinstance(names, list):
-                    continue
-                try:
-                    buttons = {button_from_str(b) for b in names}
-                except ValueError:
-                    continue
-                rt.set_buttons(buttons)
+                t = parsed.get("type")
+                if t == "buttons":
+                    names = parsed.get("buttons", [])
+                    if not isinstance(names, list):
+                        continue
+                    try:
+                        buttons = {button_from_str(b) for b in names}
+                    except ValueError:
+                        continue
+                    rt.set_buttons(buttons)
+                elif t == "fast_forward":
+                    app.state.fast_forward = bool(parsed.get("on", False))
 
         recv_task = asyncio.create_task(_receive_loop())
         try:
@@ -218,6 +257,20 @@ _VIEWER_HTML = """<!doctype html>
     background: rgba(167,139,250,0.08);
     border-radius: 999px;
     padding: 0.25rem 0.65rem;
+  }
+  .audio-toggle {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    border-radius: 999px;
+    padding: 0.18rem 0.55rem;
+    font-size: 0.86rem;
+    cursor: pointer;
+    transition: color 0.1s ease, border-color 0.1s ease;
+  }
+  .audio-toggle.is-on {
+    color: var(--emerald);
+    border-color: rgba(52,211,153,0.45);
   }
   body[data-mode="controller"] header .mode-badge {
     color: var(--emerald);
@@ -523,6 +576,39 @@ _VIEWER_HTML = """<!doctype html>
   .ab-a { top: 5%;  right: 0; }
   .ab-b { top: 38%; right: 38%; }
 
+  /* TURBO button — sits beneath A/B in the .abxy box (rotated with it).
+   * Sends {"type":"fast_forward","on":...} over the WS instead of a
+   * GBA button name. Visual: amber pill so it reads as a meta-control,
+   * not a GBA face button. */
+  .turbo-btn {
+    position: absolute;
+    bottom: -6%;
+    left: 4%;
+    transform: rotate(18deg);  /* unrotate against .abxy's parent rotate */
+    border: 1px solid #1a0c2e;
+    background:
+      linear-gradient(180deg, #fbbf24 0%, #b45309 100%);
+    color: #1a0c2e;
+    font-family: "Press Start 2P", monospace;
+    font-size: 8px;
+    letter-spacing: 0.14em;
+    padding: 0.6em 1.05em;
+    border-radius: 999px;
+    cursor: pointer;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.4),
+      0 3px 0 rgba(0,0,0,0.45);
+    transition: transform 0.06s ease, box-shadow 0.06s ease,
+                background 0.1s ease, filter 0.1s ease;
+  }
+  .turbo-btn.is-pressed {
+    transform: rotate(18deg) translateY(2px);
+    box-shadow: 0 0 0 rgba(0,0,0,0.45),
+                inset 0 0 12px rgba(255,255,255,0.5),
+                0 0 24px rgba(251,191,36,0.6);
+    filter: brightness(1.15);
+  }
+
   /* Start / Select pills (and Shoulder L/R for reachable layout). */
   .meta {
     grid-area: meta;
@@ -576,6 +662,7 @@ _VIEWER_HTML = """<!doctype html>
 <header>
   <h1>gbax<span class="dot">·</span>stream</h1>
   <span class="mode-badge" id="mode-badge">VIEWER</span>
+  <button class="audio-toggle" id="audio-toggle" type="button" title="Toggle browser audio">🔇 audio</button>
   <div class="hud">
     <span><span id="status-dot"></span><span id="status">connecting…</span></span>
     <span>fps <b id="fps">0</b></span>
@@ -609,6 +696,7 @@ _VIEWER_HTML = """<!doctype html>
       <div class="abxy" role="group" aria-label="Action buttons">
         <button class="ab-btn ab-a gba-btn" data-button="A">A</button>
         <button class="ab-btn ab-b gba-btn" data-button="B">B</button>
+        <button class="turbo-btn" id="turbo-btn" type="button" aria-pressed="false">Turbo</button>
       </div>
     </div>
   </div>
@@ -746,7 +834,35 @@ _VIEWER_HTML = """<!doctype html>
     }
   }
 
+  /* ---------- TURBO ---------- */
+  function sendFastForward(on) {
+    if (ws && ws.readyState === 1) {
+      ws.send(JSON.stringify({ type: "fast_forward", on: !!on }));
+    }
+  }
+
   if (isController) {
+    const turbo = document.getElementById("turbo-btn");
+    if (turbo) {
+      const turboDown = (e) => {
+        e.preventDefault();
+        try { turbo.setPointerCapture(e.pointerId); } catch (_e) {}
+        turbo.classList.add("is-pressed");
+        turbo.setAttribute("aria-pressed", "true");
+        sendFastForward(true);
+      };
+      const turboUp = (e) => {
+        turbo.classList.remove("is-pressed");
+        turbo.setAttribute("aria-pressed", "false");
+        sendFastForward(false);
+      };
+      turbo.addEventListener("pointerdown", turboDown);
+      turbo.addEventListener("pointerup", turboUp);
+      turbo.addEventListener("pointercancel", turboUp);
+      turbo.addEventListener("lostpointercapture", turboUp);
+      turbo.addEventListener("contextmenu", (e) => e.preventDefault());
+    }
+
     for (const el of Object.values(buttonNodes)) {
       const name = el.dataset.button;
       el.addEventListener("pointerdown", (e) => {
@@ -784,8 +900,105 @@ _VIEWER_HTML = """<!doctype html>
     // emulator doesn't sit on a phantom 'right'.
     window.addEventListener("blur", () => {
       for (const name of [...held]) release(name);
+      sendFastForward(false);
     });
   }
+
+  /* ---------- audio ---------- */
+  // Streams raw PCM s16le stereo @ 32768 Hz from /stream/audio/ws into
+  // an AudioWorkletProcessor that owns a ring buffer. Auto-opens on
+  // the first user click (autoplay policy); a 🔊/🔇 toggle in the
+  // header lets the user mute without tearing the WS down.
+  const AUDIO_SAMPLE_RATE = 32768;
+  const audioBtn = document.getElementById("audio-toggle");
+  let audioCtx = null;
+  let audioNode = null;
+  let audioWs = null;
+  let audioOn = false;
+
+  const WORKLET_SRC = `
+    class GbaPCM extends AudioWorkletProcessor {
+      constructor() {
+        super();
+        this.queue = []; // Float32Array chunks pending playback
+        this.offset = 0; // sample index inside this.queue[0]
+        this.port.onmessage = (e) => {
+          if (e.data instanceof Float32Array) this.queue.push(e.data);
+          else if (e.data === 'clear') { this.queue = []; this.offset = 0; }
+        };
+      }
+      process(_inputs, outputs) {
+        const out = outputs[0];
+        const L = out[0]; const R = out[1] || out[0];
+        const n = L.length;
+        for (let i = 0; i < n; i++) {
+          if (this.queue.length === 0) { L[i] = 0; R[i] = 0; continue; }
+          const head = this.queue[0];
+          L[i] = head[this.offset]; R[i] = head[this.offset + 1];
+          this.offset += 2;
+          if (this.offset >= head.length) { this.queue.shift(); this.offset = 0; }
+        }
+        return true;
+      }
+    }
+    registerProcessor('gba-pcm', GbaPCM);
+  `;
+
+  async function audioStart() {
+    if (audioOn) return;
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)({
+        sampleRate: AUDIO_SAMPLE_RATE,
+        latencyHint: 'interactive',
+      });
+      const blob = new Blob([WORKLET_SRC], { type: 'application/javascript' });
+      const blobUrl = URL.createObjectURL(blob);
+      await audioCtx.audioWorklet.addModule(blobUrl);
+      URL.revokeObjectURL(blobUrl);
+      audioNode = new AudioWorkletNode(audioCtx, 'gba-pcm', {
+        numberOfInputs: 0, outputChannelCount: [2],
+      });
+      audioNode.connect(audioCtx.destination);
+    }
+    if (audioCtx.state === 'suspended') await audioCtx.resume();
+    if (!audioWs || audioWs.readyState > 1) {
+      const audioUrl = `${wsProto}//${location.host}/stream/audio/ws`;
+      audioWs = new WebSocket(audioUrl);
+      audioWs.binaryType = 'arraybuffer';
+      audioWs.addEventListener('message', (evt) => {
+        if (!audioNode) return;
+        const i16 = new Int16Array(evt.data);
+        const f32 = new Float32Array(i16.length);
+        for (let i = 0; i < i16.length; i++) f32[i] = i16[i] / 32768;
+        audioNode.port.postMessage(f32);
+      });
+      audioWs.addEventListener('close', () => { if (audioOn) setTimeout(() => audioOn && audioStart(), 750); });
+    }
+    audioOn = true;
+    audioBtn.textContent = '🔊 audio';
+    audioBtn.classList.add('is-on');
+  }
+
+  function audioStop() {
+    audioOn = false;
+    if (audioWs) { try { audioWs.close(); } catch (_e) {} audioWs = null; }
+    if (audioNode) audioNode.port.postMessage('clear');
+    if (audioCtx && audioCtx.state === 'running') audioCtx.suspend();
+    audioBtn.textContent = '🔇 audio';
+    audioBtn.classList.remove('is-on');
+  }
+
+  audioBtn.addEventListener('click', () => {
+    if (audioOn) audioStop(); else audioStart().catch(() => audioStop());
+  });
+  // Auto-enable on the first user gesture so iOS/Safari grant audio.
+  const tryAutoStart = () => {
+    audioStart().catch(() => {});
+    window.removeEventListener('pointerdown', tryAutoStart, true);
+    window.removeEventListener('keydown', tryAutoStart, true);
+  };
+  window.addEventListener('pointerdown', tryAutoStart, true);
+  window.addEventListener('keydown', tryAutoStart, true);
 
   connect();
 })();

@@ -10,6 +10,7 @@ from gbax.runtime import EmulatorRuntime
 
 def create_app(runtime: EmulatorRuntime) -> FastAPI:
     from gbax.api.action import build_router as build_action_router
+    from gbax.api.audio_bus import AudioBus
     from gbax.api.buttons import build_router as build_buttons_router
     from gbax.api.capture_state import build_router as build_capture_state_router
     from gbax.api.cheats import build_router as build_cheats_router
@@ -20,6 +21,12 @@ def create_app(runtime: EmulatorRuntime) -> FastAPI:
 
     app = FastAPI(title="gbax", version=__version__)
     app.state.runtime = runtime
+    # Shared state for /stream + headless coordination. Browser TURBO
+    # writes here; SDL play loop and headless loop both read it.
+    app.state.fast_forward = False
+    # PCM bytes from the libretro core fan out via this bus to any
+    # /stream/audio/ws subscribers.
+    app.state.audio_bus = AudioBus()
     app.include_router(build_control_router())
     app.include_router(build_frame_router())
     app.include_router(build_buttons_router())

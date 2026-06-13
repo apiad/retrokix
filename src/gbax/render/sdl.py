@@ -129,6 +129,7 @@ def play_loop(
     keymap = keymap if keymap is not None else default_keymap()
     held: set[Button] = set()
     fast_forward = False
+    _last_ff = False  # previous tick's fast-forward state (for audio clear-on-release)
     is_fullscreen = False
     filter_quality = "linear"
 
@@ -381,8 +382,23 @@ def play_loop(
         else:
             sdl2.SDL_PauseAudioDevice(audio_dev, 0)  # 0 = unpause/play
 
+            # `fast_forward` lives in this closure; `_app_for_audio` is
+            # the FastAPI app when --listen is on, None otherwise. The
+            # callback mutes audio entirely during fast-forward (either
+            # source) — playing 8× the samples in real time would be
+            # chipmunk garbage. It also fans the PCM out to /stream/audio/ws
+            # subscribers via the AudioBus.
+            _app_for_audio = app
             def _on_audio(buf: bytes) -> None:
+                remote_ff = (
+                    _app_for_audio.state.fast_forward
+                    if _app_for_audio is not None else False
+                )
+                if fast_forward or remote_ff:
+                    return
                 sdl2.SDL_QueueAudio(audio_dev, buf, len(buf))
+                if _app_for_audio is not None:
+                    _app_for_audio.state.audio_bus.publish(buf)
 
             # Hook the libretro core's audio callback. `runtime._core` is gbax-internal.
             runtime._core.on_audio = _on_audio
@@ -656,7 +672,18 @@ def play_loop(
                         held.discard(btn)
                         runtime.set_buttons(held)
 
-            frames_this_iteration = FAST_FORWARD_MULTIPLIER if fast_forward else 1
+            # Browser TURBO (sent via /stream/ws fast_forward message)
+            # composes set-union with the local L-Shift just like inputs.
+            _remote_ff = bool(app.state.fast_forward) if app is not None else False
+            _ff = fast_forward or _remote_ff
+            if not _ff and audio_dev:
+                # Tail end of a fast-forward burst — drop any audio that
+                # piled up while muted so the next normal samples play in
+                # real time, not behind a half-second of silence buffer.
+                if _last_ff:
+                    sdl2.SDL_ClearQueuedAudio(audio_dev)
+            _last_ff = _ff
+            frames_this_iteration = FAST_FORWARD_MULTIPLIER if _ff else 1
             runtime.step(frames=frames_this_iteration)
 
             if loaded_plugin is not None and plugin_ctx is not None:

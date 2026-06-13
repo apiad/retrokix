@@ -157,6 +157,37 @@ def test_unknown_format_falls_back_to_default(client: TestClient) -> None:
         assert len(data) == 240 * 160 * 4
 
 
+def test_ws_fast_forward_message_sets_app_state() -> None:
+    rt = _StubRuntime()
+    client = TestClient(create_app(rt))
+    assert client.app.state.fast_forward is False
+
+    with client.websocket_connect("/stream/ws?fps=60&format=jpeg") as ws:
+        ws.receive_bytes()
+        ws.send_text('{"type":"fast_forward","on":true}')
+        for _ in range(6):
+            ws.receive_bytes()
+            if client.app.state.fast_forward:
+                break
+        assert client.app.state.fast_forward is True
+
+        ws.send_text('{"type":"fast_forward","on":false}')
+        for _ in range(6):
+            ws.receive_bytes()
+            if not client.app.state.fast_forward:
+                break
+        assert client.app.state.fast_forward is False
+
+
+def test_viewer_html_includes_turbo_and_audio_toggle(client: TestClient) -> None:
+    body = client.get("/stream").text
+    assert 'id="turbo-btn"' in body
+    assert 'id="audio-toggle"' in body
+    # AudioWorklet processor source must reach the page so the browser
+    # can instantiate it via Blob URL.
+    assert "registerProcessor('gba-pcm'" in body
+
+
 def test_viewer_html_mentions_both_modes(client: TestClient) -> None:
     """The viewer page advertises both mode links so a user can
     switch without editing the URL by hand."""
