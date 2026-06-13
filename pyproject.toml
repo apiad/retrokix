@@ -27,6 +27,7 @@ dependencies = [
   "typer>=0.12",
   "fastapi>=0.110",
   "uvicorn>=0.29",
+  "websockets>=12",  # WebSocket transport for /stream — uvicorn ships without by default
   "numpy>=1.26",
   "pillow>=10",
   "pysdl2>=0.9.16",
