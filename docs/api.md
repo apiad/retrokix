@@ -103,6 +103,107 @@ $ curl -s 'localhost:8420/frame?fmt=raw' | wc -c
 115200
 ```
 
+## Live stream
+
+A WebSocket pushes frames continuously; an HTML viewer page bundles
+the canvas + optional on-screen controller. Both routes share the
+same query params.
+
+### `GET /stream`
+
+Self-contained viewer page — dark GBA-bezel styling, status / fps /
+KB-per-frame HUD, auto-reconnect. Opens its own WebSocket against
+`/stream/ws` with the same query params it received.
+
+Modes:
+
+- `?mode=viewer` (default) — just the framebuffer.
+- `?mode=controller` — adds a responsive on-screen pad (D-pad +
+  A/B + L/R shoulders + Select/Start). Touch / pointer events drive
+  it; keyboard shortcuts (arrows / X / Z / A / S / Enter /
+  RShift / Backspace) match the SDL play loop defaults. The layout
+  docks the buttons to corners in portrait and to the sides in
+  landscape so they never overlap the screen.
+
+```
+$ gbax play emerald --listen
+# then open http://localhost:8420/stream
+# or  http://localhost:8420/stream?mode=controller
+```
+
+### `WS /stream/ws`
+
+Bidirectional WebSocket. Server → client pushes binary frames at
+the requested fps. Client → server can replace the runtime's
+held-button set in lockstep with the SDL keyboard / USB gamepad /
+couch, so a phone in `?mode=controller` becomes another input
+source that combines via set-union.
+
+Query params:
+
+| Param     | Default | Range / values     | Meaning                          |
+| --------- | ------- | ------------------ | -------------------------------- |
+| `fps`     | `30`    | `1..60`            | Target frame rate.               |
+| `format`  | `raw`   | `raw \| jpeg`      | Frame encoding (see below).      |
+| `quality` | `92`    | `10..95`           | JPEG quality (when `format=jpeg`). |
+| `mode`    | `viewer`| `viewer \| controller` | Used by the HTML viewer; the WS itself is symmetric. |
+
+Out-of-range values are clamped; unknown `format=` falls back to
+`raw`.
+
+#### Wire format
+
+- **`format=raw` (default)** — RGBA8888 bytes, row-major,
+  `240 × 160 × 4 = 153,600` bytes per frame. Lossless, pixel-exact.
+  Browser decodes via `ImageData` + `putImageData` — no JPEG
+  decode, no compression artifacts.
+  Bandwidth: **~4.5 MB/s @ 30 fps**. Fine on localhost / LAN.
+- **`format=jpeg`** — JPEG-encoded bytes, ~5–20 KB per frame at
+  the default `quality=92`. Browser decodes via `createImageBitmap`.
+  Bandwidth: **~150–600 KB/s @ 30 fps**. Use when streaming over
+  a constrained connection.
+
+#### Sending input
+
+Client → server text frames carry the currently-held button set:
+
+```json
+{"type": "buttons", "buttons": ["UP", "A"]}
+```
+
+Each message **replaces** the previous held set, identical to
+`POST /buttons`. Empty array releases all. Unknown button names and
+malformed JSON are dropped silently — the connection stays alive,
+no error frames.
+
+#### Quick examples
+
+Watch from a second screen:
+```
+http://<gbax-host>:8420/stream
+```
+
+Play from your phone in the same WiFi:
+```
+http://<gbax-host>:8420/stream?mode=controller
+```
+
+Save bandwidth on a remote link:
+```
+http://<gbax-host>:8420/stream?mode=controller&format=jpeg&fps=20
+```
+
+Drive the WebSocket directly from your own JS:
+```js
+const ws = new WebSocket(`ws://${host}:8420/stream/ws?format=raw&fps=30`);
+ws.binaryType = "arraybuffer";
+ws.onmessage = e => {
+  const data = new Uint8ClampedArray(e.data);
+  ctx.putImageData(new ImageData(data, 240, 160), 0, 0);
+};
+ws.send(JSON.stringify({type: "buttons", buttons: ["RIGHT"]}));
+```
+
 ## Buttons
 
 ### `GET /buttons`

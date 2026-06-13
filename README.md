@@ -84,6 +84,11 @@ discover the next memory address, build the next algorithm.
   to play. ~6,700 cheat codes vendored from libretro-database; no
   network at runtime.
 - **GPU shaders** (`crt-lottes`, custom WGSL) when you want pretty.
+- **Browser stream** — `gbax play --listen` then open
+  `http://localhost:8420/stream` in any browser. Pristine RGBA frames
+  over WebSocket; add `?mode=controller` for an on-screen GBA-bezel
+  with D-pad + A/B + L/R + Select/Start. Play from a phone, a
+  laptop, or any window in between.
 - One `pip install`, one MPL-2.0 license, Linux x86_64 today.
 
 ## Discovery toolkit
@@ -93,8 +98,9 @@ docs/ page.
 
 - [**HTTP API**](docs/api.md) — `/frame`, `/buttons`, `/memory`,
   `/step`, `/action` (atomic multi-step), `/capture_state` (record
-  labeled snapshots), `/plugins/<name>/...` (per-plugin namespaces),
-  `/plugins` (active plugin listing).
+  labeled snapshots), `/stream` + `/stream/ws` (live browser viewer
+  with optional on-screen controller), `/plugins/<name>/...`
+  (per-plugin namespaces), `/plugins` (active plugin listing).
 - [**Plugins**](docs/plugins.md) — Python files that hook the play
   loop AND publish HTTP routes. The bundled `gbax.plugins.emerald_party`
   is the canonical example: a [cookbook page](docs/cookbook/emerald_party.md)
