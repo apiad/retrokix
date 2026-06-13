@@ -47,7 +47,7 @@ def test_viewer_html_served(client: TestClient) -> None:
 
 
 def test_websocket_pushes_decodable_jpeg_frames(client: TestClient) -> None:
-    with client.websocket_connect("/stream/ws?fps=60&quality=80") as ws:
+    with client.websocket_connect("/stream/ws?fps=60&format=jpeg&quality=80") as ws:
         for _ in range(3):
             data = ws.receive_bytes()
             assert data[:2] == b"\xff\xd8"  # JPEG SOI marker
@@ -58,13 +58,13 @@ def test_websocket_pushes_decodable_jpeg_frames(client: TestClient) -> None:
 
 def test_fps_param_is_clamped(client: TestClient) -> None:
     """fps=99999 is clamped to the max — we still get frames, not a 500."""
-    with client.websocket_connect("/stream/ws?fps=99999") as ws:
+    with client.websocket_connect("/stream/ws?fps=99999&format=jpeg") as ws:
         data = ws.receive_bytes()
         assert data[:2] == b"\xff\xd8"
 
 
 def test_quality_param_is_clamped(client: TestClient) -> None:
-    with client.websocket_connect("/stream/ws?quality=200") as ws:
+    with client.websocket_connect("/stream/ws?quality=200&format=jpeg") as ws:
         data = ws.receive_bytes()
         assert data[:2] == b"\xff\xd8"
 
@@ -126,6 +126,35 @@ def test_ws_invalid_button_message_does_not_crash() -> None:
             ws.receive_bytes()
 
     assert rt.set_buttons_calls == [], "invalid messages must not call set_buttons"
+
+
+def test_default_format_is_raw_rgba(client: TestClient) -> None:
+    """No `format` param → server sends 240*160*4 = 153600-byte RGBA
+    frames, not JPEG. Alpha byte is 0xff for every pixel."""
+    with client.websocket_connect("/stream/ws?fps=60") as ws:
+        data = ws.receive_bytes()
+        assert len(data) == 240 * 160 * 4
+        # JPEG would start with 0xff 0xd8 — raw definitely doesn't.
+        assert data[:2] != b"\xff\xd8"
+        # Every 4th byte (alpha) must be 0xff.
+        alpha = data[3::4]
+        assert len(alpha) == 240 * 160
+        assert set(alpha) == {0xFF}
+
+
+def test_explicit_format_jpeg_returns_jpeg(client: TestClient) -> None:
+    with client.websocket_connect("/stream/ws?fps=60&format=jpeg") as ws:
+        data = ws.receive_bytes()
+        assert data[:2] == b"\xff\xd8"
+        # Way smaller than the raw size for the same screen.
+        assert len(data) < 240 * 160 * 4
+
+
+def test_unknown_format_falls_back_to_default(client: TestClient) -> None:
+    with client.websocket_connect("/stream/ws?fps=60&format=nope") as ws:
+        data = ws.receive_bytes()
+        # Default (raw) → 153600 bytes.
+        assert len(data) == 240 * 160 * 4
 
 
 def test_viewer_html_mentions_both_modes(client: TestClient) -> None:

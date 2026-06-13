@@ -22,10 +22,16 @@ Two routes:
 Query params on /stream and /stream/ws:
   mode     — viewer | controller (default viewer)
   fps      — target frame rate (1..60, default 30)
-  quality  — JPEG quality (10..95, default 75)
+  format   — raw | jpeg (default raw)
+  quality  — JPEG quality, only used when format=jpeg (10..95, default 92)
 
-Bandwidth math: 240×160 RGB → JPEG q75 is ~5–15 KB/frame → ~150–450
-KB/s at 30 fps.
+Wire formats:
+  format=raw  — RGBA8888 bytes, row-major, 240*160*4 = 153,600 bytes
+                per frame. Lossless, pixel-exact. ~4.6 MB/s at 30 fps —
+                fine on localhost/LAN, real ceiling on remote internet.
+  format=jpeg — JPEG-compressed bytes, ~5–20 KB/frame. The browser
+                decodes via createImageBitmap. Bandwidth-friendly but
+                introduces compression artifacts on pixel art.
 """
 
 from __future__ import annotations
@@ -34,6 +40,7 @@ import asyncio
 import json
 from io import BytesIO
 
+import numpy as np
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
 from PIL import Image
@@ -42,7 +49,9 @@ from gbax.input import button_from_str
 
 
 _MIN_FPS, _MAX_FPS, _DEFAULT_FPS = 1, 60, 30
-_MIN_Q, _MAX_Q, _DEFAULT_Q = 10, 95, 75
+_MIN_Q, _MAX_Q, _DEFAULT_Q = 10, 95, 92
+_VALID_FORMATS = ("raw", "jpeg")
+_DEFAULT_FORMAT = "raw"
 
 
 def build_router() -> APIRouter:
@@ -57,11 +66,15 @@ def build_router() -> APIRouter:
         websocket: WebSocket,
         fps: int = _DEFAULT_FPS,
         quality: int = _DEFAULT_Q,
+        format: str = _DEFAULT_FORMAT,
     ) -> None:
         await websocket.accept()
         rt = websocket.app.state.runtime
         fps = max(_MIN_FPS, min(_MAX_FPS, fps))
         quality = max(_MIN_Q, min(_MAX_Q, quality))
+        fmt = format.lower() if isinstance(format, str) else _DEFAULT_FORMAT
+        if fmt not in _VALID_FORMATS:
+            fmt = _DEFAULT_FORMAT
         interval = 1.0 / fps
         loop = asyncio.get_event_loop()
 
@@ -89,12 +102,27 @@ def build_router() -> APIRouter:
 
         recv_task = asyncio.create_task(_receive_loop())
         try:
+            # Allocate the RGBA scratch buffer once per connection
+            # (raw format only). Alpha is always 0xff.
+            rgba_buf = (
+                np.empty((160, 240, 4), dtype=np.uint8)
+                if fmt == "raw" else None
+            )
+            if rgba_buf is not None:
+                rgba_buf[..., 3] = 0xFF
+
             while True:
                 t0 = loop.time()
                 fb = rt.framebuffer()
-                buf = BytesIO()
-                Image.fromarray(fb).save(buf, format="JPEG", quality=quality)
-                await websocket.send_bytes(buf.getvalue())
+                if fmt == "raw":
+                    assert rgba_buf is not None
+                    rgba_buf[..., :3] = fb
+                    payload: bytes = rgba_buf.tobytes()
+                else:
+                    buf = BytesIO()
+                    Image.fromarray(fb).save(buf, format="JPEG", quality=quality)
+                    payload = buf.getvalue()
+                await websocket.send_bytes(payload)
                 elapsed = loop.time() - t0
                 await asyncio.sleep(max(0.0, interval - elapsed))
         except WebSocketDisconnect:
@@ -589,19 +617,26 @@ _VIEWER_HTML = """<!doctype html>
   WebSocket: <code id="ws-url">/stream/ws</code>
   &middot; <a href="?mode=viewer">viewer</a>
   &middot; <a href="?mode=controller">controller</a>
+  &middot; <a href="?mode=controller&format=raw">raw</a>
+  &middot; <a href="?mode=controller&format=jpeg">jpeg</a>
 </footer>
 <script>
 (() => {
   const params = new URLSearchParams(location.search);
   const mode    = (params.get("mode") || "viewer").toLowerCase();
   const fps     = params.get("fps")     || "30";
-  const quality = params.get("quality") || "75";
+  const quality = params.get("quality") || "92";
+  const fmt     = (params.get("format") || "raw").toLowerCase() === "jpeg"
+                    ? "jpeg" : "raw";
   const isController = mode === "controller";
   document.body.dataset.mode = isController ? "controller" : "viewer";
   document.getElementById("mode-badge").textContent = isController ? "CONTROLLER" : "VIEWER";
 
   const wsProto = location.protocol === "https:" ? "wss:" : "ws:";
-  const wsPath  = `/stream/ws?fps=${fps}&quality=${quality}`;
+  const wsQs = fmt === "jpeg"
+    ? `fps=${fps}&format=jpeg&quality=${quality}`
+    : `fps=${fps}&format=raw`;
+  const wsPath  = `/stream/ws?${wsQs}`;
   const url = `${wsProto}//${location.host}${wsPath}`;
   document.getElementById("ws-url").textContent = wsPath;
 
@@ -627,7 +662,10 @@ _VIEWER_HTML = """<!doctype html>
   function connect() {
     setStatus("connecting…");
     ws = new WebSocket(url);
-    ws.binaryType = "blob";
+    // Raw frames arrive as ArrayBuffer so we can feed them directly
+    // into ImageData/putImageData without a Blob roundtrip; JPEG
+    // frames stay as Blob for createImageBitmap.
+    ws.binaryType = fmt === "raw" ? "arraybuffer" : "blob";
 
     ws.addEventListener("open", () => {
       setStatus("live", "live");
@@ -642,12 +680,21 @@ _VIEWER_HTML = """<!doctype html>
     });
 
     ws.addEventListener("message", async (evt) => {
-      bytes += evt.data.size;
-      try {
-        const bmp = await createImageBitmap(evt.data);
-        ctx.drawImage(bmp, 0, 0, canvas.width, canvas.height);
-        bmp.close();
-      } catch (_e) { /* drop frame on decode race */ }
+      if (fmt === "raw") {
+        const ab = evt.data;
+        bytes += ab.byteLength;
+        const arr = new Uint8ClampedArray(ab);
+        if (arr.length === canvas.width * canvas.height * 4) {
+          ctx.putImageData(new ImageData(arr, canvas.width, canvas.height), 0, 0);
+        }
+      } else {
+        bytes += evt.data.size;
+        try {
+          const bmp = await createImageBitmap(evt.data);
+          ctx.drawImage(bmp, 0, 0, canvas.width, canvas.height);
+          bmp.close();
+        } catch (_e) { /* drop frame on decode race */ }
+      }
       frames++;
       const now = performance.now();
       if (now - lastReport >= 1000) {
