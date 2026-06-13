@@ -149,6 +149,18 @@
   border: 1px solid var(--gx-border-soft);
   border-radius: var(--gx-radius);
   box-shadow: var(--gx-shadow-sm);
+  padding: 0.85rem 1.05rem;
+  overflow-x: auto;
+}
+/* Material wraps Pygments-highlighted code in
+ * <div class="highlight"><pre><code>…</code></pre></div>. The pre
+ * inside .highlight has its own default padding we'd double up on
+ * — strip it back to a single inset. */
+[data-md-color-scheme="gbax"] .md-typeset .highlight pre {
+  padding: 0.85rem 1.05rem;
+}
+[data-md-color-scheme="gbax"] .md-typeset .highlighttable .linenos {
+  padding-right: 0.6rem;
 }
 
 /* Links */
