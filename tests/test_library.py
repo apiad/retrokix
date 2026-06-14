@@ -131,3 +131,69 @@ def test_resolve_rom_ambiguous(tmp_path):
     (tmp_path / "Pokemon - Emerald Version (Japan).gba").touch()
     with pytest.raises(RuntimeError, match="ambiguous"):
         resolve_rom("emerald", roms_dir=tmp_path)
+
+
+# ---------- multi-console (NES + GBA) ----------
+
+def test_bundled_metadata_includes_both_consoles():
+    """Default RomLibrary loads GBA + NES entries together."""
+    from gbax.library import RomLibrary
+
+    lib = RomLibrary()
+    entries = lib.entries()
+    consoles = {e.console for e in entries}
+    assert {"gba", "nes"}.issubset(consoles)
+    # Pokemon Emerald (GBA) and Super Mario Bros. (NES) are both
+    # canonical anchors in their sets.
+    assert any(e.console == "gba" and "Pokemon" in e.name and "Emerald" in e.name for e in entries)
+    assert any(e.console == "nes" and "Super Mario Bros." in e.name for e in entries)
+
+
+def test_console_filter_constrains_to_one_set():
+    from gbax.library import RomLibrary
+
+    nes_only = RomLibrary(console="nes").entries()
+    assert nes_only
+    assert all(e.console == "nes" for e in nes_only)
+    assert all(e.name.lower().endswith(".zip") for e in nes_only)
+
+
+def test_search_returns_cross_console_matches():
+    """A query like 'mario' hits both GBA and NES — caller is expected
+    to disambiguate by inspecting entry.console."""
+    from gbax.library import RomLibrary
+
+    lib = RomLibrary()
+    hits = lib.search("mario")
+    consoles = {h.console for h in hits}
+    assert {"gba", "nes"}.issubset(consoles)
+
+
+def test_console_for_path_dispatches_by_extension(tmp_path):
+    from gbax.library import console_for_path
+
+    assert console_for_path(tmp_path / "rom.gba") == "gba"
+    assert console_for_path(tmp_path / "rom.nes") == "nes"
+    assert console_for_path(tmp_path / "rom.smc") is None
+    assert console_for_path("Pokemon.gba") == "gba"
+
+
+def test_list_local_roms_finds_both_extensions(tmp_path):
+    """list_local_roms picks up .gba AND .nes — single roms dir, mixed."""
+    from gbax.library import list_local_roms
+
+    (tmp_path / "Pokemon.gba").touch()
+    (tmp_path / "Super Mario Bros.nes").touch()
+    (tmp_path / "not_a_rom.txt").touch()
+    out = sorted(p.name for p in list_local_roms(tmp_path))
+    assert out == ["Pokemon.gba", "Super Mario Bros.nes"]
+
+
+def test_rom_entry_title_strips_known_extensions():
+    from gbax.library import RomEntry
+
+    e = RomEntry(name="Pokemon - Emerald Version (USA, Europe).zip",
+                 size=0, sha1=None, console="gba")
+    assert e.title == "Pokemon - Emerald Version (USA, Europe)"
+    e2 = RomEntry(name="Super Mario Bros..nes", size=0, sha1=None, console="nes")
+    assert e2.title == "Super Mario Bros."

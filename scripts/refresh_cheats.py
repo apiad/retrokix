@@ -1,29 +1,31 @@
 #!/usr/bin/env python3
-"""Compile libretro-database GBA cheat files into a single bundled JSON.
+"""Compile libretro-database cheat files into a bundled JSON per console.
 
 Dev tool — run when libretro-database publishes new cheats. The output
-(`src/gbax/data/libretro_cheats_gba.json`) is what `gbax cheats <rom>`
-consults at runtime. Zero network at runtime.
+(`src/gbax/data/libretro_cheats_<console>.json`) is what `gbax cheats
+<rom>` consults at runtime. Zero network at runtime.
 
 Format of the output:
     {
       "source": {"repo": "libretro/libretro-database", "commit": "<sha>", "fetched": "<iso>"},
+      "console": "gba" | "nes" | …,
       "rom_to_cheats": {
         "Pokemon - Emerald Version (USA, Europe)": [
           {"name": "Master Code", "code": "D8BAE4D9+..."},
-          {"name": "Max Money",   "code": "82000568+..."},
           ...
         ],
         ...
       }
     }
 
-The ROM key strips the trailing format suffix (e.g. "(Code Breaker)",
-"(Action Replay)") so it matches the No-Intro filename of a ROM directly.
+The ROM key strips trailing format suffixes ("(Code Breaker)",
+"(Action Replay)", "(Game Genie)", …) so it matches the No-Intro
+filename of a ROM directly.
 
 Usage:
     git clone --depth=1 https://github.com/libretro/libretro-database /tmp/libretro-database
-    python scripts/refresh_cheats.py /tmp/libretro-database
+    python scripts/refresh_cheats.py /tmp/libretro-database         # all consoles
+    python scripts/refresh_cheats.py /tmp/libretro-database gba     # one console
 """
 
 from __future__ import annotations
@@ -35,19 +37,33 @@ import sys
 from pathlib import Path
 
 
-GBA_DIR_REL = "cht/Nintendo - Game Boy Advance"
-OUT = Path(__file__).resolve().parent.parent / "src" / "gbax" / "data" / "libretro_cheats_gba.json"
+# Each console's libretro-database folder + the cheat-format suffix
+# patterns that show up in filenames for that platform.
+CONSOLES: dict[str, dict[str, object]] = {
+    "gba": {
+        "dir": "cht/Nintendo - Game Boy Advance",
+        "suffix_re": re.compile(
+            r"\s*\((?:Code Breaker|Action Replay|GameShark|CodeBreaker|AR|GS)(?:[^)]*)\)$"
+        ),
+    },
+    "nes": {
+        "dir": "cht/Nintendo - Nintendo Entertainment System",
+        "suffix_re": re.compile(
+            r"\s*\((?:Game Genie|Action Replay|GG|AR|Pro Action Replay)(?:[^)]*)\)$"
+        ),
+    },
+}
 
-# Filenames look like "Pokemon - Emerald Version (USA, Europe) (Code Breaker).cht".
-# We strip the trailing format suffix to get the No-Intro ROM name.
-_FORMAT_SUFFIX = re.compile(
-    r"\s*\((?:Code Breaker|Action Replay|GameShark|CodeBreaker|AR|GS)(?:[^)]*)\)$"
-)
+
+def _data_path(console: str) -> Path:
+    return (
+        Path(__file__).resolve().parent.parent
+        / "src" / "gbax" / "data" / f"libretro_cheats_{console}.json"
+    )
 
 
 def parse_cht(text: str) -> list[dict]:
-    """Parse a libretro .cht file → list of {name, code, enabled} dicts."""
-    # Simple key=value scanner; values may be quoted.
+    """Parse a libretro .cht file → list of {name, code} dicts."""
     fields: dict[str, str] = {}
     for raw in text.splitlines():
         line = raw.strip()
@@ -74,11 +90,17 @@ def parse_cht(text: str) -> list[dict]:
     return cheats
 
 
-def main(db_root: Path) -> None:
-    gba_dir = db_root / GBA_DIR_REL
-    if not gba_dir.is_dir():
-        print(f"error: {gba_dir} not found", file=sys.stderr)
-        sys.exit(1)
+def refresh(db_root: Path, console: str) -> None:
+    if console not in CONSOLES:
+        raise SystemExit(
+            f"unknown console {console!r}; choices: {', '.join(sorted(CONSOLES))}"
+        )
+    cfg = CONSOLES[console]
+    cht_dir = db_root / cfg["dir"]  # type: ignore[operator]
+    if not cht_dir.is_dir():
+        raise SystemExit(f"error: {cht_dir} not found")
+
+    suffix_re: re.Pattern[str] = cfg["suffix_re"]  # type: ignore[assignment]
 
     commit = "unknown"
     try:
@@ -89,14 +111,14 @@ def main(db_root: Path) -> None:
         pass
 
     rom_to_cheats: dict[str, list[dict]] = {}
-    for cht in sorted(gba_dir.glob("*.cht")):
-        stem = cht.stem  # filename without .cht
-        rom_key = _FORMAT_SUFFIX.sub("", stem).strip()
+    for cht in sorted(cht_dir.glob("*.cht")):
+        stem = cht.stem
+        rom_key = suffix_re.sub("", stem).strip()
         cheats = parse_cht(cht.read_text(encoding="utf-8", errors="replace"))
         if not cheats:
             continue
-        # Multiple cheat files per ROM are merged — usually Code Breaker +
-        # Action Replay versions of the same game. Dedupe by name.
+        # Multiple cheat files per ROM merge (e.g. Game Genie + Action
+        # Replay variants); dedupe by name, first wins.
         existing = {c["name"]: c for c in rom_to_cheats.get(rom_key, [])}
         for c in cheats:
             existing.setdefault(c["name"], c)
@@ -109,19 +131,28 @@ def main(db_root: Path) -> None:
             "commit": commit,
             "fetched": datetime.now(UTC).strftime("%Y-%m-%d"),
         },
+        "console": console,
         "rom_to_cheats": rom_to_cheats,
     }
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    with open(OUT, "w") as f:
-        json.dump(out_doc, f, separators=(",", ":"))
+    out = _data_path(console)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    with open(out, "w") as fh:
+        json.dump(out_doc, fh, separators=(",", ":"))
 
     total = sum(len(v) for v in rom_to_cheats.values())
-    print(f"wrote {OUT}")
-    print(f"  {len(rom_to_cheats)} ROMs, {total} cheats, {OUT.stat().st_size} bytes")
+    print(f"[{console}] wrote {out}")
+    print(f"[{console}]   {len(rom_to_cheats)} ROMs, {total} cheats, {out.stat().st_size} bytes")
+
+
+def main() -> None:
+    if len(sys.argv) < 2:
+        print(f"usage: {sys.argv[0]} <libretro-database-checkout> [console ...]", file=sys.stderr)
+        sys.exit(2)
+    db_root = Path(sys.argv[1])
+    targets = sys.argv[2:] or list(CONSOLES.keys())
+    for c in targets:
+        refresh(db_root, c)
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print(f"usage: {sys.argv[0]} <libretro-database-checkout>", file=sys.stderr)
-        sys.exit(2)
-    main(Path(sys.argv[1]))
+    main()

@@ -1,35 +1,67 @@
 #!/usr/bin/env python3
-"""Regenerate src/gbax/data/no_intro_gba.json from archive.org.
+"""Regenerate src/gbax/data/no_intro_<console>.json from archive.org.
 
-Dev tool — run when the upstream archive.org snapshot moves to a new item,
-or when entries change. The bundled snapshot is what `gbax search` uses;
-this script doesn't run at install or runtime.
+Dev tool — run when the upstream archive.org snapshot moves to a new
+item, or when entries change. The bundled snapshots are what
+`gbax search`, `gbax browse`, and `gbax download` consult; this
+script doesn't run at install or runtime.
 
 Usage:
-    python scripts/refresh_library_metadata.py
+    python scripts/refresh_library_metadata.py           # all consoles
+    python scripts/refresh_library_metadata.py gba       # GBA only
+    python scripts/refresh_library_metadata.py nes       # NES only
 """
 
 from __future__ import annotations
 
 import json
+import sys
 import urllib.request
 from pathlib import Path
 
 
-ITEM = "ef_gba_no-intro_2024-02-21"
-OUT = Path(__file__).resolve().parent.parent / "src" / "gbax" / "data" / "no_intro_gba.json"
+# Each console points at an "edge of forever" archive.org mirror of the
+# corresponding No-Intro set. Same shape for every entry: per-game .zip
+# directly under the item, listed in the metadata `files` array.
+CONSOLES: dict[str, dict[str, object]] = {
+    "gba": {
+        "item": "ef_gba_no-intro_2024-02-21",
+        "rom_exts": (".gba",),
+    },
+    "nes": {
+        "item": "ef_nintendo_entertainment_-system_-no-intro_2024-04-23",
+        "rom_exts": (".nes",),
+    },
+}
 
 
-def main() -> None:
-    url = f"https://archive.org/metadata/{ITEM}"
-    print(f"fetching {url} …")
+def _data_path(console: str) -> Path:
+    return (
+        Path(__file__).resolve().parent.parent
+        / "src" / "gbax" / "data" / f"no_intro_{console}.json"
+    )
+
+
+def refresh(console: str) -> None:
+    if console not in CONSOLES:
+        raise SystemExit(
+            f"unknown console {console!r}; choices: {', '.join(sorted(CONSOLES))}"
+        )
+    cfg = CONSOLES[console]
+    item: str = cfg["item"]  # type: ignore[assignment]
+    rom_exts: tuple[str, ...] = cfg["rom_exts"]  # type: ignore[assignment]
+
+    url = f"https://archive.org/metadata/{item}"
+    print(f"[{console}] fetching {url} …")
     with urllib.request.urlopen(url, timeout=60) as resp:
         meta = json.load(resp)
 
     entries = []
     for f in meta.get("files", []):
         name = f.get("name", "")
-        if not name.lower().endswith((".zip", ".gba")):
+        lower = name.lower()
+        # Accept the canonical .zip per-rom shape plus a bare-rom fallback.
+        if not (lower.endswith(".zip") or lower.endswith(rom_exts)):
             continue
         entries.append({
             "name": name,
@@ -38,11 +70,21 @@ def main() -> None:
         })
     entries.sort(key=lambda e: e["name"])
 
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    with open(OUT, "w") as out:
-        json.dump({"item": ITEM, "entries": entries}, out, separators=(",", ":"))
+    out = _data_path(console)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    with open(out, "w") as fh:
+        json.dump({"item": item, "console": console, "entries": entries}, fh, separators=(",", ":"))
 
-    print(f"wrote {OUT}  ({len(entries)} entries, {OUT.stat().st_size} bytes)")
+    print(f"[{console}] wrote {out}  ({len(entries)} entries, {out.stat().st_size} bytes)")
+
+
+def main() -> None:
+    if len(sys.argv) > 1:
+        targets = sys.argv[1:]
+    else:
+        targets = list(CONSOLES.keys())
+    for c in targets:
+        refresh(c)
 
 
 if __name__ == "__main__":
