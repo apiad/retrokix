@@ -258,7 +258,8 @@ _VIEWER_HTML = """<!doctype html>
     border-radius: 999px;
     padding: 0.25rem 0.65rem;
   }
-  .audio-toggle {
+  .audio-toggle,
+  .header-btn {
     background: transparent;
     border: 1px solid var(--border);
     color: var(--text-dim);
@@ -266,11 +267,192 @@ _VIEWER_HTML = """<!doctype html>
     padding: 0.18rem 0.55rem;
     font-size: 0.86rem;
     cursor: pointer;
-    transition: color 0.1s ease, border-color 0.1s ease;
+    transition: color 0.1s ease, border-color 0.1s ease, background 0.1s ease;
+  }
+  .header-btn:hover {
+    color: var(--text);
+    border-color: var(--accent);
+    background: rgba(167,139,250,0.06);
   }
   .audio-toggle.is-on {
     color: var(--emerald);
     border-color: rgba(52,211,153,0.45);
+  }
+  .header-btn.is-open {
+    color: var(--accent);
+    border-color: rgba(167,139,250,0.5);
+    background: rgba(167,139,250,0.10);
+  }
+
+  /* ============================================================
+   * Overlay panels — saves + cheats. Slide down from the header.
+   * Backdrop dims the page; clicking it closes.
+   * ============================================================ */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(11,10,20,0.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 50;
+    display: none;
+  }
+  .overlay.is-open { display: block; }
+
+  .panel {
+    position: fixed;
+    top: 56px;
+    right: 1.25rem;
+    width: min(420px, calc(100vw - 2.5rem));
+    max-height: calc(100vh - 84px);
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+    display: none;
+    flex-direction: column;
+    z-index: 51;
+  }
+  .panel.is-open { display: flex; }
+  .panel__header {
+    padding: 0.85rem 1.05rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+  }
+  .panel__title {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--text);
+    font-weight: 600;
+  }
+  .panel__action {
+    margin-left: auto;
+    background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%);
+    color: #fff !important;
+    border: 0;
+    border-radius: 999px;
+    padding: 0.32rem 0.85rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: filter 0.1s ease;
+  }
+  .panel__action:hover { filter: brightness(1.1); }
+  .panel__close {
+    background: transparent;
+    border: 0;
+    color: var(--text-soft);
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0.2rem 0.4rem;
+    border-radius: 6px;
+  }
+  .panel__close:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+
+  .panel__body {
+    overflow-y: auto;
+    padding: 0.4rem 0.4rem 0.6rem;
+  }
+  .panel__empty {
+    padding: 1.25rem;
+    color: var(--text-soft);
+    font-size: 0.86rem;
+    text-align: center;
+  }
+  .panel__group-label {
+    padding: 0.55rem 0.7rem 0.3rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-soft);
+  }
+
+  .save-item, .cheat-item {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 0.7rem;
+    width: 100%;
+    padding: 0.55rem 0.7rem;
+    background: transparent;
+    border: 0;
+    color: var(--text-dim);
+    cursor: pointer;
+    text-align: left;
+    border-radius: 8px;
+    transition: background 0.1s ease, color 0.1s ease;
+    font: inherit;
+    font-size: 0.84rem;
+  }
+  .save-item:hover, .cheat-item:hover {
+    background: rgba(167,139,250,0.08);
+    color: var(--text);
+  }
+  .save-item__kind {
+    width: 1.4em;
+    text-align: center;
+  }
+  .save-item__name {
+    font-family: var(--gx-mono, "JetBrains Mono", monospace);
+    color: var(--text);
+  }
+  .save-item__when {
+    color: var(--text-soft);
+    font-size: 0.76rem;
+  }
+  .cheat-item__icon {
+    width: 1em;
+    color: var(--text-soft);
+  }
+  .cheat-item__icon.is-active {
+    color: var(--emerald);
+  }
+  .cheat-item__name {
+    color: var(--text);
+  }
+  .cheat-item__code {
+    font-family: var(--gx-mono, "JetBrains Mono", monospace);
+    color: var(--text-soft);
+    font-size: 0.72rem;
+  }
+  .cheat-search {
+    width: 100%;
+    background: var(--bg-2);
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 0.45rem 0.7rem;
+    font: inherit;
+    font-size: 0.85rem;
+    margin-bottom: 0.4rem;
+  }
+  .cheat-search:focus {
+    outline: 0;
+    border-color: rgba(167,139,250,0.45);
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 1.4rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(8px);
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.55rem 1rem;
+    border-radius: 999px;
+    font-size: 0.84rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 60;
+  }
+  .toast.is-visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
   }
   body[data-mode="controller"] header .mode-badge {
     color: var(--emerald);
@@ -662,6 +844,8 @@ _VIEWER_HTML = """<!doctype html>
 <header>
   <h1>gbax<span class="dot">·</span>stream</h1>
   <span class="mode-badge" id="mode-badge">VIEWER</span>
+  <button class="header-btn" id="saves-toggle" type="button" title="Save states (Ctrl+S / Ctrl+L mirror)">💾 saves</button>
+  <button class="header-btn" id="cheats-toggle" type="button" title="Cheat codes for this ROM">🃏 cheats</button>
   <button class="audio-toggle" id="audio-toggle" type="button" title="Toggle browser audio">🔇 audio</button>
   <div class="hud">
     <span><span id="status-dot"></span><span id="status">connecting…</span></span>
@@ -701,6 +885,30 @@ _VIEWER_HTML = """<!doctype html>
     </div>
   </div>
 </main>
+<div class="overlay" id="overlay"></div>
+<section class="panel" id="saves-panel" aria-hidden="true">
+  <header class="panel__header">
+    <h2 class="panel__title">💾 Save states</h2>
+    <button class="panel__action" id="saves-save-now" type="button">Save now</button>
+    <button class="panel__close" data-close="saves-panel" type="button" aria-label="Close">✕</button>
+  </header>
+  <div class="panel__body" id="saves-body">
+    <p class="panel__empty">loading…</p>
+  </div>
+</section>
+<section class="panel" id="cheats-panel" aria-hidden="true">
+  <header class="panel__header">
+    <h2 class="panel__title">🃏 Cheats</h2>
+    <button class="panel__close" data-close="cheats-panel" type="button" aria-label="Close">✕</button>
+  </header>
+  <div class="panel__body">
+    <input class="cheat-search" id="cheats-search" type="search" placeholder="Filter cheats…" autocomplete="off">
+    <div id="cheats-body">
+      <p class="panel__empty">loading…</p>
+    </div>
+  </div>
+</section>
+<div class="toast" id="toast" role="status"></div>
 <footer>
   WebSocket: <code id="ws-url">/stream/ws</code>
   &middot; <a href="?mode=viewer">viewer</a>
@@ -999,6 +1207,191 @@ _VIEWER_HTML = """<!doctype html>
   };
   window.addEventListener('pointerdown', tryAutoStart, true);
   window.addEventListener('keydown', tryAutoStart, true);
+
+  /* ---------- toast ---------- */
+  const toastEl = document.getElementById('toast');
+  let toastTimer = null;
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('is-visible');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove('is-visible'), 2200);
+  }
+
+  /* ---------- overlay panels ---------- */
+  const overlay = document.getElementById('overlay');
+  const savesBtn = document.getElementById('saves-toggle');
+  const cheatsBtn = document.getElementById('cheats-toggle');
+  const savesPanel = document.getElementById('saves-panel');
+  const cheatsPanel = document.getElementById('cheats-panel');
+
+  function openPanel(panel, btn) {
+    closePanels();
+    panel.classList.add('is-open');
+    panel.setAttribute('aria-hidden', 'false');
+    btn.classList.add('is-open');
+    overlay.classList.add('is-open');
+  }
+  function closePanels() {
+    for (const p of [savesPanel, cheatsPanel]) {
+      p.classList.remove('is-open');
+      p.setAttribute('aria-hidden', 'true');
+    }
+    savesBtn.classList.remove('is-open');
+    cheatsBtn.classList.remove('is-open');
+    overlay.classList.remove('is-open');
+  }
+  overlay.addEventListener('click', closePanels);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closePanels();
+  });
+  for (const el of document.querySelectorAll('[data-close]')) {
+    el.addEventListener('click', closePanels);
+  }
+
+  /* ---------- saves panel ---------- */
+  const RTF = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+  function relTime(iso) {
+    const t = new Date(iso).getTime();
+    const diff = (t - Date.now()) / 1000;  // seconds, negative = past
+    const abs = Math.abs(diff);
+    if (abs < 60) return RTF.format(Math.round(diff), 'second');
+    if (abs < 3600) return RTF.format(Math.round(diff / 60), 'minute');
+    if (abs < 86400) return RTF.format(Math.round(diff / 3600), 'hour');
+    return RTF.format(Math.round(diff / 86400), 'day');
+  }
+
+  async function refreshSaves() {
+    const body = document.getElementById('saves-body');
+    try {
+      const data = await (await fetch('/savestate/list')).json();
+      const lines = [];
+      if (data.running && data.running.length) {
+        lines.push('<div class="panel__group-label">Running stream</div>');
+        for (const s of data.running) {
+          lines.push(`<button class="save-item" data-running="${s.name}">
+            <span class="save-item__kind">📜</span>
+            <span class="save-item__name">${s.name.replace(/^running-/, '').replace(/\\.state$/, '')}</span>
+            <span class="save-item__when">${relTime(s.mtime)}</span>
+          </button>`);
+        }
+      }
+      if (data.slots && data.slots.length) {
+        lines.push('<div class="panel__group-label">Numbered slots</div>');
+        for (const s of data.slots) {
+          lines.push(`<button class="save-item" data-slot="${s.slot}">
+            <span class="save-item__kind">${s.slot}</span>
+            <span class="save-item__name">Slot ${s.slot}</span>
+            <span class="save-item__when">${relTime(s.mtime)}</span>
+          </button>`);
+        }
+      }
+      if (!lines.length) {
+        body.innerHTML = '<p class="panel__empty">No saves yet. Press <b>Save now</b> or <kbd>Ctrl+S</kbd> in the SDL window.</p>';
+        return;
+      }
+      body.innerHTML = lines.join('');
+      for (const el of body.querySelectorAll('[data-running]')) {
+        el.addEventListener('click', () => loadSave({ running: el.dataset.running }));
+      }
+      for (const el of body.querySelectorAll('[data-slot]')) {
+        el.addEventListener('click', () => loadSave({ slot: Number(el.dataset.slot) }));
+      }
+    } catch (err) {
+      body.innerHTML = `<p class="panel__empty">failed to list saves: ${err}</p>`;
+    }
+  }
+
+  async function saveNow() {
+    try {
+      const r = await fetch('/savestate/save', { method: 'POST' });
+      const d = await r.json();
+      toast(`saved → ${d.name.replace(/^running-/, '').replace(/\\.state$/, '')}`);
+      await refreshSaves();
+    } catch (err) {
+      toast(`save failed: ${err}`);
+    }
+  }
+
+  async function loadSave(payload) {
+    try {
+      const r = await fetch('/savestate/load', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!r.ok) throw new Error(await r.text());
+      const d = await r.json();
+      toast(`loaded ← ${d.loaded}`);
+      closePanels();
+    } catch (err) {
+      toast(`load failed: ${err}`);
+    }
+  }
+
+  savesBtn.addEventListener('click', () => {
+    if (savesPanel.classList.contains('is-open')) { closePanels(); return; }
+    openPanel(savesPanel, savesBtn);
+    refreshSaves();
+  });
+  document.getElementById('saves-save-now').addEventListener('click', saveNow);
+
+  /* ---------- cheats panel ---------- */
+  let cheatsCache = null;
+  async function refreshCheats(filter) {
+    const body = document.getElementById('cheats-body');
+    try {
+      if (cheatsCache === null) {
+        const d = await (await fetch('/cheats')).json();
+        cheatsCache = d.catalog || [];
+      }
+      const needle = (filter || '').trim().toLowerCase();
+      const list = cheatsCache.filter(c =>
+        !needle || c.name.toLowerCase().includes(needle) || c.slug.toLowerCase().includes(needle)
+      );
+      if (!list.length) {
+        body.innerHTML = '<p class="panel__empty">No cheats catalogued for this ROM.</p>';
+        return;
+      }
+      body.innerHTML = list.map(c => `
+        <button class="cheat-item" data-slug="${c.slug}" data-active="${c.active}">
+          <span class="cheat-item__icon ${c.active ? 'is-active' : ''}">${c.active ? '✓' : '○'}</span>
+          <span><span class="cheat-item__name">${c.name}</span>
+                <div class="cheat-item__code">${c.slug}</div></span>
+          <span></span>
+        </button>
+      `).join('');
+      for (const el of body.querySelectorAll('[data-slug]')) {
+        el.addEventListener('click', () => toggleCheat(el.dataset.slug, el.dataset.active === 'true'));
+      }
+    } catch (err) {
+      body.innerHTML = `<p class="panel__empty">failed to list cheats: ${err}</p>`;
+    }
+  }
+
+  async function toggleCheat(slug, currentlyActive) {
+    const action = currentlyActive ? 'disable' : 'enable';
+    try {
+      const r = await fetch(`/cheats/${encodeURIComponent(slug)}/${action}`, { method: 'POST' });
+      if (!r.ok) throw new Error(await r.text());
+      // Mutate cache in place so the UI updates without a round trip.
+      const item = cheatsCache && cheatsCache.find(c => c.slug === slug);
+      if (item) item.active = !currentlyActive;
+      toast(`${currentlyActive ? 'disabled' : 'enabled'} ${slug}`);
+      refreshCheats(document.getElementById('cheats-search').value);
+    } catch (err) {
+      toast(`cheat toggle failed: ${err}`);
+    }
+  }
+
+  cheatsBtn.addEventListener('click', () => {
+    if (cheatsPanel.classList.contains('is-open')) { closePanels(); return; }
+    openPanel(cheatsPanel, cheatsBtn);
+    refreshCheats('');
+  });
+  document.getElementById('cheats-search').addEventListener('input', (e) => {
+    refreshCheats(e.target.value);
+  });
 
   connect();
 })();
