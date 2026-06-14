@@ -322,6 +322,7 @@ def play(
     cheats: str | None = typer.Option(None, "--cheats", help="Comma-separated cheat slugs to enable at boot."),
     couch_room: str | None = typer.Option(None, "--couch-room", help="Couch room code to join (default 'default'). Generate one with `gbax couch room-code`."),
     no_sdl: bool = typer.Option(False, "--no-sdl", help="Skip the SDL window — run headless and play in a browser tab. Implies --listen and auto-opens http://127.0.0.1:<port>/stream?mode=controller."),
+    load: Path | None = typer.Option(None, "--load", help="Load this save state file at boot (after the ROM is mounted). Use this for one-shot resumes; Ctrl+L during play always reloads the latest running save."),
 ) -> None:
     """Boot ROM in free-run mode with an SDL window."""
     from gbax.library import resolve_rom
@@ -335,6 +336,18 @@ def play(
         raise typer.Exit(code=1) from exc
 
     runtime = EmulatorRuntime(rom_path, core_path=core_path, mode=Mode.FREE)
+    if load is not None:
+        if not load.exists():
+            typer.echo(f"--load: file not found at {load}", err=True)
+            runtime.close()
+            raise typer.Exit(code=1)
+        try:
+            runtime.load_state_from_file(load)
+        except (OSError, RuntimeError) as exc:
+            typer.echo(f"--load: failed to read {load}: {exc}", err=True)
+            runtime.close()
+            raise typer.Exit(code=1) from exc
+        typer.echo(f"loaded ← {load}")
     if cheats:
         for slug in [s.strip() for s in cheats.split(",") if s.strip()]:
             try:

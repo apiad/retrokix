@@ -579,6 +579,22 @@ def play_loop(
                             print(f"slot {slot} is empty")
                         continue
 
+                    # Ctrl+S — write a new running save (never overwrites).
+                    if sym == sdl2.SDLK_s and (mod & sdl2.KMOD_CTRL):
+                        path = runtime.save_state_running()
+                        print(f"saved → {path.name}")
+                        continue
+
+                    # Ctrl+L — load the newest running save for this ROM.
+                    if sym == sdl2.SDLK_l and (mod & sdl2.KMOD_CTRL):
+                        latest = runtime.latest_running_save()
+                        if latest is None:
+                            print("no running saves yet — Ctrl+S to make one")
+                        else:
+                            runtime.load_state_from_file(latest)
+                            print(f"loaded ← {latest.name}")
+                        continue
+
                     # Bare key (no modifier) — fire a macro if one is bound to
                     # this key. Falls through to F1..F9 cheat handling and the
                     # GBA button mapping below when no macro matches.

@@ -159,6 +159,63 @@ def test_save_to_slot_auto_persists(test_rom, mgba_core, tmp_path):
         assert slot_file.exists()
 
 
+def test_running_save_writes_timestamped_file(test_rom, mgba_core, tmp_path):
+    """Ctrl+S equivalent — every call writes a new running-*.state with
+    a sidecar JSON and never overwrites."""
+    with EmulatorRuntime(test_rom, core_path=mgba_core, save_dir=tmp_path) as rt:
+        rt.step(frames=10)
+        p1 = rt.save_state_running()
+        rt.step(frames=10)
+        p2 = rt.save_state_running()
+
+    assert p1 != p2
+    assert p1.exists() and p2.exists()
+    assert p1.name.startswith("running-") and p1.suffix == ".state"
+    assert p1.with_suffix(".json").exists()
+    assert p2.with_suffix(".json").exists()
+
+
+def test_latest_running_save_returns_newest_or_none(test_rom, mgba_core, tmp_path):
+    """Empty stream → None; after a save it's the path; after a second,
+    the newer one wins."""
+    with EmulatorRuntime(test_rom, core_path=mgba_core, save_dir=tmp_path) as rt:
+        assert rt.latest_running_save() is None
+        rt.step(frames=5)
+        a = rt.save_state_running()
+        assert rt.latest_running_save() == a
+        rt.step(frames=5)
+        b = rt.save_state_running()
+        assert rt.latest_running_save() == b
+
+
+def test_load_state_from_file_restores_frame_count(test_rom, mgba_core, tmp_path):
+    """Ctrl+L equivalent — load from any path; sidecar JSON restores
+    frame_count so plugins/macros pick up where the save left off."""
+    with EmulatorRuntime(test_rom, core_path=mgba_core, save_dir=tmp_path) as rt:
+        rt.step(frames=42)
+        path = rt.save_state_running()
+        rt.step(frames=100)  # advance past the save
+        assert rt.frame_count == 142
+        rt.load_state_from_file(path)
+        assert rt.frame_count == 42
+
+
+def test_load_state_from_file_without_sidecar_defaults_frame_count_zero(test_rom, mgba_core, tmp_path):
+    """A standalone .state (no .json sidecar) still loads cleanly;
+    frame_count just resets to 0. Covers `gbax play --load <path>` for
+    files copied from elsewhere."""
+    with EmulatorRuntime(test_rom, core_path=mgba_core, save_dir=tmp_path) as rt:
+        rt.step(frames=7)
+        blob = rt.export_state()
+
+    bare = tmp_path / "exported.state"
+    bare.write_bytes(blob)
+    with EmulatorRuntime(test_rom, core_path=mgba_core, save_dir=tmp_path) as rt2:
+        rt2.load_state_from_file(bare)
+        # No sidecar so frame_count defaults to 0.
+        assert rt2.frame_count == 0
+
+
 def test_slots_hydrate_on_construction(test_rom, mgba_core, tmp_path):
     """Slots saved in one session are in-memory on the next, so Shift+1-9 works."""
     with EmulatorRuntime(test_rom, core_path=mgba_core, save_dir=tmp_path) as rt:

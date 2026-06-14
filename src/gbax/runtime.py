@@ -331,6 +331,61 @@ class EmulatorRuntime:
             self._core.unserialize(blob)
             self._frame_count = frame_count
 
+    # --- "running" save stream — Ctrl+S / Ctrl+L semantics ---
+    #
+    # Distinct from numbered slots: every Ctrl+S writes a new file with
+    # a UTC-ISO timestamp suffix, no overwrite. Ctrl+L always loads the
+    # newest one. Files live under .../<sha1>/running/ so they're
+    # naturally segregated from slot-N.state at the directory level.
+
+    def _running_dir(self) -> Path:
+        return self._save_dir / self._rom_sha1 / "running"
+
+    def save_state_running(self) -> Path:
+        """Append a new timestamped state file to this ROM's running
+        save stream. Returns the path written."""
+        from datetime import datetime, timezone
+
+        with self._lock:
+            blob = self._core.serialize()
+            frame_count = self._frame_count
+        # millisecond precision; replace ':' with '-' so the filename
+        # is portable across Windows-style filesystems too.
+        ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H-%M-%S.%f")[:-3] + "Z"
+        running_dir = self._running_dir()
+        running_dir.mkdir(parents=True, exist_ok=True)
+        path = running_dir / f"running-{ts}.state"
+        path.write_bytes(blob)
+        path.with_suffix(".json").write_text(
+            json.dumps({"frame_count": frame_count})
+        )
+        return path
+
+    def latest_running_save(self) -> Path | None:
+        """Return the newest running-*.state path for this ROM, or
+        None if none exist."""
+        running_dir = self._running_dir()
+        if not running_dir.exists():
+            return None
+        candidates = sorted(running_dir.glob("running-*.state"))
+        return candidates[-1] if candidates else None
+
+    def load_state_from_file(self, path: Path) -> None:
+        """Load a save state from any file path. Reads the optional
+        sidecar `<stem>.json` for frame_count; defaults to 0 if missing."""
+        path = Path(path)
+        blob = path.read_bytes()
+        meta_path = path.with_suffix(".json")
+        frame_count = 0
+        if meta_path.exists():
+            try:
+                frame_count = int(json.loads(meta_path.read_text()).get("frame_count", 0))
+            except (json.JSONDecodeError, ValueError, KeyError):
+                pass
+        with self._lock:
+            self._core.unserialize(blob)
+            self._frame_count = frame_count
+
     def _slot_path(self, slot: int) -> Path:
         return self._save_dir / self._rom_sha1 / f"slot-{slot}.state"
 

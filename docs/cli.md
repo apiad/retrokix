@@ -132,6 +132,10 @@ library — `gbax play emerald` resolves to
 | Fullscreen   | `F11` — toggle borderless desktop  |
 | Screenshot   | `F12` — saves to `~/.gbax/screenshots/` |
 | Toggle cheat | `F1` … `F9` — toggle the Nth active cheat |
+| Save slot    | `Ctrl+1` … `Ctrl+9` — write to numbered slot |
+| Load slot    | `Shift+1` … `Shift+9` — load from numbered slot |
+| Running save | `Ctrl+S` — append a new timestamped save to this ROM's running stream (never overwrites). Lives in `~/.gbax/saves/<sha1>/running/`. |
+| Load latest  | `Ctrl+L` — load the newest running save for this ROM. |
 
 ### Gamepad
 
@@ -172,11 +176,20 @@ intentionally unbound — reserved for plugin hotkeys via the
 | `--user-shader PATH` | none | register a custom WGSL fragment shader |
 | `--cheats SLUGS` | none | comma-separated cheat slugs to enable at boot |
 | `--core PATH` | bundled | override the libretro core .so |
+| `--load PATH` | none | load this save state file at boot (after the ROM is mounted) |
+| `--no-sdl` | off | skip the SDL window — runs headless, auto-opens `/stream?mode=controller` |
+| `--couch-room CODE` | `default` | couch room code (`gbax couch room-code` to mint one) |
 
 
 Save state slots are written immediately to
 `~/.gbax/saves/<rom-sha1>/slot-N.state` and hydrate automatically on next
 boot of the same ROM.
+
+`Ctrl+S` saves to a separate **running stream** at
+`~/.gbax/saves/<rom-sha1>/running/running-<utc>.state` — each press
+appends a new file, nothing is ever overwritten. `Ctrl+L` always
+reloads the newest one for the current ROM. Use `--load <path>` to
+boot from any specific state file (running save, slot, or hand-rolled).
 
 Flags:
 - `--scale N` — window upscale factor. Default 3 (720×480).
