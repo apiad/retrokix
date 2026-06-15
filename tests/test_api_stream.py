@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import io
+import json
 
 import numpy as np
 import pytest
@@ -30,6 +31,25 @@ class _StubRuntime:
     def set_buttons(self, buttons) -> None:
         self.set_buttons_calls.append(set(buttons))
 
+    def system_av_info(self) -> dict:
+        return {
+            "base_width": 240, "base_height": 160,
+            "max_width": 240, "max_height": 160,
+            "aspect_ratio": 1.5, "fps": 59.7275, "sample_rate": 32768.0,
+        }
+
+    @property
+    def width(self) -> int:
+        return 240
+
+    @property
+    def height(self) -> int:
+        return 160
+
+    @property
+    def console(self) -> str:
+        return "gba"
+
 
 @pytest.fixture
 def client() -> TestClient:
@@ -46,8 +66,20 @@ def test_viewer_html_served(client: TestClient) -> None:
     assert "/stream/ws" in body
 
 
+def test_websocket_sends_info_handshake_before_frames(client: TestClient) -> None:
+    """The first message is always a JSON `info` so the browser can
+    size its canvas to the running console."""
+    with client.websocket_connect("/stream/ws?fps=60&format=jpeg") as ws:
+        info = json.loads(ws.receive_text())
+        assert info["type"] == "info"
+        assert info["width"] == 240
+        assert info["height"] == 160
+        assert info["console"] == "gba"
+
+
 def test_websocket_pushes_decodable_jpeg_frames(client: TestClient) -> None:
     with client.websocket_connect("/stream/ws?fps=60&format=jpeg&quality=80") as ws:
+        ws.receive_text()  # info handshake
         for _ in range(3):
             data = ws.receive_bytes()
             assert data[:2] == b"\xff\xd8"  # JPEG SOI marker
@@ -59,12 +91,14 @@ def test_websocket_pushes_decodable_jpeg_frames(client: TestClient) -> None:
 def test_fps_param_is_clamped(client: TestClient) -> None:
     """fps=99999 is clamped to the max — we still get frames, not a 500."""
     with client.websocket_connect("/stream/ws?fps=99999&format=jpeg") as ws:
+        ws.receive_text()  # drain info handshake
         data = ws.receive_bytes()
         assert data[:2] == b"\xff\xd8"
 
 
 def test_quality_param_is_clamped(client: TestClient) -> None:
     with client.websocket_connect("/stream/ws?quality=200&format=jpeg") as ws:
+        ws.receive_text()  # drain info handshake
         data = ws.receive_bytes()
         assert data[:2] == b"\xff\xd8"
 
@@ -80,6 +114,7 @@ def test_ws_button_message_calls_set_buttons() -> None:
     client = TestClient(create_app(rt))
 
     with client.websocket_connect("/stream/ws?fps=60") as ws:
+        ws.receive_text()  # drain info handshake
         ws.receive_bytes()  # one frame, confirms we're connected
         ws.send_text('{"type":"buttons","buttons":["A","UP"]}')
         # Receive a frame to give the server a chance to drain the WS recv queue.
@@ -98,6 +133,7 @@ def test_ws_button_release_sends_empty_set() -> None:
     client = TestClient(create_app(rt))
 
     with client.websocket_connect("/stream/ws?fps=60") as ws:
+        ws.receive_text()  # drain info handshake
         ws.receive_bytes()
         ws.send_text('{"type":"buttons","buttons":["A"]}')
         ws.send_text('{"type":"buttons","buttons":[]}')
@@ -117,6 +153,7 @@ def test_ws_invalid_button_message_does_not_crash() -> None:
     client = TestClient(create_app(rt))
 
     with client.websocket_connect("/stream/ws?fps=60") as ws:
+        ws.receive_text()  # drain info handshake
         ws.receive_bytes()
         ws.send_text("not json at all")
         ws.send_text('{"type":"nope"}')
@@ -132,6 +169,7 @@ def test_default_format_is_raw_rgba(client: TestClient) -> None:
     """No `format` param → server sends 240*160*4 = 153600-byte RGBA
     frames, not JPEG. Alpha byte is 0xff for every pixel."""
     with client.websocket_connect("/stream/ws?fps=60") as ws:
+        ws.receive_text()  # drain info handshake
         data = ws.receive_bytes()
         assert len(data) == 240 * 160 * 4
         # JPEG would start with 0xff 0xd8 — raw definitely doesn't.
@@ -144,6 +182,7 @@ def test_default_format_is_raw_rgba(client: TestClient) -> None:
 
 def test_explicit_format_jpeg_returns_jpeg(client: TestClient) -> None:
     with client.websocket_connect("/stream/ws?fps=60&format=jpeg") as ws:
+        ws.receive_text()  # drain info handshake
         data = ws.receive_bytes()
         assert data[:2] == b"\xff\xd8"
         # Way smaller than the raw size for the same screen.
@@ -152,6 +191,7 @@ def test_explicit_format_jpeg_returns_jpeg(client: TestClient) -> None:
 
 def test_unknown_format_falls_back_to_default(client: TestClient) -> None:
     with client.websocket_connect("/stream/ws?fps=60&format=nope") as ws:
+        ws.receive_text()  # drain info handshake
         data = ws.receive_bytes()
         # Default (raw) → 153600 bytes.
         assert len(data) == 240 * 160 * 4
@@ -163,6 +203,7 @@ def test_ws_fast_forward_message_sets_app_state() -> None:
     assert client.app.state.fast_forward is False
 
     with client.websocket_connect("/stream/ws?fps=60&format=jpeg") as ws:
+        ws.receive_text()  # drain info handshake
         ws.receive_bytes()
         ws.send_text('{"type":"fast_forward","on":true}')
         for _ in range(6):

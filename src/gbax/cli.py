@@ -1,3 +1,4 @@
+import sys
 from pathlib import Path
 
 import typer
@@ -33,19 +34,62 @@ def search(
 def download(
     query: str = typer.Argument(..., help="Fuzzy match — all tokens must appear in the ROM name."),
     region: str | None = typer.Option(None, "--region", help="Prefer USA|Europe|Japan|World when multiple match."),
-    roms_dir: Path | None = typer.Option(None, "--dest", help="Where to save the .gba (default ~/.gbax/roms/)."),
+    console: str | None = typer.Option(None, "--console", help="Constrain to one console (gba|nes|…). Use when a query matches games across consoles."),
+    roms_dir: Path | None = typer.Option(None, "--dest", help="Where to save the ROM (default ~/.gbax/roms/)."),
     refresh: bool = typer.Option(False, "--refresh", help="Force-fetch the latest metadata from archive.org."),
 ) -> None:
-    """Download a ROM. Auto-picks the best match; prints the final .gba path."""
-    from gbax.library import RomLibrary
+    """Download a ROM. Auto-picks the best match within a single console;
+    prompts when matches span multiple consoles."""
+    from gbax.library import CONSOLES, RomLibrary
 
-    lib = RomLibrary(roms_dir=roms_dir, refresh=refresh) if roms_dir else RomLibrary(refresh=refresh)
+    if console is not None and console not in CONSOLES:
+        typer.echo(f"--console {console!r}: choices are {', '.join(sorted(CONSOLES))}", err=True)
+        raise typer.Exit(code=1)
+
+    kwargs: dict = {"refresh": refresh}
+    if roms_dir is not None:
+        kwargs["roms_dir"] = roms_dir
+    if console is not None:
+        kwargs["console"] = console
+    lib = RomLibrary(**kwargs)
+
     matches = lib.search(query)
     if not matches:
         typer.echo(f"no matches for {query!r}")
         raise typer.Exit(code=1)
 
-    # Prefer the region the user asked for, else USA, else first match.
+    # Cross-console ambiguity → ask which console (unless user already
+    # specified via --console). Without a TTY, fail with a hint rather
+    # than guess.
+    consoles_hit = sorted({m.console for m in matches})
+    if len(consoles_hit) > 1:
+        if not sys.stdin.isatty():
+            typer.echo(
+                f"matches span multiple consoles ({', '.join(consoles_hit)}); "
+                f"rerun with --console <slug>",
+                err=True,
+            )
+            raise typer.Exit(code=1)
+        typer.echo(f"{len(matches)} matches across {len(consoles_hit)} consoles:")
+        for i, slug in enumerate(consoles_hit, 1):
+            n = sum(1 for m in matches if m.console == slug)
+            typer.echo(f"  [{i}] {CONSOLES[slug].label:30s}  {n} match{'es' if n != 1 else ''}")
+        try:
+            pick = input("pick console number: ").strip()
+        except (EOFError, KeyboardInterrupt):
+            raise typer.Exit(code=1) from None
+        try:
+            idx = int(pick)
+            if not 1 <= idx <= len(consoles_hit):
+                raise ValueError
+        except ValueError:
+            typer.echo(f"invalid choice {pick!r}", err=True)
+            raise typer.Exit(code=1) from None
+        chosen_slug = consoles_hit[idx - 1]
+        matches = [m for m in matches if m.console == chosen_slug]
+
+    # Within one console: prefer the region the user asked for, else
+    # USA, else first match.
     def _score(entry) -> int:
         name = entry.name.lower()
         if region and region.lower() in name:
@@ -61,9 +105,9 @@ def download(
 
     if len(matches) > 1:
         typer.echo(f"{len(matches)} matches; picked: {chosen.name}")
-        typer.echo("  (use a more specific query or --region to override)")
+        typer.echo("  (use a more specific query, --region, or --console to override)")
     else:
-        typer.echo(f"match: {chosen.name}")
+        typer.echo(f"match: {chosen.name}  [{chosen.console}]")
     typer.echo(f"  size: {chosen.size / 1_048_576:.1f} MB")
 
     path = lib.download(chosen)

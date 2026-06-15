@@ -141,20 +141,36 @@ def build_router() -> APIRouter:
 
         recv_task = asyncio.create_task(_receive_loop())
         try:
-            # Allocate the RGBA scratch buffer once per connection
-            # (raw format only). Alpha is always 0xff.
-            rgba_buf = (
-                np.empty((160, 240, 4), dtype=np.uint8)
-                if fmt == "raw" else None
-            )
-            if rgba_buf is not None:
-                rgba_buf[..., 3] = 0xFF
+            # First message: an info handshake so the browser can size
+            # its canvas before frames arrive. Console-agnostic — works
+            # for GBA 240x160, NES 256x240, anything libretro hands us.
+            av = rt.system_av_info()
+            base_w = av["base_width"] or rt.width or 240
+            base_h = av["base_height"] or rt.height or 160
+            aspect = av["aspect_ratio"] or (base_w / max(1, base_h))
+            console_slug = getattr(rt, "console", None)
+            await websocket.send_text(json.dumps({
+                "type": "info",
+                "width": int(base_w),
+                "height": int(base_h),
+                "aspect": float(aspect),
+                "fps": float(av["fps"] or 60.0),
+                "sample_rate": float(av["sample_rate"] or 0),
+                "console": console_slug,
+            }))
 
+            # RGBA scratch buffer; reallocated if the framebuffer ever
+            # resizes (rare but legal — some cores switch resolution
+            # mid-game, e.g. SNES hi-res sprites).
+            rgba_buf: "np.ndarray | None" = None
             while True:
                 t0 = loop.time()
                 fb = rt.framebuffer()
                 if fmt == "raw":
-                    assert rgba_buf is not None
+                    h, w = fb.shape[0], fb.shape[1]
+                    if rgba_buf is None or rgba_buf.shape[:2] != (h, w):
+                        rgba_buf = np.empty((h, w, 4), dtype=np.uint8)
+                        rgba_buf[..., 3] = 0xFF
                     rgba_buf[..., :3] = fb
                     payload: bytes = rgba_buf.tobytes()
                 else:
@@ -827,6 +843,11 @@ _VIEWER_HTML = """<!doctype html>
     color: var(--accent-hot);
   }
 
+  /* NES has no L/R shoulder buttons. When the runtime tells us
+   * console=nes the bezel hides the shoulders entirely. */
+  body[data-console="nes"] .gba__shoulder { display: none; }
+  body[data-console="nes"] .gba__shoulders { height: 0; min-height: 0; }
+
   /* Very narrow / tall — give Select+Start their own row beneath
    * the screen so D-pad and A/B don't get squeezed. */
   @media (max-aspect-ratio: 5/4) and (max-width: 520px) {
@@ -955,6 +976,24 @@ _VIEWER_HTML = """<!doctype html>
     if (state) statusDot.classList.add(state);
   }
 
+  // Console slug (gba/nes/…) sent in the info handshake. Drives the
+  // L/R shoulder button visibility (NES has neither).
+  let currentConsole = null;
+  function applyRuntimeInfo(info) {
+    if (info.width && info.height) {
+      if (canvas.width !== info.width)  canvas.width  = info.width;
+      if (canvas.height !== info.height) canvas.height = info.height;
+      const screen = document.querySelector(".gba__screen");
+      if (screen && info.aspect && Number.isFinite(info.aspect) && info.aspect > 0) {
+        screen.style.aspectRatio = `${info.aspect}`;
+      }
+    }
+    if (info.console && info.console !== currentConsole) {
+      currentConsole = info.console;
+      document.body.dataset.console = info.console;
+    }
+  }
+
   function connect() {
     setStatus("connecting…");
     ws = new WebSocket(url);
@@ -976,6 +1015,18 @@ _VIEWER_HTML = """<!doctype html>
     });
 
     ws.addEventListener("message", async (evt) => {
+      // Info handshake — server sends one text message before frames so
+      // we can size the canvas to the running console (240x160 GBA,
+      // 256x240 NES, …) before drawing the first frame.
+      if (typeof evt.data === "string") {
+        try {
+          const info = JSON.parse(evt.data);
+          if (info.type === "info") {
+            applyRuntimeInfo(info);
+          }
+        } catch (_e) { /* ignore */ }
+        return;
+      }
       if (fmt === "raw") {
         const ab = evt.data;
         bytes += ab.byteLength;

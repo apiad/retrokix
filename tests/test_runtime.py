@@ -254,3 +254,39 @@ def test_free_run_ticker_speed_multiplier(runtime):
         assert fc >= 50, f"expected many frames in 0.5s at 4x, got {fc}"
     finally:
         runtime.stop_free_run_ticker()
+
+
+# ---------- multi-console (NES + GBA) ----------
+
+def test_system_av_info_reports_gba_geometry(runtime):
+    """mGBA reports 240x160 at native 16:10 aspect.
+
+    libretro lets cores leave `aspect_ratio` zero ("compute from base");
+    mGBA fills it in. Either way the base dimensions are exact."""
+    av = runtime.system_av_info()
+    assert av["base_width"] == 240
+    assert av["base_height"] == 160
+    assert av["aspect_ratio"] in (0.0, av["base_width"] / av["base_height"])
+
+
+def test_runtime_console_property_is_gba_for_gba_rom(runtime, test_rom):
+    """Runtime infers the console slug from the ROM extension."""
+    # test_rom is a .gba fixture so should slot in as 'gba'.
+    assert runtime.console == "gba"
+
+
+def test_default_core_path_picks_console_specific_core(tmp_path):
+    """A .nes ROM path resolves to fceumm_libretro.so (whether or not
+    that core happens to exist on this dev machine — _default_core_path
+    returns the *expected* location)."""
+    from gbax.runtime import _default_core_path
+
+    nes_rom = tmp_path / "fake.nes"
+    nes_rom.write_bytes(b"NES\x1a")  # iNES magic — not booted, just file ext
+    path = _default_core_path(nes_rom)
+    assert path.name == "fceumm_libretro.so"
+
+    gba_rom = tmp_path / "fake.gba"
+    gba_rom.write_bytes(b"\x00" * 16)
+    path = _default_core_path(gba_rom)
+    assert path.name == "mgba_libretro.so"

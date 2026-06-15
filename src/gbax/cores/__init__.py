@@ -23,7 +23,11 @@ def _files(package: str):
     return _files_impl(package)
 
 
-def bundled_core_path() -> Path | None:
-    """Return path to the bundled mgba_libretro.so if present, else None."""
-    candidate = Path(str(_files("gbax.cores") / "mgba_libretro.so"))
+def bundled_core_path(filename: str = "mgba_libretro.so") -> Path | None:
+    """Return path to a bundled libretro .so by filename, or None.
+
+    Default `filename` is mGBA for back-compat with the GBA-only era.
+    New consoles pass the filename explicitly (the library's CONSOLES
+    table records each one's `core_so`)."""
+    candidate = Path(str(_files("gbax.cores") / filename))
     return candidate if candidate.exists() else None

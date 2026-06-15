@@ -29,23 +29,38 @@ class Mode(str, Enum):
     STEP = "step"
 
 
-def _default_core_path() -> Path:
+def _default_core_path(rom_path: Path | None = None) -> Path:
     """Find a libretro core, in priority order:
 
     1. ``$GBAX_CORE_PATH`` — explicit override (power users, alt cores).
-    2. Bundled ``gbax/cores/mgba_libretro.so`` — what ``pip install`` ships.
-    3. Dev fixture ``tests/cores/mgba_libretro.so`` — built from source via
-       ``bin/build-core`` when working on the binding without ``pip install -e .``.
+    2. Bundled ``gbax/cores/<core>.so`` — what ``pip install`` ships.
+       The core filename is derived from the ROM's extension via the
+       library.CONSOLES table (e.g. .nes → fceumm_libretro.so).
+    3. Dev fixture ``tests/cores/<core>.so`` — built from source via
+       ``bin/build-core`` when working on the binding without
+       ``pip install -e .``.
+
+    If `rom_path` is None, defaults to the GBA core for back-compat with
+    callers that haven't picked a ROM yet (none in tree today).
     """
     env = os.environ.get("GBAX_CORE_PATH")
     if env:
         return Path(env)
+
     from gbax.cores import bundled_core_path
-    bundled = bundled_core_path()
+    from gbax.library import CONSOLES, console_for_path
+
+    if rom_path is not None:
+        slug = console_for_path(rom_path)
+        core_so = CONSOLES[slug].core_so if slug else "mgba_libretro.so"
+    else:
+        core_so = "mgba_libretro.so"
+
+    bundled = bundled_core_path(core_so)
     if bundled is not None:
         return bundled
     here = Path(__file__).resolve()
-    return here.parent.parent.parent / "tests" / "cores" / "mgba_libretro.so"
+    return here.parent.parent.parent / "tests" / "cores" / core_so
 
 
 class EmulatorRuntime:
@@ -58,7 +73,9 @@ class EmulatorRuntime:
     ):
         self._rom_path = Path(rom_path)
         self._rom_sha1 = hashlib.sha1(self._rom_path.read_bytes()).hexdigest()
-        self._core_path = Path(core_path) if core_path else _default_core_path()
+        self._core_path = (
+            Path(core_path) if core_path else _default_core_path(self._rom_path)
+        )
         self._save_dir = Path(save_dir) if save_dir else Path.home() / ".gbax" / "saves"
         if not self._core_path.exists():
             raise FileNotFoundError(
@@ -235,6 +252,28 @@ class EmulatorRuntime:
         with self._lock:
             self._core.reset()
             self._frame_count = 0
+
+    def system_av_info(self) -> dict:
+        """Console-agnostic display/timing facts from the libretro core.
+        See ``LibretroCore.system_av_info`` for the schema."""
+        with self._lock:
+            return self._core.system_av_info()
+
+    @property
+    def width(self) -> int:
+        """Current framebuffer width in pixels (post first retro_run)."""
+        return self._core.width
+
+    @property
+    def height(self) -> int:
+        return self._core.height
+
+    @property
+    def console(self) -> str | None:
+        """ROM-extension-derived console slug (`'gba'`, `'nes'`, …) or
+        None if the extension isn't one gbax recognises."""
+        from gbax.library import console_for_path
+        return console_for_path(self._rom_path)
 
     def buttons_held(self) -> set[Button]:
         return set(self._buttons_held)

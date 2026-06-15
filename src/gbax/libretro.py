@@ -252,6 +252,39 @@ class LibretroCore:
     def run(self) -> None:
         self._lib.retro_run()
 
+    def system_av_info(self) -> dict:
+        """Query the core for the current ROM's display + timing facts.
+
+        Returns a flat dict mirroring `retro_system_av_info`:
+            {
+              'base_width': int, 'base_height': int,
+              'max_width': int,  'max_height': int,
+              'aspect_ratio': float,   # 0 means "use base_w / base_h"
+              'fps': float,
+              'sample_rate': float,
+            }
+        """
+        info = self._ffi.new("struct retro_system_av_info *")
+        self._lib.retro_get_system_av_info(info)
+        return {
+            "base_width": int(info.geometry.base_width),
+            "base_height": int(info.geometry.base_height),
+            "max_width": int(info.geometry.max_width),
+            "max_height": int(info.geometry.max_height),
+            "aspect_ratio": float(info.geometry.aspect_ratio),
+            "fps": float(info.timing.fps),
+            "sample_rate": float(info.timing.sample_rate),
+        }
+
+    @property
+    def width(self) -> int:
+        """Current framebuffer width in pixels (post first retro_run)."""
+        return int(self._framebuffer.shape[1])
+
+    @property
+    def height(self) -> int:
+        return int(self._framebuffer.shape[0])
+
     @property
     def framebuffer(self) -> np.ndarray:
         """(H, W, 3) uint8 RGB array. Updated each retro_run on frames the core emits."""
