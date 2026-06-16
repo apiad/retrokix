@@ -25,6 +25,73 @@ body:has(.gx-hero) .md-sidebar {
 }
 
 /* ============================================================
+ * Top-100 ticker — horizontal marquee of fame-ranked titles.
+ * ============================================================ */
+.gx-ticker {
+  position: relative;
+  overflow: hidden;
+  padding: 0.85rem 0;
+  border-top: 1px solid var(--gx-border-soft);
+  border-bottom: 1px solid var(--gx-border-soft);
+  background:
+    linear-gradient(180deg,
+      rgba(15, 12, 30, 0.4) 0%,
+      rgba(15, 12, 30, 0.2) 100%);
+  /* Fade out edges so items appear/disappear smoothly. */
+  mask-image: linear-gradient(90deg, transparent 0, black 5%, black 95%, transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, black 5%, black 95%, transparent 100%);
+}
+.gx-ticker__track {
+  display: flex;
+  width: max-content;
+  animation: gx-ticker-scroll 220s linear infinite;
+}
+.gx-ticker:hover .gx-ticker__track {
+  animation-play-state: paused;
+}
+.gx-ticker__row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-right: 0.5rem;
+}
+.gx-ticker__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(167, 139, 250, 0.06);
+  border: 1px solid rgba(167, 139, 250, 0.12);
+  white-space: nowrap;
+  font-size: 0.88rem;
+  color: var(--gx-text-dim);
+}
+.gx-ticker__emoji {
+  font-size: 1rem;
+  line-height: 1;
+}
+.gx-ticker__title {
+  font-family: var(--gx-display);
+  font-weight: 500;
+  color: var(--gx-text);
+}
+.gx-ticker__console {
+  font-family: var(--gx-mono, "JetBrains Mono", monospace);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  padding: 0.05rem 0.35rem;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.05);
+}
+.gx-ticker__console--gba { color: #a78bfa; background: rgba(167, 139, 250, 0.12); }
+.gx-ticker__console--nes { color: #f87171; background: rgba(248, 113, 113, 0.12); }
+@keyframes gx-ticker-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* ============================================================
  * Console roster — sits between hero and "Three commands".
  * One row, 4 cells, separated by faint dividers.
  * ============================================================ */

@@ -43,6 +43,8 @@ extra_css:
 
 extra_javascript:
   - javascripts/rotate.js
+  - javascripts/top_games_data.js
+  - javascripts/ticker.js
 
 extra:
   social:
