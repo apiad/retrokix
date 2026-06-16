@@ -1,4 +1,4 @@
-# retrokix — Game Boy Advance you can drive.
+# retrokix — Retro consoles you can drive.
 
 **Bring your keyboard, your gamepad, and your AI. They all work together.**
 
@@ -11,13 +11,14 @@
 ---
 
 **retrokix is an emulator you can talk to.** It plays Game Boy Advance
-games in a window with sound and a keyboard — and in the same session,
-it exposes the framebuffer, memory bus, and input as an HTTP API any
-coding agent can reach. Use it to speedrun Pokémon Emerald with Claude
-Code looking over your shoulder, or to test a neurosymbolic policy
-against 3,500+ hand-crafted GBA environments where the level designers
-were genre masters. Same emulator, same session, same API. Whether
-you're the player or the algorithm, you're in the loop together.
+and NES games in a window with sound and a keyboard — and in the same
+session, it exposes the framebuffer, memory bus, and input as an HTTP
+API any coding agent can reach. Use it to speedrun Pokémon Emerald with
+Claude Code looking over your shoulder, or to test a neurosymbolic
+policy against 10,000+ hand-crafted GBA + NES environments where the
+level designers were genre masters. Same emulator, same session, same
+API. Whether you're the player or the algorithm, you're in the loop
+together.
 
 ## Three commands
 
@@ -71,8 +72,10 @@ discover the next memory address, build the next algorithm.
 
 ## What you get
 
-- **3,555 ROMs** in a fuzzy-searchable bundled No-Intro index. `retrokix
-  download` pulls from the public archive.org mirror.
+- **10,000+ ROMs** across GBA + NES in a fuzzy-searchable bundled
+  No-Intro index, ranked by Wikipedia 12-month pageviews with a 0–5
+  star column in `retrokix browse`. `retrokix download` pulls from
+  the public archive.org mirror.
 - **One HTTP API** exposing the framebuffer, full memory bus, input,
   cheat codes, save states, and an atomic `/action` for multi-step
   agent plans.
@@ -207,7 +210,7 @@ and need `$RETROKIX_CORE_PATH` set. Full coverage in
 
 ## Status
 
-- **Alpha.** v0.18.0. Works on Linux x86_64. macOS / Windows / ARM
+- **Alpha.** v0.19.0. Works on Linux x86_64. macOS / Windows / ARM
   are PR-welcome.
 - **Multi-console.** GBA via mGBA and NES via FCEUmm — both shipped in
   the wheel. The runtime picks a core from the ROM extension; `retrokix

@@ -5,8 +5,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Grotesk:wght@400;500;600;700&display=swap">
-  <meta property="og:title" content="retrokix — Game Boy Advance you can drive">
-  <meta property="og:description" content="Hacker-first GBA emulator. Pip-installable, native libretro core, HTTP API any LLM can reach. Bring your keyboard, your gamepad, and your AI — they all work together.">
+  <meta property="og:title" content="retrokix — Retro consoles you can drive">
+  <meta property="og:description" content="Hacker-first multi-console emulator (GBA + NES). Pip-installable, native libretro cores, HTTP API any LLM can reach. Bring your keyboard, your gamepad, and your AI — they all work together.">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
 {% endblock %}
@@ -17,14 +17,15 @@
     <div class="gx-hero__inner">
       <div class="gx-hero__copy">
         <div class="gx-hero__eyebrow">
-          <span class="gx-pill gx-pill--accent">v0.16.0</span>
+          <span class="gx-pill gx-pill--accent">v0.19.0</span>
           <span class="gx-pill">alpha</span>
+          <span class="gx-pill">GBA + NES</span>
           <span class="gx-pill">MPL-2.0</span>
           <span class="gx-pill">Linux x86_64</span>
         </div>
         <h1 class="gx-hero__title">
           <span class="gx-wordmark" aria-hidden="true">retrokix</span>
-          <span class="gx-hero__tagline">Game Boy Advance you can drive.</span>
+          <span class="gx-hero__tagline">Retro consoles you can drive.</span>
         </h1>
         <p class="gx-hero__lead">
           An emulator for hackers, speedrunners, and AI researchers. Plays
@@ -95,7 +96,7 @@
         <span class="gx-alt__label">Or, point-and-click</span>
         <pre class="gx-codeblock gx-codeblock--inline"><code><span class="t-pf">$</span> retrokix browse</code></pre>
         <p class="gx-alt__caption">
-          Interactive search-as-you-type over all <strong>3,555 ROMs</strong>.
+          Interactive search-as-you-type over <strong>10,000+ ROMs across GBA + NES</strong>, ranked by Wikipedia fame with a five-star column.
           Arrow keys to navigate, <kbd>Enter</kbd> to download. ROMs you
           already own show a green <span class="gx-alt__dot">●</span>.
         </p>
@@ -173,10 +174,12 @@
       <div class="gx-cards">
         <article class="gx-card">
           <div class="gx-card__icon">🎮</div>
-          <h3 class="gx-card__title">3,555 ROMs</h3>
+          <h3 class="gx-card__title">10,000+ ROMs</h3>
           <p class="gx-card__body">
-            Fuzzy-searchable No-Intro index bundled. <code>retrokix download</code>
-            pulls from the public archive.org mirror. Bring games you own.
+            Fuzzy-searchable No-Intro index for both GBA and NES, ranked
+            by Wikipedia fame with a five-star column. <code>retrokix
+            download</code> pulls from the public archive.org mirror.
+            Bring games you own.
           </p>
         </article>
         <article class="gx-card">
