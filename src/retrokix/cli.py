@@ -119,12 +119,21 @@ def browse(
     query: str = typer.Argument("", help="Optional initial filter — same fuzzy semantics as `retrokix search`."),
     refresh: bool = typer.Option(False, "--refresh", help="Force-fetch the latest metadata from archive.org."),
 ) -> None:
-    """Interactive ROM browser. Search-as-you-type, arrows to navigate, Enter to download."""
+    """Interactive ROM browser. Search-as-you-type, arrows to navigate,
+    Enter to play (or download then play if you don't own it yet)."""
+    import os
+    import sys
     from retrokix.browse import run
     from retrokix.library import RomLibrary
 
     lib = RomLibrary(refresh=refresh)
-    raise typer.Exit(code=run(lib=lib, initial_query=query))
+    picked = run(lib=lib, initial_query=query)
+    if picked is None:
+        raise typer.Exit(code=0)
+    # Re-exec into `retrokix play <path>` so the SDL window inherits the
+    # terminal cleanly. argv[0] is the current entry-point binary; we
+    # invoke it via -m to be robust to console-script paths.
+    os.execvp(sys.executable, [sys.executable, "-m", "retrokix", "play", str(picked)])
 
 
 @app.command()

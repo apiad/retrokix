@@ -127,7 +127,7 @@ async def test_browse_enter_on_single_variant_group_downloads(stub_lib, tmp_path
     """Group with one variant → Enter triggers download immediately, no modal."""
 
     captured: list[RomEntry] = []
-    def fake_download(entry, progress=True):
+    def fake_download(entry, progress=True, progress_cb=None):
         captured.append(entry)
         return tmp_path / "fake.gba"
 
@@ -170,7 +170,7 @@ async def test_picker_enter_dismisses_and_downloads(stub_lib, tmp_path):
     the download on the chosen variant."""
 
     captured: list[RomEntry] = []
-    def fake_download(entry, progress=True):
+    def fake_download(entry, progress=True, progress_cb=None):
         captured.append(entry)
         return tmp_path / "fake.gba"
     stub_lib.download = MagicMock(side_effect=fake_download)

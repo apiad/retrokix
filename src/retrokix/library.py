@@ -241,7 +241,12 @@ class RomLibrary:
             if all(t in e.name.lower() for t in tokens)
         ]
 
-    def download(self, entry: RomEntry, progress: bool = True) -> Path:
+    def download(
+        self,
+        entry: RomEntry,
+        progress: bool = True,
+        progress_cb=None,
+    ) -> Path:
         """Download an entry, extract the ROM if zipped, save to
         roms_dir. Returns the final ROM path (e.g. `.gba`, `.nes`)."""
         self.roms_dir.mkdir(parents=True, exist_ok=True)
@@ -258,7 +263,12 @@ class RomLibrary:
         with tempfile.NamedTemporaryFile(delete=False, suffix=Path(entry.name).suffix) as tmp:
             tmp_path = Path(tmp.name)
         try:
-            _stream_download(url, tmp_path, total_bytes=entry.size, show_progress=progress)
+            _stream_download(
+                url, tmp_path,
+                total_bytes=entry.size,
+                show_progress=progress,
+                progress_cb=progress_cb,
+            )
             if entry.is_zip:
                 rom_exts = info.rom_exts if info else ALL_ROM_EXTS
                 final = _extract_first_rom(tmp_path, self.roms_dir, rom_exts)
@@ -271,7 +281,18 @@ class RomLibrary:
                 tmp_path.unlink()
 
 
-def _stream_download(url: str, dest: Path, total_bytes: int = 0, show_progress: bool = True, retries: int = 3) -> None:
+def _stream_download(
+    url: str,
+    dest: Path,
+    total_bytes: int = 0,
+    show_progress: bool = True,
+    retries: int = 3,
+    progress_cb=None,
+) -> None:
+    """Stream a URL to disk. Reports progress via stdout (when
+    show_progress=True) and/or a callback (progress_cb(downloaded,
+    total)) — the callback is invoked at every chunk so callers like
+    the TUI can drive a smooth progress bar."""
     req = urllib.request.Request(url, headers={"User-Agent": "retrokix/0.0.1"})
     last_exc = None
     for attempt in range(retries):
@@ -286,6 +307,8 @@ def _stream_download(url: str, dest: Path, total_bytes: int = 0, show_progress: 
                         break
                     out.write(chunk)
                     downloaded += len(chunk)
+                    if progress_cb is not None:
+                        progress_cb(downloaded, total_bytes)
                     if show_progress and total_bytes:
                         pct = int(downloaded * 100 / total_bytes)
                         if pct != last_pct and pct % 5 == 0:

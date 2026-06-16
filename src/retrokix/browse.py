@@ -26,7 +26,7 @@ from textual.binding import Binding
 from textual.containers import Container, Horizontal, Vertical
 from textual.reactive import reactive
 from textual.screen import ModalScreen
-from textual.widgets import Footer, Header, Input, ListItem, ListView, Static
+from textual.widgets import Footer, Header, Input, ListItem, ListView, ProgressBar, Static
 
 if TYPE_CHECKING:
     from retrokix.library import RomEntry, RomLibrary
@@ -444,7 +444,7 @@ _CONSOLE_BADGE_COLORS = {
 
 def _console_badge(slug: str | None) -> str:
     if not slug:
-        return "   "
+        return "    "
     color = _CONSOLE_BADGE_COLORS.get(slug, "#94a3b8")
     return f"[{color}]{slug.upper()}[/]"
 
@@ -662,8 +662,8 @@ class BrowseApp(App):
         height: 1;
     }
     .row-console {
-        width: 4;
-        min-width: 4;
+        width: 5;
+        min-width: 5;
         height: 1;
         padding: 0 1 0 0;
     }
@@ -693,6 +693,15 @@ class BrowseApp(App):
         background: $boost;
         color: $text-muted;
     }
+    #dl-progress {
+        dock: bottom;
+        height: 1;
+        padding: 0 2;
+        display: none;
+    }
+    #dl-progress.--visible {
+        display: block;
+    }
     """
 
     BINDINGS = [
@@ -721,6 +730,7 @@ class BrowseApp(App):
         self._downloading = False
         self._famous_cache: list[RomGroup] | None = None
         self._local_stems: set[str] = set()
+        self._local_paths: dict[str, Path] = {}
 
     def _refresh_local(self) -> None:
         """Re-scan the on-disk ROM folder. Stems (filename minus suffix)
@@ -732,12 +742,25 @@ class BrowseApp(App):
         except (FileNotFoundError, OSError):
             paths = []
         self._local_stems = {p.stem for p in paths}
+        self._local_paths = {p.stem: p for p in paths}
+
+    def _group_local_path(self, group: RomGroup) -> Path | None:
+        """Return the on-disk path of any owned variant of this group,
+        preferring the canonical primary variant first."""
+        for v in group.variants:
+            stem = self._entry_stem(v.name)
+            if stem in self._local_paths:
+                return self._local_paths[stem]
+        return None
 
     @staticmethod
     def _entry_stem(name: str) -> str:
-        """Strip the archive extension (.zip / .gba) for ownership matching."""
-        for suffix in (".zip", ".gba"):
-            if name.lower().endswith(suffix):
+        """Strip the archive extension (.zip / per-console ROM) for
+        ownership matching. Same suffix set as `library.ALL_ROM_EXTS`."""
+        from retrokix.library import ALL_ROM_EXTS
+        lower = name.lower()
+        for suffix in (".zip",) + ALL_ROM_EXTS:
+            if lower.endswith(suffix):
                 return name[: -len(suffix)]
         return name
 
@@ -811,6 +834,7 @@ class BrowseApp(App):
                 id="q",
             )
         yield ListView(id="results")
+        yield ProgressBar(id="dl-progress", total=100, show_eta=False)
         yield Static("", id="status")
         yield Footer()
 
@@ -911,9 +935,12 @@ class BrowseApp(App):
             self.exit()
 
     def action_download_selected(self) -> None:
+        """Enter on a row: if any variant is already on disk, exit the
+        TUI with that path so the wrapper CLI can `retrokix play` it.
+        Otherwise start a download with a live progress bar and exit
+        with the new path on success."""
         if self._downloading:
             return
-        # A modal (e.g. the variant picker) is on top — let it handle Enter.
         if isinstance(self.screen, ModalScreen):
             return
         listv = self.query_one("#results", ListView)
@@ -922,6 +949,10 @@ class BrowseApp(App):
             self._set_status("nothing selected")
             return
         group = self._results[idx]
+        owned = self._group_local_path(group)
+        if owned is not None:
+            self.exit(owned)
+            return
         if len(group.variants) == 1:
             self._download(group.primary)
         else:
@@ -936,14 +967,29 @@ class BrowseApp(App):
     def _download(self, entry: "RomEntry") -> None:
         self._downloading = True
         name = _trim_name(entry.name, 50)
+        total = max(entry.size, 1)
+        bar = self.query_one("#dl-progress", ProgressBar)
+        bar.update(total=total, progress=0)
+        bar.add_class("--visible")
         self._set_status(f"downloading {name} ({_fmt_size(entry.size)})…")
+
+        def cb(downloaded: int, _total: int) -> None:
+            self.call_from_thread(self._on_progress, downloaded, total)
+
         self.run_worker(
-            lambda: self.lib.download(entry, progress=False),
+            lambda: self.lib.download(entry, progress=False, progress_cb=cb),
             thread=True,
             exclusive=True,
             name="rom-download",
             description=f"download {entry.name}",
         )
+
+    def _on_progress(self, downloaded: int, total: int) -> None:
+        try:
+            bar = self.query_one("#dl-progress", ProgressBar)
+        except Exception:  # noqa: BLE001 — widget gone, nothing to update
+            return
+        bar.update(progress=min(downloaded, total))
 
     def on_worker_state_changed(self, event) -> None:
         from textual.worker import WorkerState
@@ -951,21 +997,27 @@ class BrowseApp(App):
         if event.worker.name != "rom-download":
             return
         state = event.state
+        bar = self.query_one("#dl-progress", ProgressBar)
         if state == WorkerState.SUCCESS:
             self._downloading = False
+            bar.remove_class("--visible")
             path: Path = event.worker.result
-            self._set_status(f"saved → {path}")
-            # Refresh the owned-marker — the new ROM now exists on disk.
-            self._refresh_local()
-            self._refresh()
+            # Hand the path back to the wrapper CLI — it'll exec `play`.
+            self.exit(path)
         elif state == WorkerState.ERROR:
             self._downloading = False
+            bar.remove_class("--visible")
             err = event.worker.error
             self._set_status(f"error: {err}")
 
 
-def run(lib: "RomLibrary", initial_query: str = "") -> int:
-    """Launch the TUI. Returns the process exit code."""
+def run(lib: "RomLibrary", initial_query: str = "") -> "Path | None":
+    """Launch the TUI. Returns the picked ROM path (if Enter was pressed
+    on a row), or None if the user quit without picking. The wrapper CLI
+    is expected to `retrokix play <path>` on the returned value."""
     app = BrowseApp(lib=lib, initial_query=initial_query)
     app.run()
-    return 0
+    result = app.return_value
+    if isinstance(result, Path):
+        return result
+    return None
