@@ -355,6 +355,28 @@ def resolve_rom(query_or_path: str, roms_dir: Path | None = None) -> Path:
     return matches[0]
 
 
+# --- title grouping ---
+
+def title_key(name: str) -> str:
+    """Group key for No-Intro names — everything before the first '('.
+
+    e.g. 'Pokemon - Emerald Version (USA, Europe).zip' →
+         'Pokemon - Emerald Version'
+
+    Collapses regional/language/version variants into one group. If a
+    name has no parenthetical we strip the archive/ROM extension and
+    use what remains. Shared between `gbax browse`, the fame
+    refresher, and any other tool that needs a stable title key."""
+    paren = name.find("(")
+    if paren > 0:
+        return name[:paren].rstrip()
+    lower = name.lower()
+    for ext in (".zip",) + ALL_ROM_EXTS:
+        if lower.endswith(ext):
+            return name[: -len(ext)].rstrip()
+    return name.rstrip()
+
+
 # --- fame index ---
 
 _FAME_CACHE: dict[str, dict[str, dict]] | None = None

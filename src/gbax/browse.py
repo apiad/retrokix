@@ -257,22 +257,7 @@ _FAMOUS_QUERIES: tuple[str, ...] = (
 )
 
 
-def _title_key(name: str) -> str:
-    """Group key for No-Intro names — everything before the first '('.
-
-    e.g. 'Pokemon - Emerald Version (USA, Europe).zip' →
-         'Pokemon - Emerald Version'
-
-    This collapses regional/language/version variants of the same
-    title into one group. If a name has no parenthetical, we strip
-    the .zip/.gba suffix and use what remains.
-    """
-    paren = name.find("(")
-    if paren > 0:
-        return name[:paren].rstrip()
-    if name.lower().endswith((".zip", ".gba")):
-        return name.rsplit(".", 1)[0].rstrip()
-    return name.rstrip()
+from gbax.library import title_key as _title_key  # noqa: E402  re-export
 
 
 def _region_score(name_lower: str) -> int:

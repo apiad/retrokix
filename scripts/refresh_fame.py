@@ -37,8 +37,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
-from gbax.browse import _title_key  # noqa: E402
-from gbax.library import CONSOLES, RomLibrary  # noqa: E402
+from gbax.library import CONSOLES, RomLibrary, title_key  # noqa: E402
 
 UA = "gbax-fame-refresh/0.1 (+https://github.com/apiad/gbax)"
 SLEEP = 0.25
@@ -197,7 +196,7 @@ def _all_groups(consoles: list[str]) -> list[tuple[str, str]]:
     for e in lib.entries():
         if e.console not in consoles:
             continue
-        key = (e.console, _title_key(e.name))
+        key = (e.console, title_key(e.name))
         if key in seen:
             continue
         seen.add(key)
