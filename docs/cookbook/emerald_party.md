@@ -1,12 +1,12 @@
 # Cookbook: Pokémon Emerald party plugin
 
-Walk-through of how `gbax.plugins.emerald_party` was built. This is
+Walk-through of how `retrokix.plugins.emerald_party` was built. This is
 the canonical example of decoding game-specific structured state and
 exposing it as plugin HTTP routes. Useful as a template for similar
 plugins targeting other GBA games.
 
 The full source lives at
-[`src/gbax/plugins/emerald_party.py`](https://github.com/apiad/gbax/blob/main/src/gbax/plugins/emerald_party.py).
+[`src/retrokix/plugins/emerald_party.py`](https://github.com/apiad/retrokix/blob/main/src/retrokix/plugins/emerald_party.py).
 
 ## The problem
 
@@ -32,13 +32,13 @@ offsets within the 100-byte slot and don't need decryption.
 
 ## Finding slot 0
 
-gbax's state tracker won't find encrypted data directly — the byte
+retrokix's state tracker won't find encrypted data directly — the byte
 values don't match labels. But it will find adjacent unencrypted
 fields. The path used to bootstrap this plugin:
 
 1. Captured state with `Ctrl+F` at varied HP and level values across
    8-10 in-game moments.
-2. Ran `gbax state compile emerald` and saw two candidate addresses
+2. Ran `retrokix state compile emerald` and saw two candidate addresses
    for `level`: one display buffer at `0x020240AE` (only valid when
    the POKEMON menu is open) and one canonical address at
    `0x02024540`.
@@ -50,7 +50,7 @@ fields. The path used to bootstrap this plugin:
 The full path-of-discovery is documented in the state-tracker docs
 under "Known blind spots: Display buffers vs canonical addresses."
 
-## The slot layout (subset gbax cares about)
+## The slot layout (subset retrokix cares about)
 
 | Offset | Field | Width |
 |---|---|---|
@@ -118,8 +118,8 @@ def parse_growth(growth: bytes) -> dict:
 ## Putting it together in a plugin
 
 ```python
-import gbax
-p = gbax.plugin()
+import retrokix
+p = retrokix.plugin()
 
 PARTY_BASE = 0x020244EC
 SLOT_SIZE = 100
@@ -172,7 +172,7 @@ same.
 ## Running it
 
 ```bash
-gbax play emerald --listen --plugin gbax.plugins.emerald_party
+retrokix play emerald --listen --plugin retrokix.plugins.emerald_party
 ```
 
 Then from any terminal:

@@ -19,7 +19,7 @@ from pathlib import Path
 
 import pytest
 
-from gbax.couch import Broker, Client, Event
+from retrokix.couch import Broker, Client, Event
 
 
 @pytest.fixture

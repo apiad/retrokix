@@ -1,7 +1,7 @@
-"""Tests for the _default_core_path() precedence in gbax.runtime."""
+"""Tests for the _default_core_path() precedence in retrokix.runtime."""
 from __future__ import annotations
 
-from gbax.runtime import _default_core_path
+from retrokix.runtime import _default_core_path
 
 
 def test_env_var_wins_over_bundled(monkeypatch, tmp_path):
@@ -10,8 +10,8 @@ def test_env_var_wins_over_bundled(monkeypatch, tmp_path):
     bundled = tmp_path / "bundled-core.so"
     bundled.write_bytes(b"\x7fELF")
 
-    monkeypatch.setenv("GBAX_CORE_PATH", str(env_path))
-    monkeypatch.setattr("gbax.cores.bundled_core_path", lambda *_: bundled)
+    monkeypatch.setenv("RETROKIX_CORE_PATH", str(env_path))
+    monkeypatch.setattr("retrokix.cores.bundled_core_path", lambda *_: bundled)
 
     assert _default_core_path() == env_path
 
@@ -20,15 +20,15 @@ def test_bundled_wins_over_dev_fixture_when_no_env(monkeypatch, tmp_path):
     bundled = tmp_path / "bundled-core.so"
     bundled.write_bytes(b"\x7fELF")
 
-    monkeypatch.delenv("GBAX_CORE_PATH", raising=False)
-    monkeypatch.setattr("gbax.cores.bundled_core_path", lambda *_: bundled)
+    monkeypatch.delenv("RETROKIX_CORE_PATH", raising=False)
+    monkeypatch.setattr("retrokix.cores.bundled_core_path", lambda *_: bundled)
 
     assert _default_core_path() == bundled
 
 
 def test_dev_fixture_is_last_resort(monkeypatch):
-    monkeypatch.delenv("GBAX_CORE_PATH", raising=False)
-    monkeypatch.setattr("gbax.cores.bundled_core_path", lambda *_: None)
+    monkeypatch.delenv("RETROKIX_CORE_PATH", raising=False)
+    monkeypatch.setattr("retrokix.cores.bundled_core_path", lambda *_: None)
 
     result = _default_core_path()
     # Returns the dev fixture path even if the file doesn't exist —

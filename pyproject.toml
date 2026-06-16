@@ -1,5 +1,5 @@
 [project]
-name = "gbax"
+name = "retrokix"
 version = "0.18.0"
 description = "Hacker-first, scriptable GBA emulator with HTTP API"
 readme = "README.md"
@@ -32,18 +32,18 @@ dependencies = [
   "pillow>=10",
   "pysdl2>=0.9.16",
   "pysdl2-dll>=2.30",
-  "cffi>=1.17",  # used by gbax.libretro to bind the libretro ABI
+  "cffi>=1.17",  # used by retrokix.libretro to bind the libretro ABI
   "imagehash>=4.3",  # pHash/dHash for scene-detection fallback
-  "textual>=0.80",  # interactive ROM browser (gbax browse)
+  "textual>=0.80",  # interactive ROM browser (retrokix browse)
 ]
 
 [project.urls]
-Homepage = "https://github.com/apiad/gbax"
-Source = "https://github.com/apiad/gbax"
-Issues = "https://github.com/apiad/gbax/issues"
+Homepage = "https://github.com/apiad/retrokix"
+Source = "https://github.com/apiad/retrokix"
+Issues = "https://github.com/apiad/retrokix/issues"
 
 [project.scripts]
-gbax = "gbax.cli:app"
+retrokix = "retrokix.cli:app"
 
 [project.optional-dependencies]
 dev = [
@@ -64,69 +64,69 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/gbax"]
+packages = ["src/retrokix"]
 
 [tool.hatch.build.targets.wheel.force-include]
-"src/gbax/data/no_intro_gba.json" = "gbax/data/no_intro_gba.json"
-"src/gbax/data/libretro_cheats_gba.json" = "gbax/data/libretro_cheats_gba.json"
-"src/gbax/data/no_intro_nes.json" = "gbax/data/no_intro_nes.json"
-"src/gbax/data/libretro_cheats_nes.json" = "gbax/data/libretro_cheats_nes.json"
-"src/gbax/data/wikipedia_fame.json" = "gbax/data/wikipedia_fame.json"
-"src/gbax/data/emerald_species.json" = "gbax/data/emerald_species.json"
-"src/gbax/data/emerald_growth_rates.json" = "gbax/data/emerald_growth_rates.json"
-"src/gbax/data/emerald_species_info.json" = "gbax/data/emerald_species_info.json"
-"src/gbax/data/emerald_evolutions.json" = "gbax/data/emerald_evolutions.json"
-"src/gbax/data/emerald_levelup.json" = "gbax/data/emerald_levelup.json"
-"src/gbax/data/emerald_moves.json" = "gbax/data/emerald_moves.json"
-"src/gbax/data/emerald_type_chart.json" = "gbax/data/emerald_type_chart.json"
-"src/gbax/data/emerald_items.json" = "gbax/data/emerald_items.json"
-"src/gbax/data/emerald_abilities.json" = "gbax/data/emerald_abilities.json"
-"src/gbax/data/emerald_natures.json" = "gbax/data/emerald_natures.json"
-"src/gbax/data/emerald_mapsec.json" = "gbax/data/emerald_mapsec.json"
-"src/gbax/data/emerald_types.json" = "gbax/data/emerald_types.json"
-"src/gbax/data/bots/__init__.py" = "gbax/data/bots/__init__.py"
-"src/gbax/data/bots/press_a.py" = "gbax/data/bots/press_a.py"
-"src/gbax/data/bots/random.py" = "gbax/data/bots/random.py"
-"src/gbax/data/scenarios/__init__.py" = "gbax/data/scenarios/__init__.py"
-"src/gbax/data/scenarios/mk_arcade_easy.py" = "gbax/data/scenarios/mk_arcade_easy.py"
-"src/gbax/data/scenarios/smb3_world_1_1.py" = "gbax/data/scenarios/smb3_world_1_1.py"
-"src/gbax/cores/__init__.py" = "gbax/cores/__init__.py"
-"src/gbax/cores/mgba_libretro.so" = "gbax/cores/mgba_libretro.so"
-"src/gbax/cores/LICENSE.mGBA" = "gbax/cores/LICENSE.mGBA"
-"src/gbax/cores/fceumm_libretro.so" = "gbax/cores/fceumm_libretro.so"
-"src/gbax/cores/LICENSE.FCEUmm" = "gbax/cores/LICENSE.FCEUmm"
-"src/gbax/render/shaders/__init__.py" = "gbax/render/shaders/__init__.py"
-"src/gbax/render/shaders/_vertex.wgsl" = "gbax/render/shaders/_vertex.wgsl"
-"src/gbax/render/shaders/nearest.wgsl" = "gbax/render/shaders/nearest.wgsl"
-"src/gbax/render/shaders/linear.wgsl" = "gbax/render/shaders/linear.wgsl"
-"src/gbax/render/shaders/crt_lottes.wgsl" = "gbax/render/shaders/crt_lottes.wgsl"
-"src/gbax/plugins/__init__.py" = "gbax/plugins/__init__.py"
-"src/gbax/plugins/pokemon/__init__.py" = "gbax/plugins/pokemon/__init__.py"
-"src/gbax/plugins/pokemon/emerald.py" = "gbax/plugins/pokemon/emerald.py"
-"src/gbax/plugins/pokemon/emerald_driver.py" = "gbax/plugins/pokemon/emerald_driver.py"
-"src/gbax/plugins/pokemon/shared/__init__.py" = "gbax/plugins/pokemon/shared/__init__.py"
-"src/gbax/plugins/pokemon/shared/addresses.py" = "gbax/plugins/pokemon/shared/addresses.py"
-"src/gbax/plugins/pokemon/shared/bag.py" = "gbax/plugins/pokemon/shared/bag.py"
-"src/gbax/plugins/pokemon/shared/battle.py" = "gbax/plugins/pokemon/shared/battle.py"
-"src/gbax/plugins/pokemon/shared/data.py" = "gbax/plugins/pokemon/shared/data.py"
-"src/gbax/plugins/pokemon/shared/encounters.py" = "gbax/plugins/pokemon/shared/encounters.py"
-"src/gbax/plugins/pokemon/shared/formulas.py" = "gbax/plugins/pokemon/shared/formulas.py"
-"src/gbax/plugins/pokemon/shared/hints.py" = "gbax/plugins/pokemon/shared/hints.py"
-"src/gbax/plugins/pokemon/shared/matchup.py" = "gbax/plugins/pokemon/shared/matchup.py"
-"src/gbax/plugins/pokemon/shared/party.py" = "gbax/plugins/pokemon/shared/party.py"
-"src/gbax/plugins/pokemon/shared/pokedex.py" = "gbax/plugins/pokemon/shared/pokedex.py"
-"src/gbax/plugins/pokemon/shared/scene.py" = "gbax/plugins/pokemon/shared/scene.py"
-"src/gbax/plugins/pokemon/shared/world.py" = "gbax/plugins/pokemon/shared/world.py"
+"src/retrokix/data/no_intro_gba.json" = "retrokix/data/no_intro_gba.json"
+"src/retrokix/data/libretro_cheats_gba.json" = "retrokix/data/libretro_cheats_gba.json"
+"src/retrokix/data/no_intro_nes.json" = "retrokix/data/no_intro_nes.json"
+"src/retrokix/data/libretro_cheats_nes.json" = "retrokix/data/libretro_cheats_nes.json"
+"src/retrokix/data/wikipedia_fame.json" = "retrokix/data/wikipedia_fame.json"
+"src/retrokix/data/emerald_species.json" = "retrokix/data/emerald_species.json"
+"src/retrokix/data/emerald_growth_rates.json" = "retrokix/data/emerald_growth_rates.json"
+"src/retrokix/data/emerald_species_info.json" = "retrokix/data/emerald_species_info.json"
+"src/retrokix/data/emerald_evolutions.json" = "retrokix/data/emerald_evolutions.json"
+"src/retrokix/data/emerald_levelup.json" = "retrokix/data/emerald_levelup.json"
+"src/retrokix/data/emerald_moves.json" = "retrokix/data/emerald_moves.json"
+"src/retrokix/data/emerald_type_chart.json" = "retrokix/data/emerald_type_chart.json"
+"src/retrokix/data/emerald_items.json" = "retrokix/data/emerald_items.json"
+"src/retrokix/data/emerald_abilities.json" = "retrokix/data/emerald_abilities.json"
+"src/retrokix/data/emerald_natures.json" = "retrokix/data/emerald_natures.json"
+"src/retrokix/data/emerald_mapsec.json" = "retrokix/data/emerald_mapsec.json"
+"src/retrokix/data/emerald_types.json" = "retrokix/data/emerald_types.json"
+"src/retrokix/data/bots/__init__.py" = "retrokix/data/bots/__init__.py"
+"src/retrokix/data/bots/press_a.py" = "retrokix/data/bots/press_a.py"
+"src/retrokix/data/bots/random.py" = "retrokix/data/bots/random.py"
+"src/retrokix/data/scenarios/__init__.py" = "retrokix/data/scenarios/__init__.py"
+"src/retrokix/data/scenarios/mk_arcade_easy.py" = "retrokix/data/scenarios/mk_arcade_easy.py"
+"src/retrokix/data/scenarios/smb3_world_1_1.py" = "retrokix/data/scenarios/smb3_world_1_1.py"
+"src/retrokix/cores/__init__.py" = "retrokix/cores/__init__.py"
+"src/retrokix/cores/mgba_libretro.so" = "retrokix/cores/mgba_libretro.so"
+"src/retrokix/cores/LICENSE.mGBA" = "retrokix/cores/LICENSE.mGBA"
+"src/retrokix/cores/fceumm_libretro.so" = "retrokix/cores/fceumm_libretro.so"
+"src/retrokix/cores/LICENSE.FCEUmm" = "retrokix/cores/LICENSE.FCEUmm"
+"src/retrokix/render/shaders/__init__.py" = "retrokix/render/shaders/__init__.py"
+"src/retrokix/render/shaders/_vertex.wgsl" = "retrokix/render/shaders/_vertex.wgsl"
+"src/retrokix/render/shaders/nearest.wgsl" = "retrokix/render/shaders/nearest.wgsl"
+"src/retrokix/render/shaders/linear.wgsl" = "retrokix/render/shaders/linear.wgsl"
+"src/retrokix/render/shaders/crt_lottes.wgsl" = "retrokix/render/shaders/crt_lottes.wgsl"
+"src/retrokix/plugins/__init__.py" = "retrokix/plugins/__init__.py"
+"src/retrokix/plugins/pokemon/__init__.py" = "retrokix/plugins/pokemon/__init__.py"
+"src/retrokix/plugins/pokemon/emerald.py" = "retrokix/plugins/pokemon/emerald.py"
+"src/retrokix/plugins/pokemon/emerald_driver.py" = "retrokix/plugins/pokemon/emerald_driver.py"
+"src/retrokix/plugins/pokemon/shared/__init__.py" = "retrokix/plugins/pokemon/shared/__init__.py"
+"src/retrokix/plugins/pokemon/shared/addresses.py" = "retrokix/plugins/pokemon/shared/addresses.py"
+"src/retrokix/plugins/pokemon/shared/bag.py" = "retrokix/plugins/pokemon/shared/bag.py"
+"src/retrokix/plugins/pokemon/shared/battle.py" = "retrokix/plugins/pokemon/shared/battle.py"
+"src/retrokix/plugins/pokemon/shared/data.py" = "retrokix/plugins/pokemon/shared/data.py"
+"src/retrokix/plugins/pokemon/shared/encounters.py" = "retrokix/plugins/pokemon/shared/encounters.py"
+"src/retrokix/plugins/pokemon/shared/formulas.py" = "retrokix/plugins/pokemon/shared/formulas.py"
+"src/retrokix/plugins/pokemon/shared/hints.py" = "retrokix/plugins/pokemon/shared/hints.py"
+"src/retrokix/plugins/pokemon/shared/matchup.py" = "retrokix/plugins/pokemon/shared/matchup.py"
+"src/retrokix/plugins/pokemon/shared/party.py" = "retrokix/plugins/pokemon/shared/party.py"
+"src/retrokix/plugins/pokemon/shared/pokedex.py" = "retrokix/plugins/pokemon/shared/pokedex.py"
+"src/retrokix/plugins/pokemon/shared/scene.py" = "retrokix/plugins/pokemon/shared/scene.py"
+"src/retrokix/plugins/pokemon/shared/world.py" = "retrokix/plugins/pokemon/shared/world.py"
 
 [tool.hatch.build.targets.sdist]
 # Keep build artifacts out of the source tarball — only the platform
 # wheel ships the binary core. The sdist is the fallback for any
 # non-Linux-x86_64 install; runtime errors clearly when invoked.
 exclude = [
-  "src/gbax/cores/mgba_libretro.so",
-  "src/gbax/cores/LICENSE.mGBA",
-  "src/gbax/cores/fceumm_libretro.so",
-  "src/gbax/cores/LICENSE.FCEUmm",
+  "src/retrokix/cores/mgba_libretro.so",
+  "src/retrokix/cores/LICENSE.mGBA",
+  "src/retrokix/cores/fceumm_libretro.so",
+  "src/retrokix/cores/LICENSE.FCEUmm",
 ]
 
 [tool.hatch.build.hooks.custom]

@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from gbax.driver import MatchOutcome, StepDriver
+from retrokix.driver import MatchOutcome, StepDriver
 
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -15,7 +15,7 @@ FIXTURES = Path(__file__).parent / "fixtures"
 
 @pytest.fixture
 def minimal_scenario_cls():
-    from gbax.scenario import load_scenario_file
+    from retrokix.scenario import load_scenario_file
     return load_scenario_file(FIXTURES / "minimal_scenario.py", "MinimalScenario")
 
 
@@ -39,7 +39,7 @@ def test_step_driver_respects_max_frames(test_rom, mgba_core, tmp_path):
 
     sc_path = tmp_path / "never_done.py"
     sc_path.write_text("""\
-from gbax.scenario import Scenario
+from retrokix.scenario import Scenario
 class NeverDone(Scenario):
     name = "never-done"
     rom_sha1 = "b6a631b57969143ddcb7b85553e1e1ea4448a631"
@@ -50,7 +50,7 @@ class NeverDone(Scenario):
     def score(self, ctl, frame): return {"score": float(frame), "frame": frame}
     def done(self, ctl, frame): return False
 """)
-    from gbax.scenario import load_scenario_file
+    from retrokix.scenario import load_scenario_file
     cls = load_scenario_file(sc_path, "NeverDone")
 
     driver = StepDriver(rom_path=test_rom, scenario_cls=cls, core_path=mgba_core)

@@ -1,13 +1,13 @@
-"""Tests for the gbax macros / macro CLI subcommands."""
+"""Tests for the retrokix macros / macro CLI subcommands."""
 from __future__ import annotations
 
 from datetime import datetime, timezone
 
 from typer.testing import CliRunner
 
-from gbax.cli import app
-from gbax.input import Button
-from gbax.macros import Macro, save
+from retrokix.cli import app
+from retrokix.input import Button
+from retrokix.macros import Macro, save
 
 
 SHA1 = "f3ae088181bf583e55daf962a92bb46f4f1d07b7"
@@ -37,8 +37,8 @@ def _seed(tmp_path):
 
 def test_macros_list(monkeypatch, tmp_path):
     _seed(tmp_path)
-    monkeypatch.setattr("gbax.macros.DEFAULT_MACROS_ROOT", tmp_path)
-    monkeypatch.setattr("gbax.cli._resolve_rom_sha1", lambda rom: (tmp_path / "rom.gba", SHA1))
+    monkeypatch.setattr("retrokix.macros.DEFAULT_MACROS_ROOT", tmp_path)
+    monkeypatch.setattr("retrokix.cli._resolve_rom_sha1", lambda rom: (tmp_path / "rom.gba", SHA1))
     result = runner.invoke(app, ["macros", "anything"])
     assert result.exit_code == 0
     assert "F3" in result.stdout and "heal-pc" in result.stdout and "123" in result.stdout
@@ -47,8 +47,8 @@ def test_macros_list(monkeypatch, tmp_path):
 
 def test_macro_delete(monkeypatch, tmp_path):
     _seed(tmp_path)
-    monkeypatch.setattr("gbax.macros.DEFAULT_MACROS_ROOT", tmp_path)
-    monkeypatch.setattr("gbax.cli._resolve_rom_sha1", lambda rom: (tmp_path / "rom.gba", SHA1))
+    monkeypatch.setattr("retrokix.macros.DEFAULT_MACROS_ROOT", tmp_path)
+    monkeypatch.setattr("retrokix.cli._resolve_rom_sha1", lambda rom: (tmp_path / "rom.gba", SHA1))
     result = runner.invoke(app, ["macro", "delete", "anything", "F3"])
     assert result.exit_code == 0
     assert "deleted F3" in result.stdout
@@ -58,8 +58,8 @@ def test_macro_delete(monkeypatch, tmp_path):
 
 
 def test_macro_delete_missing(monkeypatch, tmp_path):
-    monkeypatch.setattr("gbax.macros.DEFAULT_MACROS_ROOT", tmp_path)
-    monkeypatch.setattr("gbax.cli._resolve_rom_sha1", lambda rom: (tmp_path / "rom.gba", SHA1))
+    monkeypatch.setattr("retrokix.macros.DEFAULT_MACROS_ROOT", tmp_path)
+    monkeypatch.setattr("retrokix.cli._resolve_rom_sha1", lambda rom: (tmp_path / "rom.gba", SHA1))
     result = runner.invoke(app, ["macro", "delete", "anything", "F3"])
     assert result.exit_code == 1
     assert "no macro" in (result.stdout + result.stderr).lower()

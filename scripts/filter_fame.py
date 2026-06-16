@@ -26,9 +26,9 @@ import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-FAME_JSON = ROOT / "src" / "gbax" / "data" / "wikipedia_fame.json"
+FAME_JSON = ROOT / "src" / "retrokix" / "data" / "wikipedia_fame.json"
 
-UA = "gbax-fame-filter/0.1 (+https://github.com/apiad/gbax)"
+UA = "retrokix-fame-filter/0.1 (+https://github.com/apiad/retrokix)"
 SLEEP = 0.2
 TIMEOUT = 15
 RETRIES = 3

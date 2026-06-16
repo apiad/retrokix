@@ -5,9 +5,9 @@ from datetime import datetime, timezone
 
 import pytest
 
-from gbax.input import Button
-from gbax.macros import Macro
-from gbax.runtime import EmulatorRuntime, Mode
+from retrokix.input import Button
+from retrokix.macros import Macro
+from retrokix.runtime import EmulatorRuntime, Mode
 
 
 def _make_runtime(test_rom, mgba_core, tmp_path):

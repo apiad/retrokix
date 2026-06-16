@@ -27,12 +27,12 @@ jobs:
           # CI tests historically read tests/cores/mgba_libretro.so via the
           # `mgba_core` conftest fixture; mirror the bundled artifact there
           # so existing tests keep finding it.
-          cp src/gbax/cores/mgba_libretro.so tests/cores/mgba_libretro.so
+          cp src/retrokix/cores/mgba_libretro.so tests/cores/mgba_libretro.so
 
       - name: Build fceumm_libretro.so
         run: bin/build-fceumm-core
 
-      - name: Install gbax + dev deps
+      - name: Install retrokix + dev deps
         run: pip install -e ".[dev]"
 
       - name: Lint

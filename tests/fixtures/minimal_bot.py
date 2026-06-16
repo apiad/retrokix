@@ -1,6 +1,6 @@
 """Trivial bot used by tests: always returns ['a']."""
 
-from gbax.player import run
+from retrokix.player import run
 
 
 def act(_obs):

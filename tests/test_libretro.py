@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from gbax.libretro import (
+from retrokix.libretro import (
     BUTTON_IDS,
     GBA_HEIGHT,
     GBA_WIDTH,

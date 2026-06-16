@@ -1,10 +1,10 @@
-"""Tests for gbax.state.capture — sparse memory snapshot + persistence."""
+"""Tests for retrokix.state.capture — sparse memory snapshot + persistence."""
 from __future__ import annotations
 
 import json
 from datetime import datetime, timezone
 
-from gbax.state.capture import (
+from retrokix.state.capture import (
     EWRAM_BASE,
     EWRAM_SIZE,
     IWRAM_BASE,

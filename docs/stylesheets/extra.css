@@ -1,5 +1,5 @@
 /*
- * gbax — site-wide theme.
+ * retrokix — site-wide theme.
  *
  * Applied to every page including the custom landing page.
  * Palette: deep slate-indigo with a GBA-purple primary and Emerald-green
@@ -43,9 +43,9 @@
 }
 
 /* ============================================================
- * Material palette: 'gbax' (custom scheme — see mkdocs.yml).
+ * Material palette: 'retrokix' (custom scheme — see mkdocs.yml).
  * ============================================================ */
-[data-md-color-scheme="gbax"] {
+[data-md-color-scheme="retrokix"] {
   --md-default-bg-color:        #0b0a14;
   --md-default-bg-color--light:  #11101f;
   --md-default-bg-color--lighter: #1a1830;
@@ -82,7 +82,7 @@
 }
 
 /* Header keeps the page background; no light strip up top. */
-[data-md-color-scheme="gbax"] .md-header {
+[data-md-color-scheme="retrokix"] .md-header {
   background: rgba(11, 10, 20, 0.78);
   backdrop-filter: saturate(140%) blur(10px);
   -webkit-backdrop-filter: saturate(140%) blur(10px);
@@ -90,61 +90,61 @@
   box-shadow: none;
 }
 
-[data-md-color-scheme="gbax"] .md-tabs {
+[data-md-color-scheme="retrokix"] .md-tabs {
   background: transparent;
   border-bottom: 1px solid var(--gx-border-soft);
 }
-[data-md-color-scheme="gbax"] .md-tabs__link {
+[data-md-color-scheme="retrokix"] .md-tabs__link {
   color: var(--gx-text-dim);
   opacity: 1;
 }
-[data-md-color-scheme="gbax"] .md-tabs__link:hover,
-[data-md-color-scheme="gbax"] .md-tabs__link--active {
+[data-md-color-scheme="retrokix"] .md-tabs__link:hover,
+[data-md-color-scheme="retrokix"] .md-tabs__link--active {
   color: var(--gx-text);
 }
 
 /* Typography on docs pages */
-[data-md-color-scheme="gbax"] body,
-[data-md-color-scheme="gbax"] .md-typeset {
+[data-md-color-scheme="retrokix"] body,
+[data-md-color-scheme="retrokix"] .md-typeset {
   font-feature-settings: "cv11", "ss01", "ss03";
 }
-[data-md-color-scheme="gbax"] .md-typeset h1,
-[data-md-color-scheme="gbax"] .md-typeset h2,
-[data-md-color-scheme="gbax"] .md-typeset h3,
-[data-md-color-scheme="gbax"] .md-typeset h4 {
+[data-md-color-scheme="retrokix"] .md-typeset h1,
+[data-md-color-scheme="retrokix"] .md-typeset h2,
+[data-md-color-scheme="retrokix"] .md-typeset h3,
+[data-md-color-scheme="retrokix"] .md-typeset h4 {
   font-family: var(--gx-display);
   letter-spacing: -0.01em;
   font-weight: 600;
 }
-[data-md-color-scheme="gbax"] .md-typeset h1 {
+[data-md-color-scheme="retrokix"] .md-typeset h1 {
   color: var(--gx-text);
   font-weight: 700;
   letter-spacing: -0.02em;
 }
-[data-md-color-scheme="gbax"] .md-typeset h2 {
+[data-md-color-scheme="retrokix"] .md-typeset h2 {
   border-bottom: 1px solid var(--gx-border-soft);
   padding-bottom: 0.35rem;
   margin-top: 2.5rem;
 }
 
 /* Code blocks: warm indigo, subtle inner border */
-[data-md-color-scheme="gbax"] .md-typeset code,
-[data-md-color-scheme="gbax"] .md-typeset pre {
+[data-md-color-scheme="retrokix"] .md-typeset code,
+[data-md-color-scheme="retrokix"] .md-typeset pre {
   font-family: var(--gx-mono);
 }
-[data-md-color-scheme="gbax"] .md-typeset code {
+[data-md-color-scheme="retrokix"] .md-typeset code {
   background: rgba(167, 139, 250, 0.08);
   border: 1px solid rgba(167, 139, 250, 0.18);
   border-radius: 5px;
   padding: 0.08em 0.36em;
   font-size: 0.86em;
 }
-[data-md-color-scheme="gbax"] .md-typeset pre > code {
+[data-md-color-scheme="retrokix"] .md-typeset pre > code {
   background: transparent;
   border: 0;
   padding: 0;
 }
-[data-md-color-scheme="gbax"] .md-typeset pre {
+[data-md-color-scheme="retrokix"] .md-typeset pre {
   background: #0a0816;
   border: 1px solid var(--gx-border-soft);
   border-radius: var(--gx-radius);
@@ -156,56 +156,56 @@
  * <div class="highlight"><pre><code>…</code></pre></div>. The pre
  * inside .highlight has its own default padding we'd double up on
  * — strip it back to a single inset. */
-[data-md-color-scheme="gbax"] .md-typeset .highlight pre {
+[data-md-color-scheme="retrokix"] .md-typeset .highlight pre {
   padding: 0.85rem 1.05rem;
 }
-[data-md-color-scheme="gbax"] .md-typeset .highlighttable .linenos {
+[data-md-color-scheme="retrokix"] .md-typeset .highlighttable .linenos {
   padding-right: 0.6rem;
 }
 
 /* Links */
-[data-md-color-scheme="gbax"] .md-typeset a {
+[data-md-color-scheme="retrokix"] .md-typeset a {
   text-decoration-color: rgba(167, 139, 250, 0.4);
   text-underline-offset: 3px;
   transition: color .15s ease, text-decoration-color .15s ease;
 }
-[data-md-color-scheme="gbax"] .md-typeset a:hover {
+[data-md-color-scheme="retrokix"] .md-typeset a:hover {
   color: var(--gx-accent-hot);
   text-decoration-color: var(--gx-accent-hot);
 }
 
 /* Search box */
-[data-md-color-scheme="gbax"] .md-search__input {
+[data-md-color-scheme="retrokix"] .md-search__input {
   background: var(--gx-bg-2);
   color: var(--gx-text);
   border: 1px solid var(--gx-border-soft);
 }
-[data-md-color-scheme="gbax"] .md-search__input::placeholder {
+[data-md-color-scheme="retrokix"] .md-search__input::placeholder {
   color: var(--gx-text-soft);
 }
 
 /* Sidebar */
-[data-md-color-scheme="gbax"] .md-sidebar__scrollwrap {
+[data-md-color-scheme="retrokix"] .md-sidebar__scrollwrap {
   scrollbar-color: var(--gx-border) transparent;
 }
-[data-md-color-scheme="gbax"] .md-nav__title {
+[data-md-color-scheme="retrokix"] .md-nav__title {
   color: var(--gx-text-dim);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   font-size: 0.72rem;
   font-weight: 600;
 }
-[data-md-color-scheme="gbax"] .md-nav__link {
+[data-md-color-scheme="retrokix"] .md-nav__link {
   color: var(--gx-text-dim);
 }
-[data-md-color-scheme="gbax"] .md-nav__link:hover,
-[data-md-color-scheme="gbax"] .md-nav__link--active {
+[data-md-color-scheme="retrokix"] .md-nav__link:hover,
+[data-md-color-scheme="retrokix"] .md-nav__link--active {
   color: var(--gx-text);
 }
 
 /* Admonitions: keep the dark vibe */
-[data-md-color-scheme="gbax"] .md-typeset .admonition,
-[data-md-color-scheme="gbax"] .md-typeset details {
+[data-md-color-scheme="retrokix"] .md-typeset .admonition,
+[data-md-color-scheme="retrokix"] .md-typeset details {
   background: var(--gx-bg-1);
   border-left-color: var(--gx-accent);
   border-radius: var(--gx-radius);
@@ -213,25 +213,25 @@
 }
 
 /* Tables */
-[data-md-color-scheme="gbax"] .md-typeset table:not([class]) {
+[data-md-color-scheme="retrokix"] .md-typeset table:not([class]) {
   background: var(--gx-bg-1);
   border: 1px solid var(--gx-border-soft);
   border-radius: var(--gx-radius);
   overflow: hidden;
 }
-[data-md-color-scheme="gbax"] .md-typeset table:not([class]) th {
+[data-md-color-scheme="retrokix"] .md-typeset table:not([class]) th {
   background: var(--gx-bg-2);
   color: var(--gx-text);
   border-bottom: 1px solid var(--gx-border-soft);
 }
-[data-md-color-scheme="gbax"] .md-typeset table:not([class]) tr:hover {
+[data-md-color-scheme="retrokix"] .md-typeset table:not([class]) tr:hover {
   background: rgba(167, 139, 250, 0.04);
 }
 
 /* Footer */
-[data-md-color-scheme="gbax"] .md-footer {
+[data-md-color-scheme="retrokix"] .md-footer {
   border-top: 1px solid var(--gx-border-soft);
 }
-[data-md-color-scheme="gbax"] .md-copyright {
+[data-md-color-scheme="retrokix"] .md-copyright {
   color: var(--gx-text-soft);
 }

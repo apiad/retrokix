@@ -9,8 +9,8 @@ import pytest
 from fastapi.testclient import TestClient
 from PIL import Image
 
-from gbax.api.server import create_app
-from gbax.runtime import EmulatorRuntime, Mode
+from retrokix.api.server import create_app
+from retrokix.runtime import EmulatorRuntime, Mode
 
 
 @pytest.fixture
@@ -141,7 +141,7 @@ def test_post_buttons_sets_held(client):
     r = c.post("/buttons", json={"buttons": ["a", "right"]})
     assert r.status_code == 200
     assert set(r.json()["buttons"]) == {"a", "right"}
-    from gbax.input import Button
+    from retrokix.input import Button
     assert rt.buttons_held() == {Button.A, Button.RIGHT}
 
 

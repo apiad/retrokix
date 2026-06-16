@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from gbax.couch import Broker, Client
+from retrokix.couch import Broker, Client
 
 
 async def _wait_for(predicate, *, timeout: float = 2.0, step: float = 0.01) -> None:

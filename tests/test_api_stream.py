@@ -10,7 +10,7 @@ import pytest
 from fastapi.testclient import TestClient
 from PIL import Image
 
-from gbax.api.server import create_app
+from retrokix.api.server import create_app
 
 
 class _StubRuntime:
@@ -108,7 +108,7 @@ def test_quality_param_is_clamped(client: TestClient) -> None:
 def test_ws_button_message_calls_set_buttons() -> None:
     """Client sends `{type:buttons, buttons:["A","UP"]}` and the runtime
     sees the corresponding Button set."""
-    from gbax.input import Button
+    from retrokix.input import Button
 
     rt = _StubRuntime()
     client = TestClient(create_app(rt))

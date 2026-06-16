@@ -1,14 +1,14 @@
-# Smoke-testing gbax
+# Smoke-testing retrokix
 
 Quick end-to-end verification after any non-trivial runtime or API change.
 Assumes `tests/fixtures/test.gba` and `tests/cores/mgba_libretro.so` are
 present.
 
-## `gbax serve` curl walk-through
+## `retrokix serve` curl walk-through
 
 ```bash
 source .venv/bin/activate
-gbax serve tests/fixtures/test.gba --port 18420 &
+retrokix serve tests/fixtures/test.gba --port 18420 &
 SERVE_PID=$!
 sleep 1
 
@@ -21,8 +21,8 @@ curl -s -X POST 'http://127.0.0.1:18420/step?frames=10'
 # {"frame_count": 10}
 
 # Get frame as PNG
-curl -s http://127.0.0.1:18420/frame -o /tmp/gbax-frame.png
-file /tmp/gbax-frame.png
+curl -s http://127.0.0.1:18420/frame -o /tmp/retrokix-frame.png
+file /tmp/retrokix-frame.png
 # PNG image data, 240 x 160, 8-bit/color RGB, non-interlaced
 
 # Press buttons
@@ -51,10 +51,10 @@ curl -s http://127.0.0.1:18420/frame_count
 kill $SERVE_PID
 ```
 
-## `gbax play` (manual)
+## `retrokix play` (manual)
 
 ```bash
-gbax play tests/fixtures/test.gba
+retrokix play tests/fixtures/test.gba
 ```
 
 - Window opens at 720×480 (240×160 × 3).
@@ -68,36 +68,36 @@ documented.
 
 ## Player + scenario + tournament smoke
 
-ROMs are not vendored; download once into `~/.gbax/roms/`.
+ROMs are not vendored; download once into `~/.retrokix/roms/`.
 
 ```bash
-gbax download "mortal kombat advance"
-gbax download "super mario advance 4"
+retrokix download "mortal kombat advance"
+retrokix download "super mario advance 4"
 ```
 
 Single-player train (random bot, no time budget):
 
 ```bash
-gbax train --rom "mortal kombat" \
+retrokix train --rom "mortal kombat" \
   --scenario mk-arcade-easy \
-  --player "python -m gbax.data.bots.random"
+  --player "python -m retrokix.data.bots.random"
 ```
 
 Expected: one `[scored]` or `[timeout]` line. A `score=0` across the entire
 run usually means the scenario's RAM addresses are wrong — fix the
-`src/gbax/data/scenarios/<name>.py` constants and re-run.
+`src/retrokix/data/scenarios/<name>.py` constants and re-run.
 
 Two-player tournament (60 fps, lag-forfeit enabled):
 
 ```bash
-gbax tournament --rom "mortal kombat" \
+retrokix tournament --rom "mortal kombat" \
   --scenario mk-arcade-easy \
-  --player "python -m gbax.data.bots.press_a" \
-  --player "python -m gbax.data.bots.random" \
+  --player "python -m retrokix.data.bots.press_a" \
+  --player "python -m retrokix.data.bots.random" \
   --output /tmp/mk-tournament/
 ```
 
 Expected: leaderboard table with two rows and `results.json` written. The
 match should complete in under 30s wall-clock per round at 60fps. If the
 leaderboard is blank or scores are flat, the scenario addresses are wrong
-— see `src/gbax/data/scenarios/`.
+— see `src/retrokix/data/scenarios/`.

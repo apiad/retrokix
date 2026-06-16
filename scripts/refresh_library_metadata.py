@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Regenerate src/gbax/data/no_intro_<console>.json from archive.org.
+"""Regenerate src/retrokix/data/no_intro_<console>.json from archive.org.
 
 Dev tool — run when the upstream archive.org snapshot moves to a new
 item, or when entries change. The bundled snapshots are what
-`gbax search`, `gbax browse`, and `gbax download` consult; this
+`retrokix search`, `retrokix browse`, and `retrokix download` consult; this
 script doesn't run at install or runtime.
 
 Usage:
@@ -38,7 +38,7 @@ CONSOLES: dict[str, dict[str, object]] = {
 def _data_path(console: str) -> Path:
     return (
         Path(__file__).resolve().parent.parent
-        / "src" / "gbax" / "data" / f"no_intro_{console}.json"
+        / "src" / "retrokix" / "data" / f"no_intro_{console}.json"
     )
 
 

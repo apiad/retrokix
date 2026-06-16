@@ -1,5 +1,5 @@
 /*
- * gbax — landing page (index.md → overrides/home.html).
+ * retrokix — landing page (index.md → overrides/home.html).
  *
  * Self-contained styles for the bespoke hero. Every selector is `gx-`
  * prefixed so it cannot collide with Material's defaults.
@@ -8,7 +8,7 @@
 /* ============================================================
  * Landing-page only resets.
  * ============================================================ */
-body[data-md-color-scheme="gbax"]:has(.gx-hero) .md-main {
+body[data-md-color-scheme="retrokix"]:has(.gx-hero) .md-main {
   background:
     radial-gradient(ellipse 80% 50% at 50% -10%, rgba(124, 58, 237, 0.18), transparent 60%),
     radial-gradient(ellipse 60% 40% at 90% 30%, rgba(52, 211, 153, 0.08), transparent 60%),
@@ -533,7 +533,7 @@ body:has(.gx-hero) .md-sidebar {
 }
 
 /* Inline alt-path block under the three-commands section — the
- * "or, just gbax browse" pitch. */
+ * "or, just retrokix browse" pitch. */
 .gx-alt {
   margin: 2.25rem auto 0;
   max-width: 680px;

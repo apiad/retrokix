@@ -8,8 +8,8 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from gbax.controller import Controller
-from gbax.input import Button
+from retrokix.controller import Controller
+from retrokix.input import Button
 
 
 @pytest.fixture

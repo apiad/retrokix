@@ -1,4 +1,4 @@
-"""Tests for the gbax state CLI subcommands."""
+"""Tests for the retrokix state CLI subcommands."""
 from __future__ import annotations
 
 import json
@@ -6,9 +6,9 @@ from datetime import datetime, timezone
 
 from typer.testing import CliRunner
 
-from gbax.cli import app
-from gbax.state.capture import save_capture
-from gbax.state.compile import compile_for_rom
+from retrokix.cli import app
+from retrokix.state.capture import save_capture
+from retrokix.state.compile import compile_for_rom
 
 
 SHA1 = "abc"
@@ -29,8 +29,8 @@ def _seed(tmp_path):
 
 
 def _patch(monkeypatch, tmp_path):
-    monkeypatch.setattr("gbax.state.storage.DEFAULT_STATE_ROOT", tmp_path)
-    monkeypatch.setattr("gbax.cli._resolve_rom_sha1", lambda rom: (tmp_path / "rom.gba", SHA1))
+    monkeypatch.setattr("retrokix.state.storage.DEFAULT_STATE_ROOT", tmp_path)
+    monkeypatch.setattr("retrokix.cli._resolve_rom_sha1", lambda rom: (tmp_path / "rom.gba", SHA1))
 
 
 def test_state_compile_writes_json(monkeypatch, tmp_path):

@@ -1,4 +1,4 @@
-"""Pytest fixtures shared across the gbax test suite."""
+"""Pytest fixtures shared across the retrokix test suite."""
 
 from __future__ import annotations
 

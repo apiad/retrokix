@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Build mgba_libretro.so and stage it for the gbax wheel.
+# Build mgba_libretro.so and stage it for the retrokix wheel.
 #
 # Used by:
 #   - Developers on a fresh checkout: `bin/build-core` produces the .so
-#     at src/gbax/cores/mgba_libretro.so (the bundled path).
+#     at src/retrokix/cores/mgba_libretro.so (the bundled path).
 #   - The CI release workflow (release.yml): runs inside the manylinux
 #     container before `python -m build`.
 #
@@ -13,7 +13,7 @@
 # This script does NOT touch tests/cores/mgba_libretro.so — that file is
 # tracked in git and only updated by deliberate commits when bumping
 # mGBA. To refresh it after a bump, run this script then:
-#   cp src/gbax/cores/mgba_libretro.so tests/cores/mgba_libretro.so
+#   cp src/retrokix/cores/mgba_libretro.so tests/cores/mgba_libretro.so
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -79,12 +79,12 @@ if [[ -n "$BAD" ]]; then
   exit 1
 fi
 
-mkdir -p "$REPO_ROOT/src/gbax/cores"
-cp "$SO" "$REPO_ROOT/src/gbax/cores/mgba_libretro.so"
-cp "$BUILD_DIR/mgba/LICENSE" "$REPO_ROOT/src/gbax/cores/LICENSE.mGBA"
+mkdir -p "$REPO_ROOT/src/retrokix/cores"
+cp "$SO" "$REPO_ROOT/src/retrokix/cores/mgba_libretro.so"
+cp "$BUILD_DIR/mgba/LICENSE" "$REPO_ROOT/src/retrokix/cores/LICENSE.mGBA"
 
 # Stamp MGBA_VERSION into the package __init__.
-INIT="$REPO_ROOT/src/gbax/cores/__init__.py"
+INIT="$REPO_ROOT/src/retrokix/cores/__init__.py"
 python3 - <<PY
 import re, pathlib
 p = pathlib.Path("$INIT")
@@ -93,4 +93,4 @@ new = re.sub(r'^MGBA_VERSION\s*=.*$', f'MGBA_VERSION = "$MGBA_VERSION"', text, c
 p.write_text(new)
 PY
 
-echo "OK: bundled core at src/gbax/cores/mgba_libretro.so (mGBA $MGBA_VERSION)"
+echo "OK: bundled core at src/retrokix/cores/mgba_libretro.so (mGBA $MGBA_VERSION)"

@@ -1,4 +1,4 @@
-"""Tests for `gbax tournament`."""
+"""Tests for `retrokix tournament`."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from pathlib import Path
 
 from typer.testing import CliRunner
 
-from gbax.cli import app
+from retrokix.cli import app
 
 
 runner = CliRunner()

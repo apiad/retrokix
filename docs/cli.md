@@ -1,16 +1,16 @@
 # CLI reference
 
-`gbax --help` lists every command. This page covers what each one does in
+`retrokix --help` lists every command. This page covers what each one does in
 practice.
 
-## `gbax search <query>`
+## `retrokix search <query>`
 
 Search the bundled No-Intro index for ROMs matching `<query>`. Fuzzy match —
 every whitespace-separated token must appear (case-insensitive) in the
 filename.
 
 ```
-$ gbax search "metroid"
+$ retrokix search "metroid"
     1. Metroid - Zero Mission (USA).zip  (4.0 MB)
     2. Metroid Fusion (USA, Australia).zip  (5.5 MB)
     …
@@ -20,26 +20,26 @@ Flags:
 - `--refresh` — force-fetch the latest metadata from archive.org instead of
   using the bundled snapshot. Rare; the snapshot is frozen.
 
-## `gbax download <query>`
+## `retrokix download <query>`
 
 Fuzzy-match against the index, pick the best result (preferring USA/World >
 Europe > the rest), download the ZIP, extract the inner `.gba`, save to
-`~/.gbax/roms/`.
+`~/.retrokix/roms/`.
 
 ```
-$ gbax download "pokemon emerald"
+$ retrokix download "pokemon emerald"
 match: Pokemon - Emerald Version (USA, Europe).zip
   size: 6.7 MB
   downloading… 100%  (6.7/6.7 MB)
-saved: /home/<you>/.gbax/roms/Pokemon - Emerald Version (USA, Europe).gba
+saved: /home/<you>/.retrokix/roms/Pokemon - Emerald Version (USA, Europe).gba
 ```
 
 Flags:
 - `--region USA|Europe|Japan|World` — override the auto-pick.
-- `--dest <dir>` — save somewhere other than `~/.gbax/roms/`.
+- `--dest <dir>` — save somewhere other than `~/.retrokix/roms/`.
 - `--refresh` — same as `search --refresh`.
 
-## `gbax browse [<query>]`
+## `retrokix browse [<query>]`
 
 Interactive ROM browser — search-as-you-type, ↑/↓ to navigate, Enter
 to download. Pure-TUI complement to `search` + `download`; those
@@ -50,7 +50,7 @@ you land on something recognizable instead of "007 — Everything or
 Nothing" alphabetical. Any keystroke replaces that with live fuzzy
 matches against the full 3,555-entry index (capped at the top 100).
 
-ROMs already in `~/.gbax/roms/` show a green `●` marker on the
+ROMs already in `~/.retrokix/roms/` show a green `●` marker on the
 left so you can tell at a glance what's downloaded. The marker
 updates immediately after a download finishes.
 
@@ -61,9 +61,9 @@ modal listing every variant (USA/World first, then Europe, then
 Japan/other) where Enter picks one and Esc backs out.
 
 ```
-$ gbax browse zelda
+$ retrokix browse zelda
 
-┌─ gbax browse ──────────────────────────────────────────┐
+┌─ retrokix browse ──────────────────────────────────────────┐
 │ search ROMs — type any tokens, e.g. 'zelda minish'     │
 │ > zelda                                                │
 ├────────────────────────────────────────────────────────┤
@@ -78,7 +78,7 @@ $ gbax browse zelda
 ```
 
 Keymap:
-- type — live filter (same fuzzy semantics as `gbax search`)
+- type — live filter (same fuzzy semantics as `retrokix search`)
 - `↑` / `↓` — navigate the result list
 - `PgUp` / `PgDn` — jump 10 rows
 - `Enter` — download the highlighted entry
@@ -87,30 +87,30 @@ Keymap:
 
 Flags:
 - `<query>` (positional, optional) — pre-fills the search input so
-  `gbax browse zelda` opens already filtered.
+  `retrokix browse zelda` opens already filtered.
 - `--refresh` — same as `search --refresh`.
 
-Use `gbax browse` when you don't remember the exact No-Intro name
+Use `retrokix browse` when you don't remember the exact No-Intro name
 or when several regional variants exist and you want to eyeball the
-list. For scripts and agents, prefer `gbax search` (machine-readable
-output) and `gbax download` (one-shot, no terminal).
+list. For scripts and agents, prefer `retrokix search` (machine-readable
+output) and `retrokix download` (one-shot, no terminal).
 
-## `gbax list-roms`
+## `retrokix list-roms`
 
-Show ROMs in `~/.gbax/roms/` with size and SHA-1 prefix.
+Show ROMs in `~/.retrokix/roms/` with size and SHA-1 prefix.
 
 ```
-$ gbax list-roms
+$ retrokix list-roms
   Pokemon - Emerald Version (USA, Europe).gba  (16.0 MB)  sha1:f3ae088181
 ```
 
-## `gbax play <rom>`
+## `retrokix play <rom>`
 
 Boot the ROM in a SDL window with keyboard input and audio.
 
 `<rom>` is either a path to a `.gba` file or a fuzzy query against the local
-library — `gbax play emerald` resolves to
-`~/.gbax/roms/Pokemon - Emerald Version (USA, Europe).gba`.
+library — `retrokix play emerald` resolves to
+`~/.retrokix/roms/Pokemon - Emerald Version (USA, Europe).gba`.
 
 ### Keymap
 
@@ -130,11 +130,11 @@ library — `gbax play emerald` resolves to
 | State capture | `Ctrl+F` — labeled state snapshot |
 | Filter cycle | `F10` — cycle upscale shader       |
 | Fullscreen   | `F11` — toggle borderless desktop  |
-| Screenshot   | `F12` — saves to `~/.gbax/screenshots/` |
+| Screenshot   | `F12` — saves to `~/.retrokix/screenshots/` |
 | Toggle cheat | `F1` … `F9` — toggle the Nth active cheat |
 | Save slot    | `Ctrl+1` … `Ctrl+9` — write to numbered slot |
 | Load slot    | `Shift+1` … `Shift+9` — load from numbered slot |
-| Running save | `Ctrl+S` — append a new timestamped save to this ROM's running stream (never overwrites). Lives in `~/.gbax/saves/<sha1>/running/`. |
+| Running save | `Ctrl+S` — append a new timestamped save to this ROM's running stream (never overwrites). Lives in `~/.retrokix/saves/<sha1>/running/`. |
 | Load latest  | `Ctrl+L` — load the newest running save for this ROM. |
 
 ### Gamepad
@@ -171,22 +171,22 @@ intentionally unbound — reserved for plugin hotkeys via the
 | `--listen-port` | `8420` | HTTP bind port (implies `--listen`) |
 | `--watch-state` | off | live Rich panel of tagged state values |
 | `--plugin PATH` | none | load a Python plugin (file path OR module name) |
-| `--renderer={sdl,wgpu}` | `sdl` | renderer backend (`wgpu` needs `gbax[gpu]`) |
+| `--renderer={sdl,wgpu}` | `sdl` | renderer backend (`wgpu` needs `retrokix[gpu]`) |
 | `--shader NAME` | `linear` | initial shader (linear/nearest/crt-lottes) |
 | `--user-shader PATH` | none | register a custom WGSL fragment shader |
 | `--cheats SLUGS` | none | comma-separated cheat slugs to enable at boot |
 | `--core PATH` | bundled | override the libretro core .so |
 | `--load PATH` | none | load this save state file at boot (after the ROM is mounted) |
 | `--no-sdl` | off | skip the SDL window — runs headless, auto-opens `/stream?mode=controller` |
-| `--couch-room CODE` | `default` | couch room code (`gbax couch room-code` to mint one) |
+| `--couch-room CODE` | `default` | couch room code (`retrokix couch room-code` to mint one) |
 
 
 Save state slots are written immediately to
-`~/.gbax/saves/<rom-sha1>/slot-N.state` and hydrate automatically on next
+`~/.retrokix/saves/<rom-sha1>/slot-N.state` and hydrate automatically on next
 boot of the same ROM.
 
 `Ctrl+S` saves to a separate **running stream** at
-`~/.gbax/saves/<rom-sha1>/running/running-<utc>.state` — each press
+`~/.retrokix/saves/<rom-sha1>/running/running-<utc>.state` — each press
 appends a new file, nothing is ever overwritten. `Ctrl+L` always
 reloads the newest one for the current ROM. Use `--load <path>` to
 boot from any specific state file (running save, slot, or hand-rolled).
@@ -194,35 +194,35 @@ boot from any specific state file (running save, slot, or hand-rolled).
 Flags:
 - `--scale N` — window upscale factor. Default 3 (720×480).
 - `--core <path>` — path to a libretro core `.so`. Default looks at
-  `GBAX_CORE_PATH` env, then `tests/cores/mgba_libretro.so` for in-repo use.
-- `--cheats slug1,slug2,…` — enable cheats at boot (slugs from `gbax cheats <rom>`).
+  `RETROKIX_CORE_PATH` env, then `tests/cores/mgba_libretro.so` for in-repo use.
+- `--cheats slug1,slug2,…` — enable cheats at boot (slugs from `retrokix cheats <rom>`).
 
-## `gbax cheats <rom>`
+## `retrokix cheats <rom>`
 
 List the catalogued cheats (libretro-database) for the given ROM, with their
 slugs (for use with `--cheats` and the API).
 
 ```
-$ gbax cheats emerald | head -3
+$ retrokix cheats emerald | head -3
   1-hit-kill                           1-Hit Kill
   max-money                            Max Money
   walk-through-walls-l-r               Walk Through Walls [Press L+R]
 ```
 
-## `gbax pin <rom> <key> <slug>` / `gbax unpin` / `gbax pins`
+## `retrokix pin <rom> <key> <slug>` / `retrokix unpin` / `retrokix pins`
 
 Bind a cheat to an F-key for a specific ROM. Persists to
-`~/.gbax/pins/<rom-sha1>.json` and applies in `gbax play` automatically on
+`~/.retrokix/pins/<rom-sha1>.json` and applies in `retrokix play` automatically on
 the next boot.
 
 ```
-$ gbax pin emerald F1 max-money
-pinned F1 → max-money  (/home/<you>/.gbax/pins/f3ae08...json)
+$ retrokix pin emerald F1 max-money
+pinned F1 → max-money  (/home/<you>/.retrokix/pins/f3ae08...json)
 
-$ gbax pins emerald
+$ retrokix pins emerald
   F1  →  max-money
 
-$ gbax unpin emerald F1
+$ retrokix unpin emerald F1
 unpinned F1
 ```
 
@@ -230,15 +230,15 @@ In `play`, pinned F-keys toggle the specific cheat (autoloading it from the
 catalog if needed). Unpinned F-keys fall back to "toggle the Nth currently
 active cheat" — handy if you just `--cheats foo,bar` without setting pins.
 
-## `gbax serve <rom>`
+## `retrokix serve <rom>`
 
 Same boot, but no window. Exposes a FastAPI controller API on
 `127.0.0.1:8420`. Default mode is `step` — the emulator is paused until a
 controller posts `/step?frames=N`.
 
 ```
-$ gbax serve emerald
-gbax serving Pokemon - Emerald Version (USA, Europe).gba on http://127.0.0.1:8420
+$ retrokix serve emerald
+retrokix serving Pokemon - Emerald Version (USA, Europe).gba on http://127.0.0.1:8420
   mode=step  rom_sha1=f3ae088181bf583e55daf962a92bb46f4f1d07b7
   endpoints: /mode /step /speed /frame /buttons /memory /frame_count
 ```
@@ -250,28 +250,28 @@ Flags:
 
 See [`api.md`](api.md) for the full endpoint surface.
 
-## `gbax version`
+## `retrokix version`
 
 Prints the package version.
 
-## `gbax scenario create / list / validate`
+## `retrokix scenario create / list / validate`
 
 See [`automation.md`](automation.md).
 
-## `gbax train`
+## `retrokix train`
 
 ```
-gbax train --rom <rom> --scenario <name|path> --player <cmd> [--output dir/]
+retrokix train --rom <rom> --scenario <name|path> --player <cmd> [--output dir/]
 ```
 
 Single-run StepDriver — emulator waits for the player on each frame, no
 wall-clock deadline. Prints the result to stdout; writes `result.json`
 if `--output` is given.
 
-## `gbax tournament`
+## `retrokix tournament`
 
 ```
-gbax tournament --rom <rom> --scenario <name|path> --player <cmd> --player <cmd> [...]
+retrokix tournament --rom <rom> --scenario <name|path> --player <cmd> --player <cmd> [...]
                 [--lag-forfeit N] [--slack-ms N] [--output dir/] [--show] [--record]
 ```
 

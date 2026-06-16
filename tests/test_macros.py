@@ -1,12 +1,12 @@
-"""Tests for the gbax.macros persistence layer."""
+"""Tests for the retrokix.macros persistence layer."""
 from __future__ import annotations
 
 from datetime import datetime, timezone
 
 import pytest
 
-from gbax.input import Button
-from gbax.macros import Macro, delete, list_for_rom, load, macros_dir_for_rom, save
+from retrokix.input import Button
+from retrokix.macros import Macro, delete, list_for_rom, load, macros_dir_for_rom, save
 
 
 SHA1 = "f3ae088181bf583e55daf962a92bb46f4f1d07b7"

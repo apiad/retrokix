@@ -1,7 +1,7 @@
 """Tests for the matchup engine."""
 from __future__ import annotations
 
-from gbax.plugins.pokemon.shared.matchup import (
+from retrokix.plugins.pokemon.shared.matchup import (
     Attacker,
     Defender,
     matchup,

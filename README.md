@@ -1,16 +1,16 @@
-# gbax — Game Boy Advance you can drive.
+# retrokix — Game Boy Advance you can drive.
 
 **Bring your keyboard, your gamepad, and your AI. They all work together.**
 
-[![PyPI](https://img.shields.io/pypi/v/gbax.svg?logo=pypi&logoColor=white)](https://pypi.org/project/gbax/)
-[![Python](https://img.shields.io/pypi/pyversions/gbax.svg?logo=python&logoColor=white)](https://pypi.org/project/gbax/)
-[![CI](https://github.com/apiad/gbax/actions/workflows/ci.yml/badge.svg)](https://github.com/apiad/gbax/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/retrokix.svg?logo=pypi&logoColor=white)](https://pypi.org/project/retrokix/)
+[![Python](https://img.shields.io/pypi/pyversions/retrokix.svg?logo=python&logoColor=white)](https://pypi.org/project/retrokix/)
+[![CI](https://github.com/apiad/retrokix/actions/workflows/ci.yml/badge.svg)](https://github.com/apiad/retrokix/actions/workflows/ci.yml)
 [![License: MPL-2.0](https://img.shields.io/badge/License-MPL%202.0-1d2d44.svg)](https://www.mozilla.org/MPL/2.0/)
 ![Platform](https://img.shields.io/badge/Linux-only-555555?logo=linux&logoColor=white)
 
 ---
 
-**gbax is an emulator you can talk to.** It plays Game Boy Advance
+**retrokix is an emulator you can talk to.** It plays Game Boy Advance
 games in a window with sound and a keyboard — and in the same session,
 it exposes the framebuffer, memory bus, and input as an HTTP API any
 coding agent can reach. Use it to speedrun Pokémon Emerald with Claude
@@ -22,21 +22,21 @@ you're the player or the algorithm, you're in the loop together.
 ## Three commands
 
 ```
-$ pip install gbax
-$ gbax download "pokemon emerald"
-$ gbax play emerald
+$ pip install retrokix
+$ retrokix download "pokemon emerald"
+$ retrokix play emerald
 ```
 
 Pokémon Emerald, in a window, with sound. The wheel ships a prebuilt
-`mgba_libretro.so`; no cmake, no apt-get, no `$GBAX_CORE_PATH`.
+`mgba_libretro.so`; no cmake, no apt-get, no `$RETROKIX_CORE_PATH`.
 
 ## The cooperative loop
 
-Launch gbax with both the keyboard surface and the HTTP API:
+Launch retrokix with both the keyboard surface and the HTTP API:
 
 ```
-$ gbax play emerald --listen --plugin gbax.plugins.emerald_party
-gbax HTTP API listening on http://127.0.0.1:8420
+$ retrokix play emerald --listen --plugin retrokix.plugins.emerald_party
+retrokix HTTP API listening on http://127.0.0.1:8420
   plugin route: GET /plugins/emerald_party/party
   plugin route: GET /plugins/emerald_party/slot/{idx}
 ```
@@ -71,7 +71,7 @@ discover the next memory address, build the next algorithm.
 
 ## What you get
 
-- **3,555 ROMs** in a fuzzy-searchable bundled No-Intro index. `gbax
+- **3,555 ROMs** in a fuzzy-searchable bundled No-Intro index. `retrokix
   download` pulls from the public archive.org mirror.
 - **One HTTP API** exposing the framebuffer, full memory bus, input,
   cheat codes, save states, and an atomic `/action` for multi-step
@@ -84,7 +84,7 @@ discover the next memory address, build the next algorithm.
   to play. ~6,700 cheat codes vendored from libretro-database; no
   network at runtime.
 - **GPU shaders** (`crt-lottes`, custom WGSL) when you want pretty.
-- **Browser stream** — `gbax play --listen` then open
+- **Browser stream** — `retrokix play --listen` then open
   `http://localhost:8420/stream` in any browser. Pristine raw RGBA
   frames over WebSocket plus a separate audio WebSocket for live
   PCM. Add `?mode=controller` for an on-screen GBA-bezel with D-pad
@@ -105,11 +105,11 @@ docs/ page.
   with optional on-screen controller), `/plugins/<name>/...`
   (per-plugin namespaces), `/plugins` (active plugin listing).
 - [**Plugins**](docs/plugins.md) — Python files that hook the play
-  loop AND publish HTTP routes. The bundled `gbax.plugins.emerald_party`
+  loop AND publish HTTP routes. The bundled `retrokix.plugins.emerald_party`
   is the canonical example: a [cookbook page](docs/cookbook/emerald_party.md)
   walks through how it was built.
 - [**State tracker**](docs/state-tracker.md) — capture / compile /
-  refine flow. Label what's true (`hp=22, scene=overworld`); gbax
+  refine flow. Label what's true (`hp=22, scene=overworld`); retrokix
   intersects labels across captures and infers where each value
   lives.
 - **In-process Controller** ([automation.md](docs/automation.md)) —
@@ -129,19 +129,19 @@ For the human-first reader. Each entry links to its details.
   SDL's GameController DB recognises them all). Multiple pads + the
   keyboard + the HTTP API combine via set-union. Hot-plug works.
   Layout in [docs/cli.md#gamepad](docs/cli.md).
-- **Browser play** — `gbax play <rom> --no-sdl` boots the runtime
+- **Browser play** — `retrokix play <rom> --no-sdl` boots the runtime
   headless and pops a browser tab to a GBA-bezel viewer with
   on-screen controls. Touch / pointer drives the D-pad + A/B + L/R
   + Select/Start + TURBO; keyboard shortcuts mirror the SDL play
   loop's defaults (arrows + X / Z / A / S / Enter); audio streams
   live over WebSocket and plays through an AudioWorklet in the page.
-- **Cheats** — `gbax cheats <rom>` lists; `gbax pin <rom> F1
+- **Cheats** — `retrokix cheats <rom>` lists; `retrokix pin <rom> F1
   max-money` binds; `F1`-`F9` toggle in-game. Pins persist per ROM.
 - **Macros** — record a button sequence with `Ctrl+R`, bind to any
   letter / digit / F-key, replay anywhere in-game.
-- **Shaders** — `gbax play <rom> --renderer=wgpu --shader=crt-lottes`
+- **Shaders** — `retrokix play <rom> --renderer=wgpu --shader=crt-lottes`
   via the optional `[gpu]` extra. Full guide in [docs/shaders.md](docs/shaders.md).
-- **Save state slots** survive restarts. Per-ROM, in `~/.gbax/saves/<rom-sha1>/`.
+- **Save state slots** survive restarts. Per-ROM, in `~/.retrokix/saves/<rom-sha1>/`.
 
 ## Architecture
 
@@ -153,9 +153,9 @@ flowchart TB
         http([HTTP client<br/>script · LLM · shell])
     end
 
-    subgraph cli["gbax CLI (Typer)"]
-        play["gbax play"]
-        serve["gbax serve"]
+    subgraph cli["retrokix CLI (Typer)"]
+        play["retrokix play"]
+        serve["retrokix serve"]
         other["search · download · state · macro · pin · …"]
     end
 
@@ -197,12 +197,12 @@ flowchart TB
 ## Install
 
 ```
-pip install gbax                # default install
-pip install gbax[gpu]           # adds wgpu renderer + CRT-Lottes
+pip install retrokix                # default install
+pip install retrokix[gpu]           # adds wgpu renderer + CRT-Lottes
 ```
 
 One command on Linux x86_64. Other platforms fall back to the sdist
-and need `$GBAX_CORE_PATH` set. Full coverage in
+and need `$RETROKIX_CORE_PATH` set. Full coverage in
 [docs/installing.md](docs/installing.md).
 
 ## Status
@@ -210,11 +210,11 @@ and need `$GBAX_CORE_PATH` set. Full coverage in
 - **Alpha.** v0.18.0. Works on Linux x86_64. macOS / Windows / ARM
   are PR-welcome.
 - **Multi-console.** GBA via mGBA and NES via FCEUmm — both shipped in
-  the wheel. The runtime picks a core from the ROM extension; `gbax
+  the wheel. The runtime picks a core from the ROM extension; `retrokix
   browse` shows a per-row console badge and merges both libraries.
 - **MPL-2.0.** Same license as the underlying mGBA core. The bundled
   FCEUmm core is GPLv2 — see `cores/LICENSE.FCEUmm`.
-- **No ROMs bundled.** `gbax download` pulls from the public No-Intro
+- **No ROMs bundled.** `retrokix download` pulls from the public No-Intro
   mirror at archive.org. Use it for games you own; respect your
   local laws.
 
@@ -229,7 +229,7 @@ and need `$GBAX_CORE_PATH` set. Full coverage in
 | ⏳ | macOS / Windows / aarch64 wheels |
 | ⏳ | YAML user scripts — `Ctrl+H` runs a sequence |
 
-Past releases: see [GitHub Releases](https://github.com/apiad/gbax/releases).
+Past releases: see [GitHub Releases](https://github.com/apiad/retrokix/releases).
 
 ## Credits
 

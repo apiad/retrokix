@@ -5,7 +5,7 @@ from __future__ import annotations
 import queue
 import threading
 
-from gbax.api.audio_bus import AudioBus
+from retrokix.api.audio_bus import AudioBus
 
 
 def test_subscribe_returns_independent_queues() -> None:

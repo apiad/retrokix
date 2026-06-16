@@ -1,5 +1,5 @@
 /*
- * gbax landing — rotating game showcase.
+ * retrokix landing — rotating game showcase.
  *
  * Cross-fades title / image / curl JSON / install commands / plugin slug
  * across ~10 well-known GBA games on a fixed tick. Pauses on hover
@@ -26,7 +26,7 @@
       title: "Pokémon Emerald",
       download: "pokemon emerald",
       rom: "emerald",
-      plugin: "gbax.plugins.emerald_party",
+      plugin: "retrokix.plugins.emerald_party",
       route: "/plugins/emerald_party/party",
       json: `{
   "slots": [
@@ -43,7 +43,7 @@
       title: "Zelda: The Minish Cap",
       download: "zelda minish cap",
       rom: "minish-cap",
-      plugin: "gbax.plugins.zelda_inventory",
+      plugin: "retrokix.plugins.zelda_inventory",
       route: "/plugins/zelda_inventory/inventory",
       json: `{
   "hearts": 9,
@@ -59,7 +59,7 @@
       title: "Metroid Fusion",
       download: "metroid fusion",
       rom: "metroid-fusion",
-      plugin: "gbax.plugins.samus_status",
+      plugin: "retrokix.plugins.samus_status",
       route: "/plugins/samus_status/status",
       json: `{
   "energy": 199, "max_energy": 299,
@@ -74,7 +74,7 @@
       title: "Castlevania: Aria of Sorrow",
       download: "castlevania aria of sorrow",
       rom: "aria-of-sorrow",
-      plugin: "gbax.plugins.aria_souls",
+      plugin: "retrokix.plugins.aria_souls",
       route: "/plugins/aria_souls/souls",
       json: `{
   "level": 14,
@@ -90,7 +90,7 @@
       title: "Advance Wars",
       download: "advance wars",
       rom: "advance-wars",
-      plugin: "gbax.plugins.aw_battlefield",
+      plugin: "retrokix.plugins.aw_battlefield",
       route: "/plugins/aw_battlefield/state",
       json: `{
   "day": 7,
@@ -106,7 +106,7 @@
       title: "Final Fantasy Tactics Advance",
       download: "final fantasy tactics advance",
       rom: "ffta",
-      plugin: "gbax.plugins.ffta_clan",
+      plugin: "retrokix.plugins.ffta_clan",
       route: "/plugins/ffta_clan/roster",
       json: `{
   "clan": "Cygnus",
@@ -123,7 +123,7 @@
       title: "Mario & Luigi: Superstar Saga",
       download: "mario luigi superstar saga",
       rom: "mlss",
-      plugin: "gbax.plugins.mlss_bros",
+      plugin: "retrokix.plugins.mlss_bros",
       route: "/plugins/mlss_bros/status",
       json: `{
   "mario": { "hp": 84, "bp": 24, "level": 12 },
@@ -137,7 +137,7 @@
       title: "Golden Sun",
       download: "golden sun",
       rom: "golden-sun",
-      plugin: "gbax.plugins.golden_sun_djinn",
+      plugin: "retrokix.plugins.golden_sun_djinn",
       route: "/plugins/golden_sun_djinn/party",
       json: `{
   "leader": "Isaac",
@@ -152,7 +152,7 @@
       title: "Wario Land 4",
       download: "wario land 4",
       rom: "wario-land-4",
-      plugin: "gbax.plugins.wario_run",
+      plugin: "retrokix.plugins.wario_run",
       route: "/plugins/wario_run/state",
       json: `{
   "level": "the_curious_factory",
@@ -167,7 +167,7 @@
       title: "Doom",
       download: "doom",
       rom: "doom",
-      plugin: "gbax.plugins.doom_hud",
+      plugin: "retrokix.plugins.doom_hud",
       route: "/plugins/doom_hud/state",
       json: `{
   "map": "E1M2",
@@ -259,7 +259,7 @@
         const visible = stack.querySelector(".gx-screen__img.is-visible");
         const hidden = visible === layers[0] ? layers[1] : layers[0];
         const src = `${stack.dataset.base}${game.slug}.png`;
-        hidden.alt = `gbax running ${game.title}`;
+        hidden.alt = `retrokix running ${game.title}`;
         if (hidden.getAttribute("src") !== src) {
           hidden.src = src;
         }

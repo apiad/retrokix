@@ -1,23 +1,23 @@
 # HTTP API reference
 
-`gbax` exposes the running emulator as a FastAPI server. Two ways to
+`retrokix` exposes the running emulator as a FastAPI server. Two ways to
 reach it:
 
 ```bash
-gbax serve emerald                          # API only, no window
-gbax play emerald --listen                  # API + SDL window (cooperative loop)
+retrokix serve emerald                          # API only, no window
+retrokix play emerald --listen                  # API + SDL window (cooperative loop)
 ```
 
 Both modes serve the same endpoints. The default bind is
 `127.0.0.1:8420`; override with `--port` (on `serve`) or `--listen-host`
 / `--listen-port` (on `play`).
 
-The endpoints are deliberately small and direct — `gbax` is a
+The endpoints are deliberately small and direct — `retrokix` is a
 substrate; the controllers are the interesting part.
 
 ## Modes: step vs free
 
-`gbax` runs in one of two modes at any time:
+`retrokix` runs in one of two modes at any time:
 
 | Mode | Behavior                                                                                                  |
 | ---- | --------------------------------------------------------------------------------------------------------- |
@@ -126,7 +126,7 @@ Modes:
   landscape so they never overlap the screen.
 
 ```
-$ gbax play emerald --listen
+$ retrokix play emerald --listen
 # then open http://localhost:8420/stream
 # or  http://localhost:8420/stream?mode=controller
 ```
@@ -180,17 +180,17 @@ no error frames.
 
 Watch from a second screen:
 ```
-http://<gbax-host>:8420/stream
+http://<retrokix-host>:8420/stream
 ```
 
 Play from your phone in the same WiFi:
 ```
-http://<gbax-host>:8420/stream?mode=controller
+http://<retrokix-host>:8420/stream?mode=controller
 ```
 
 Save bandwidth on a remote link:
 ```
-http://<gbax-host>:8420/stream?mode=controller&format=jpeg&fps=20
+http://<retrokix-host>:8420/stream?mode=controller&format=jpeg&fps=20
 ```
 
 Drive the WebSocket directly from your own JS:
@@ -391,7 +391,7 @@ Response:
 
 ```json
 {
-  "path": "/home/you/.gbax/states/<sha1>/captures/2026-06-10T14-21-40.dump",
+  "path": "/home/you/.retrokix/states/<sha1>/captures/2026-06-10T14-21-40.dump",
   "stable_bytes": 291421,
   "n_frames": 30,
   "labels": {"scene": "overworld", "hp": 22, "level": 6},
@@ -399,7 +399,7 @@ Response:
 }
 ```
 
-Run `gbax state compile <rom>` offline to merge new captures into
+Run `retrokix state compile <rom>` offline to merge new captures into
 the compiled inference. See [state-tracker.md](state-tracker.md).
 
 ## Plugins
@@ -413,7 +413,7 @@ Lists active plugins and the routes they expose.
   "plugins": [
     {
       "name": "emerald_party",
-      "path": "/path/to/gbax/plugins/emerald_party.py",
+      "path": "/path/to/retrokix/plugins/emerald_party.py",
       "routes": [
         {"path": "/plugins/emerald_party/party", "methods": ["GET"]},
         {"path": "/plugins/emerald_party/slot/{idx}", "methods": ["GET"]}

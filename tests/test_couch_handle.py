@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from gbax.couch.handle import BrokerHandle, CouchHandle
+from retrokix.couch.handle import BrokerHandle, CouchHandle
 
 
 @pytest.fixture

@@ -1,9 +1,9 @@
-"""Tests for the gbax.cores helper module."""
+"""Tests for the retrokix.cores helper module."""
 from __future__ import annotations
 
 from pathlib import Path
 
-from gbax import cores
+from retrokix import cores
 
 
 def test_mgba_version_is_a_string():
@@ -19,7 +19,7 @@ def test_bundled_core_path_returns_none_when_absent(monkeypatch, tmp_path):
     (fake_pkg / "__init__.py").write_text("")
 
     def fake_files(pkg: str) -> Path:
-        assert pkg == "gbax.cores"
+        assert pkg == "retrokix.cores"
         return fake_pkg
 
     monkeypatch.setattr(cores, "_files", fake_files)

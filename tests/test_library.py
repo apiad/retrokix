@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import pytest
 
-from gbax.library import RomEntry, RomLibrary, list_local_roms
+from retrokix.library import RomEntry, RomLibrary, list_local_roms
 
 
 @pytest.fixture
@@ -55,7 +55,7 @@ def test_entries_cached(stub_lib):
 
 def test_bundled_metadata_loads():
     """The vendored snapshot ships in the wheel and parses cleanly."""
-    from gbax.library import _load_bundled_metadata
+    from retrokix.library import _load_bundled_metadata
 
     item, entries = _load_bundled_metadata()
     assert item.startswith("ef_gba_no-intro")
@@ -88,7 +88,7 @@ def test_list_local_roms_filters_extension(tmp_path):
 
 
 def test_resolve_rom_existing_path(tmp_path):
-    from gbax.library import resolve_rom
+    from retrokix.library import resolve_rom
 
     f = tmp_path / "anywhere.gba"
     f.touch()
@@ -96,17 +96,17 @@ def test_resolve_rom_existing_path(tmp_path):
 
 
 def test_resolve_rom_fuzzy_single_match(tmp_path, monkeypatch):
-    from gbax.library import resolve_rom
+    from retrokix.library import resolve_rom
 
     (tmp_path / "Pokemon - Emerald Version (USA, Europe).gba").touch()
     (tmp_path / "Mario Kart - Super Circuit (USA).gba").touch()
-    monkeypatch.setattr("gbax.library.DEFAULT_ROMS_DIR", tmp_path)
+    monkeypatch.setattr("retrokix.library.DEFAULT_ROMS_DIR", tmp_path)
     result = resolve_rom("emerald", roms_dir=tmp_path)
     assert result.name == "Pokemon - Emerald Version (USA, Europe).gba"
 
 
 def test_resolve_rom_fuzzy_multi_token(tmp_path):
-    from gbax.library import resolve_rom
+    from retrokix.library import resolve_rom
 
     (tmp_path / "Pokemon - Emerald Version (USA, Europe).gba").touch()
     (tmp_path / "Pokemon - Emerald Version (Japan).gba").touch()
@@ -116,7 +116,7 @@ def test_resolve_rom_fuzzy_multi_token(tmp_path):
 
 def test_resolve_rom_no_match(tmp_path):
     import pytest
-    from gbax.library import resolve_rom
+    from retrokix.library import resolve_rom
 
     (tmp_path / "Pokemon - Emerald Version (USA, Europe).gba").touch()
     with pytest.raises(FileNotFoundError):
@@ -125,7 +125,7 @@ def test_resolve_rom_no_match(tmp_path):
 
 def test_resolve_rom_ambiguous(tmp_path):
     import pytest
-    from gbax.library import resolve_rom
+    from retrokix.library import resolve_rom
 
     (tmp_path / "Pokemon - Emerald Version (USA, Europe).gba").touch()
     (tmp_path / "Pokemon - Emerald Version (Japan).gba").touch()
@@ -137,7 +137,7 @@ def test_resolve_rom_ambiguous(tmp_path):
 
 def test_bundled_metadata_includes_both_consoles():
     """Default RomLibrary loads GBA + NES entries together."""
-    from gbax.library import RomLibrary
+    from retrokix.library import RomLibrary
 
     lib = RomLibrary()
     entries = lib.entries()
@@ -150,7 +150,7 @@ def test_bundled_metadata_includes_both_consoles():
 
 
 def test_console_filter_constrains_to_one_set():
-    from gbax.library import RomLibrary
+    from retrokix.library import RomLibrary
 
     nes_only = RomLibrary(console="nes").entries()
     assert nes_only
@@ -161,7 +161,7 @@ def test_console_filter_constrains_to_one_set():
 def test_search_returns_cross_console_matches():
     """A query like 'mario' hits both GBA and NES — caller is expected
     to disambiguate by inspecting entry.console."""
-    from gbax.library import RomLibrary
+    from retrokix.library import RomLibrary
 
     lib = RomLibrary()
     hits = lib.search("mario")
@@ -170,7 +170,7 @@ def test_search_returns_cross_console_matches():
 
 
 def test_console_for_path_dispatches_by_extension(tmp_path):
-    from gbax.library import console_for_path
+    from retrokix.library import console_for_path
 
     assert console_for_path(tmp_path / "rom.gba") == "gba"
     assert console_for_path(tmp_path / "rom.nes") == "nes"
@@ -180,7 +180,7 @@ def test_console_for_path_dispatches_by_extension(tmp_path):
 
 def test_list_local_roms_finds_both_extensions(tmp_path):
     """list_local_roms picks up .gba AND .nes — single roms dir, mixed."""
-    from gbax.library import list_local_roms
+    from retrokix.library import list_local_roms
 
     (tmp_path / "Pokemon.gba").touch()
     (tmp_path / "Super Mario Bros.nes").touch()
@@ -190,7 +190,7 @@ def test_list_local_roms_finds_both_extensions(tmp_path):
 
 
 def test_rom_entry_title_strips_known_extensions():
-    from gbax.library import RomEntry
+    from retrokix.library import RomEntry
 
     e = RomEntry(name="Pokemon - Emerald Version (USA, Europe).zip",
                  size=0, sha1=None, console="gba")

@@ -1,10 +1,10 @@
-"""CLI smoke tests for `gbax serve`."""
+"""CLI smoke tests for `retrokix serve`."""
 
 from __future__ import annotations
 
 from typer.testing import CliRunner
 
-from gbax.cli import app
+from retrokix.cli import app
 
 
 runner = CliRunner()
@@ -23,4 +23,4 @@ def test_serve_rejects_nonexistent_rom():
 def test_version_command():
     result = runner.invoke(app, ["version"])
     assert result.exit_code == 0
-    assert "gbax" in result.output
+    assert "retrokix" in result.output

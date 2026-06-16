@@ -1,7 +1,7 @@
 """Tests for the renderer base layer."""
 from __future__ import annotations
 
-from gbax.render.base import SHADERS, Renderer
+from retrokix.render.base import SHADERS, Renderer
 
 
 def test_shaders_registry_has_core_entries():

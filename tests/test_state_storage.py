@@ -1,9 +1,9 @@
-"""Tests for gbax.state.storage — label parser and path helpers."""
+"""Tests for retrokix.state.storage — label parser and path helpers."""
 from __future__ import annotations
 
 import pytest
 
-from gbax.state.storage import (
+from retrokix.state.storage import (
     captures_dir_for_rom,
     compiled_path_for_rom,
     parse_labels,

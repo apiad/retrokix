@@ -18,12 +18,12 @@ def test_import_error_when_wgpu_missing(monkeypatch):
     import sys
     # Hide wgpu — set to None which `_require_wgpu` detects as "missing".
     monkeypatch.setitem(sys.modules, "wgpu", None)
-    from gbax.render.wgpu_renderer import WGPURenderer
+    from retrokix.render.wgpu_renderer import WGPURenderer
     with pytest.raises(RuntimeError, match=r"\[gpu\]"):
         WGPURenderer()
 
 
-@pytest.mark.skipif(not _HAS_WGPU, reason="gbax[gpu] not installed")
+@pytest.mark.skipif(not _HAS_WGPU, reason="retrokix[gpu] not installed")
 @pytest.mark.skipif(
     os.environ.get("SDL_VIDEODRIVER") == "dummy",
     reason="wgpu surface needs a real video driver",
@@ -32,11 +32,11 @@ def test_wgpu_renderer_present_smoke():
     import sdl2
     import sdl2.ext
 
-    from gbax.render.wgpu_renderer import WGPURenderer
+    from retrokix.render.wgpu_renderer import WGPURenderer
 
     sdl2.ext.init()
     try:
-        window = sdl2.ext.Window("gbax-wgpu", size=(480, 320))
+        window = sdl2.ext.Window("retrokix-wgpu", size=(480, 320))
         window.show()
         try:
             renderer = WGPURenderer()

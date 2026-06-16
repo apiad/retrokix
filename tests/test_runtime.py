@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from gbax.runtime import EmulatorRuntime
+from retrokix.runtime import EmulatorRuntime
 
 
 @pytest.fixture
@@ -78,12 +78,12 @@ def test_missing_core_raises(test_rom, tmp_path):
 
 
 def test_default_mode_is_step(runtime):
-    from gbax.runtime import Mode
+    from retrokix.runtime import Mode
     assert runtime.mode == Mode.STEP
 
 
 def test_mode_setter(runtime):
-    from gbax.runtime import Mode
+    from retrokix.runtime import Mode
     runtime.mode = Mode.FREE
     assert runtime.mode == Mode.FREE
     runtime.mode = "step"  # string also accepted
@@ -202,7 +202,7 @@ def test_load_state_from_file_restores_frame_count(test_rom, mgba_core, tmp_path
 
 def test_load_state_from_file_without_sidecar_defaults_frame_count_zero(test_rom, mgba_core, tmp_path):
     """A standalone .state (no .json sidecar) still loads cleanly;
-    frame_count just resets to 0. Covers `gbax play --load <path>` for
+    frame_count just resets to 0. Covers `retrokix play --load <path>` for
     files copied from elsewhere."""
     with EmulatorRuntime(test_rom, core_path=mgba_core, save_dir=tmp_path) as rt:
         rt.step(frames=7)
@@ -279,7 +279,7 @@ def test_default_core_path_picks_console_specific_core(tmp_path):
     """A .nes ROM path resolves to fceumm_libretro.so (whether or not
     that core happens to exist on this dev machine — _default_core_path
     returns the *expected* location)."""
-    from gbax.runtime import _default_core_path
+    from retrokix.runtime import _default_core_path
 
     nes_rom = tmp_path / "fake.nes"
     nes_rom.write_bytes(b"NES\x1a")  # iNES magic — not booted, just file ext

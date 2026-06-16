@@ -1,12 +1,12 @@
-"""Tests for gbax.state.compile — inference from labeled captures."""
+"""Tests for retrokix.state.compile — inference from labeled captures."""
 from __future__ import annotations
 
 import json
 from datetime import datetime, timezone
 
-from gbax.state.capture import EWRAM_BASE, save_capture
-from gbax.state.compile import compile_for_rom
-from gbax.state.storage import compiled_path_for_rom
+from retrokix.state.capture import EWRAM_BASE, save_capture
+from retrokix.state.compile import compile_for_rom
+from retrokix.state.storage import compiled_path_for_rom
 
 
 SHA1 = "abc"

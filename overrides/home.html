@@ -5,7 +5,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Grotesk:wght@400;500;600;700&display=swap">
-  <meta property="og:title" content="gbax — Game Boy Advance you can drive">
+  <meta property="og:title" content="retrokix — Game Boy Advance you can drive">
   <meta property="og:description" content="Hacker-first GBA emulator. Pip-installable, native libretro core, HTTP API any LLM can reach. Bring your keyboard, your gamepad, and your AI — they all work together.">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
@@ -23,7 +23,7 @@
           <span class="gx-pill">Linux x86_64</span>
         </div>
         <h1 class="gx-hero__title">
-          <span class="gx-wordmark" aria-hidden="true">gbax</span>
+          <span class="gx-wordmark" aria-hidden="true">retrokix</span>
           <span class="gx-hero__tagline">Game Boy Advance you can drive.</span>
         </h1>
         <p class="gx-hero__lead">
@@ -42,7 +42,7 @@
             Read the docs
             <span class="gx-btn__arrow" aria-hidden="true">→</span>
           </a>
-          <a class="gx-btn gx-btn--ghost" href="https://github.com/apiad/gbax">
+          <a class="gx-btn gx-btn--ghost" href="https://github.com/apiad/retrokix">
             <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor">
               <path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.8 10.9.6.1.8-.2.8-.6v-2.2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.2 1.2.9-.3 1.9-.4 2.9-.4s2 .1 2.9.4c2.2-1.5 3.2-1.2 3.2-1.2.6 1.7.2 2.9.1 3.2.7.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6 4.5-1.5 7.8-5.8 7.8-10.9C23.5 5.7 18.3.5 12 .5z"/>
             </svg>
@@ -84,16 +84,16 @@
     <div class="gx-section__inner">
       <p class="gx-eyebrow">Three commands.</p>
       <h2 class="gx-h2"><span class="gx-rot gx-rot--title" data-gx-rot="title">Pokémon Emerald</span>, in a window, with sound.</h2>
-      <pre class="gx-codeblock"><code><span class="t-pf">$</span> pip install gbax
-<span class="t-pf">$</span> gbax download <span class="t-s">"<span class="gx-rot" data-gx-rot="download">pokemon emerald</span>"</span>
-<span class="t-pf">$</span> gbax play <span class="gx-rot" data-gx-rot="rom">emerald</span></code></pre>
+      <pre class="gx-codeblock"><code><span class="t-pf">$</span> pip install retrokix
+<span class="t-pf">$</span> retrokix download <span class="t-s">"<span class="gx-rot" data-gx-rot="download">pokemon emerald</span>"</span>
+<span class="t-pf">$</span> retrokix play <span class="gx-rot" data-gx-rot="rom">emerald</span></code></pre>
       <p class="gx-section__caption">
         The wheel ships a prebuilt <code>mgba_libretro.so</code>. No cmake.
-        No apt-get. No <code>$GBAX_CORE_PATH</code>.
+        No apt-get. No <code>$RETROKIX_CORE_PATH</code>.
       </p>
       <div class="gx-alt">
         <span class="gx-alt__label">Or, point-and-click</span>
-        <pre class="gx-codeblock gx-codeblock--inline"><code><span class="t-pf">$</span> gbax browse</code></pre>
+        <pre class="gx-codeblock gx-codeblock--inline"><code><span class="t-pf">$</span> retrokix browse</code></pre>
         <p class="gx-alt__caption">
           Interactive search-as-you-type over all <strong>3,555 ROMs</strong>.
           Arrow keys to navigate, <kbd>Enter</kbd> to download. ROMs you
@@ -175,7 +175,7 @@
           <div class="gx-card__icon">🎮</div>
           <h3 class="gx-card__title">3,555 ROMs</h3>
           <p class="gx-card__body">
-            Fuzzy-searchable No-Intro index bundled. <code>gbax download</code>
+            Fuzzy-searchable No-Intro index bundled. <code>retrokix download</code>
             pulls from the public archive.org mirror. Bring games you own.
           </p>
         </article>
@@ -202,7 +202,7 @@
           <h3 class="gx-card__title">State tracker</h3>
           <p class="gx-card__body">
             Supervised memory inference. Label what's true
-            (<code>hp=22, scene=overworld</code>). gbax intersects across
+            (<code>hp=22, scene=overworld</code>). retrokix intersects across
             captures and finds where each value lives.
           </p>
         </article>
@@ -250,7 +250,7 @@
           <div class="gx-audience__body">
             <p class="gx-audience__lead">You want to <em>remember</em>.</p>
             <ul class="gx-audience__list">
-              <li><span class="gx-li__icon">🎮</span> Browse the cartridges from your shelf — <code>gbax browse</code></li>
+              <li><span class="gx-li__icon">🎮</span> Browse the cartridges from your shelf — <code>retrokix browse</code></li>
               <li><span class="gx-li__icon">🕹️</span> Plug in any USB or Bluetooth pad — XInput, DualShock, 8BitDo, generic clones</li>
               <li><span class="gx-li__icon">💾</span> Save state anywhere — even mid-boss</li>
               <li><span class="gx-li__icon">⏩</span> Fast-forward the grind on <kbd>Left-Shift</kbd> or the left trigger</li>
@@ -285,7 +285,7 @@
             <ul class="gx-audience__list">
               <li><span class="gx-li__icon">🏟️</span> 3,555 hand-crafted environments — the level designers were genre masters</li>
               <li><span class="gx-li__icon">🥊</span> Tournaments and atomic multi-step actions</li>
-              <li><span class="gx-li__icon">🏷️</span> Supervised state-tracker labels — say what's true, gbax finds where it lives</li>
+              <li><span class="gx-li__icon">🏷️</span> Supervised state-tracker labels — say what's true, retrokix finds where it lives</li>
               <li><span class="gx-li__icon">🧩</span> Plugins that write their own plugins</li>
               <li><span class="gx-li__icon">🔌</span> BYO agent or wire an RL loop on <code>/action</code> + <code>/state</code></li>
             </ul>
@@ -300,9 +300,9 @@
       <p class="gx-eyebrow">Take it for a spin.</p>
       <h2 class="gx-h2">Three lines, and you're in.</h2>
       <pre class="gx-codeblock gx-codeblock--cta"><code><span class="t-c"># Linux x86_64 — bundled core, no extra setup</span>
-<span class="t-pf">$</span> pip install gbax
-<span class="t-pf">$</span> gbax download <span class="t-s">"<span class="gx-rot" data-gx-rot="download">pokemon emerald</span>"</span>
-<span class="t-pf">$</span> gbax play <span class="gx-rot" data-gx-rot="rom">emerald</span> --listen --plugin <span class="gx-rot" data-gx-rot="plugin">gbax.plugins.emerald_party</span></code></pre>
+<span class="t-pf">$</span> pip install retrokix
+<span class="t-pf">$</span> retrokix download <span class="t-s">"<span class="gx-rot" data-gx-rot="download">pokemon emerald</span>"</span>
+<span class="t-pf">$</span> retrokix play <span class="gx-rot" data-gx-rot="rom">emerald</span> --listen --plugin <span class="gx-rot" data-gx-rot="plugin">retrokix.plugins.emerald_party</span></code></pre>
       <div class="gx-cta-row">
         <a class="gx-btn gx-btn--primary" href="installing/">Install guide</a>
         <a class="gx-btn gx-btn--ghost" href="cookbook/emerald_party/">

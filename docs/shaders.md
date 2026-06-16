@@ -1,14 +1,14 @@
 # Shaders (GPU renderer)
 
 For CRT scanlines, custom WGSL shaders, and a GPU-accelerated pixel
-pipeline, gbax ships an optional wgpu-based renderer:
+pipeline, retrokix ships an optional wgpu-based renderer:
 
 ```
-pip install gbax[gpu]
-gbax play emerald --renderer=wgpu --shader=crt-lottes
+pip install retrokix[gpu]
+retrokix play emerald --renderer=wgpu --shader=crt-lottes
 ```
 
-The default SDL renderer (which works without `gbax[gpu]`) supports
+The default SDL renderer (which works without `retrokix[gpu]`) supports
 `linear` and `nearest` filters via SDL's built-in hardware-accelerated
 upscale. The wgpu renderer adds custom WGSL shaders on top.
 
@@ -26,7 +26,7 @@ current renderer.
 ## Custom WGSL shaders
 
 ```
-gbax play emerald --renderer=wgpu --user-shader ~/my_shader.wgsl
+retrokix play emerald --renderer=wgpu --user-shader ~/my_shader.wgsl
 ```
 
 Your shader must implement `fs_main` against the same bind group
@@ -36,7 +36,7 @@ layout the bundled shaders use:
 - binding 1: sampler
 - binding 2: uniforms struct (output_res, source_res, frame counter)
 
-Copy `gbax/render/shaders/linear.wgsl` from the installed package as
+Copy `retrokix/render/shaders/linear.wgsl` from the installed package as
 a starting point — it's the simplest valid implementation.
 
 ## Runtime knobs
@@ -46,16 +46,16 @@ a starting point — it's the simplest valid implementation.
 - `--user-shader <path.wgsl>` registers a custom shader as `user`
 - **F10** cycles shaders at runtime
 - **F11** toggles borderless-desktop fullscreen
-- **F12** screenshot to `~/.gbax/screenshots/`
+- **F12** screenshot to `~/.retrokix/screenshots/`
 
 ## Caveats
 
-- **Wayland hosts**: gbax auto-sets `SDL_VIDEODRIVER=wayland` when
+- **Wayland hosts**: retrokix auto-sets `SDL_VIDEODRIVER=wayland` when
   `--renderer=wgpu` is active. The X11/XWayland path leaks swapchain
   textures under Mesa Vulkan and OOM-kills within seconds. Override
   by setting `SDL_VIDEODRIVER` yourself if you need to.
 - **NVIDIA Vulkan**: some dual-GPU setups fail device creation with
-  "Parent device is lost" on the discrete adapter. gbax has an
+  "Parent device is lost" on the discrete adapter. retrokix has an
   adapter fallback chain (`high-performance` → `low-power` →
   `force_fallback_adapter`) that usually finds a working adapter.
 - **CRT-Lottes tuning**: the bundled single-pass port has rough
@@ -71,4 +71,4 @@ a starting point — it's the simplest valid implementation.
 ## See also
 
 - [installing.md](installing.md) — the `[gpu]` extra
-- [cli.md](cli.md) — full flag list for `gbax play`
+- [cli.md](cli.md) — full flag list for `retrokix play`

@@ -1,7 +1,7 @@
 """Minimal scenario used by the test suite. No real ROM memory dependency:
 score is just -frame_count, done is frame >= 30."""
 
-from gbax.scenario import Scenario
+from retrokix.scenario import Scenario
 
 
 class MinimalScenario(Scenario):

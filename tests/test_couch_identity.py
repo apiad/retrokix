@@ -5,8 +5,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from gbax.couch.identity import Identity, load_or_generate
-from gbax.couch.naming import (
+from retrokix.couch.identity import Identity, load_or_generate
+from retrokix.couch.naming import (
     DEFAULT_ROOM,
     is_valid_room_code,
     new_room_code,

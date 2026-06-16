@@ -1,10 +1,10 @@
-"""CLI smoke tests for `gbax play`."""
+"""CLI smoke tests for `retrokix play`."""
 
 from __future__ import annotations
 
 from typer.testing import CliRunner
 
-from gbax.cli import app
+from retrokix.cli import app
 
 
 runner = CliRunner()
@@ -21,7 +21,7 @@ def test_play_rejects_nonexistent_rom():
 
 
 def test_keymap_covers_all_buttons():
-    from gbax.input import Button
-    from gbax.render.sdl import default_keymap
+    from retrokix.input import Button
+    from retrokix.render.sdl import default_keymap
     km = default_keymap()
     assert set(km.values()) == set(Button)

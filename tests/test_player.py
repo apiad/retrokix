@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from gbax.player import (
+from retrokix.player import (
     HELLO,
     OBS,
     READY,

@@ -2,10 +2,10 @@
 """Compute a Wikipedia-pageviews fame score per ROM group.
 
 Walks the bundled GBA + NES No-Intro indexes, collapses regional/version
-variants into title groups via `gbax.browse._title_key`, and for each
+variants into title groups via `retrokix.browse._title_key`, and for each
 group resolves a Wikipedia article + sums its monthly pageviews over
-the last 12 months. Output goes to `src/gbax/data/wikipedia_fame.json`
-keyed by (console, title), which `gbax browse` consults to sort
+the last 12 months. Output goes to `src/retrokix/data/wikipedia_fame.json`
+keyed by (console, title), which `retrokix browse` consults to sort
 results DESC by views.
 
 Resume-safe: writes after every group. Pass `--limit N` for a smoke
@@ -44,15 +44,15 @@ _YEAR_GAME_CATEGORY_RE = re.compile(r"^Category:\d{4} video games$")
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
-from gbax.library import CONSOLES, RomLibrary, title_key  # noqa: E402
+from retrokix.library import CONSOLES, RomLibrary, title_key  # noqa: E402
 
-UA = "gbax-fame-refresh/0.1 (+https://github.com/apiad/gbax)"
+UA = "retrokix-fame-refresh/0.1 (+https://github.com/apiad/retrokix)"
 SLEEP = 0.25
 TIMEOUT = 15
 RETRIES = 3
 RETRY_BACKOFF = 2.0
 
-FAME_JSON = ROOT / "src" / "gbax" / "data" / "wikipedia_fame.json"
+FAME_JSON = ROOT / "src" / "retrokix" / "data" / "wikipedia_fame.json"
 
 
 def _get(url: str) -> dict | list | None:

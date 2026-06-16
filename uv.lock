@@ -304,7 +304,7 @@ wheels = [
 ]
 
 [[package]]
-name = "gbax"
+name = "retrokix"
 version = "0.17.0"
 source = { editable = "." }
 dependencies = [

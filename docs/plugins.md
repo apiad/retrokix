@@ -1,11 +1,11 @@
 # Plugins
 
-A plugin is a single Python file that hooks into a running `gbax play`
+A plugin is a single Python file that hooks into a running `retrokix play`
 session. Reads state, writes memory, injects buttons, reacts to key
 presses, runs on every frame. Can also publish its own HTTP routes
 under `/plugins/<name>/...` for an agent to call.
 
-The complement to `gbax.Controller` (the in-process API for headless
+The complement to `retrokix.Controller` (the in-process API for headless
 scripts): same scripting power, but live alongside a player at the
 keyboard.
 
@@ -13,8 +13,8 @@ keyboard.
 
 ```python
 # my_plugin.py
-import gbax
-p = gbax.plugin()
+import retrokix
+p = retrokix.plugin()
 
 @p.on_setup
 def setup(ctx):
@@ -31,7 +31,7 @@ def heartbeat(ctx):
 ```
 
 ```bash
-gbax play emerald --plugin my_plugin.py
+retrokix play emerald --plugin my_plugin.py
 ```
 
 ## Loading
@@ -39,10 +39,10 @@ gbax play emerald --plugin my_plugin.py
 `--plugin` accepts either a file path or a dotted module name:
 
 ```bash
-gbax play emerald --plugin ./my_plugin.py
-gbax play emerald --plugin /tmp/heal_low_hp.py
-gbax play emerald --plugin gbax.plugins.emerald_party     # bundled
-gbax play emerald --plugin my_packages.gbax_plugins.boss  # pip-installed
+retrokix play emerald --plugin ./my_plugin.py
+retrokix play emerald --plugin /tmp/heal_low_hp.py
+retrokix play emerald --plugin retrokix.plugins.emerald_party     # bundled
+retrokix play emerald --plugin my_packages.gbax_plugins.boss  # pip-installed
 ```
 
 Resolution order: if the argument exists as a file, treat as a path.
@@ -53,7 +53,7 @@ Otherwise try a dotted module import.
 | Decorator | Fires |
 |---|---|
 | `@p.on_setup` | once at plugin load |
-| `@p.on_teardown` | once when gbax shuts down |
+| `@p.on_teardown` | once when retrokix shuts down |
 | `@p.on_frame` | every frame |
 | `@p.on_frame(every=N)` | every Nth frame |
 | `@p.on_state_change(tag)` | when a tagged state value changes |
@@ -111,7 +111,7 @@ $ curl localhost:8420/plugins | jq
   "plugins": [
     {
       "name": "emerald_party",
-      "path": "/path/to/gbax/plugins/emerald_party.py",
+      "path": "/path/to/retrokix/plugins/emerald_party.py",
       "routes": [
         {"path": "/plugins/emerald_party/party", "methods": ["GET"]},
         {"path": "/plugins/emerald_party/slot/{idx}", "methods": ["GET"]}
@@ -123,7 +123,7 @@ $ curl localhost:8420/plugins | jq
 
 ## Atomic semantics
 
-Plugin HTTP routes are invoked while gbax holds the runtime lock. The
+Plugin HTTP routes are invoked while retrokix holds the runtime lock. The
 SDL play loop blocks until the route returns. This means:
 
 - The handler sees a consistent runtime snapshot — no frames advance
@@ -143,9 +143,9 @@ kill the plugin — subsequent handlers and the SDL loop continue.
 
 | Module | Game | Provides |
 |---|---|---|
-| `gbax.plugins.emerald_party` | Pokémon Emerald | live party panel, `/party` and `/slot/{idx}` HTTP routes, decodes encrypted substructures |
+| `retrokix.plugins.emerald_party` | Pokémon Emerald | live party panel, `/party` and `/slot/{idx}` HTTP routes, decodes encrypted substructures |
 
-More to come. PRs welcome — see `gbax.plugins.emerald_party` for the
+More to come. PRs welcome — see `retrokix.plugins.emerald_party` for the
 canonical pattern.
 
 ## Scene resolvers
@@ -176,7 +176,7 @@ This is the recommended escape hatch when the inferred classifier
 mis-fires on a specific scene — game-specific knowledge always beats
 unsupervised inference.
 
-## Case study: `gbax.plugins.emerald_party`
+## Case study: `retrokix.plugins.emerald_party`
 
 Step-by-step walk-through of how the Emerald party plugin was built —
 from "where's my Torchic in memory?" to "an agent can curl

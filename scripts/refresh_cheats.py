@@ -2,7 +2,7 @@
 """Compile libretro-database cheat files into a bundled JSON per console.
 
 Dev tool — run when libretro-database publishes new cheats. The output
-(`src/gbax/data/libretro_cheats_<console>.json`) is what `gbax cheats
+(`src/retrokix/data/libretro_cheats_<console>.json`) is what `retrokix cheats
 <rom>` consults at runtime. Zero network at runtime.
 
 Format of the output:
@@ -58,7 +58,7 @@ CONSOLES: dict[str, dict[str, object]] = {
 def _data_path(console: str) -> Path:
     return (
         Path(__file__).resolve().parent.parent
-        / "src" / "gbax" / "data" / f"libretro_cheats_{console}.json"
+        / "src" / "retrokix" / "data" / f"libretro_cheats_{console}.json"
     )
 
 

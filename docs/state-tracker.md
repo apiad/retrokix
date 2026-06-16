@@ -1,8 +1,8 @@
 # State tracker
 
-Teach gbax which memory addresses hold which gameplay values, by
-example. No per-game memory map ships with gbax — you label snapshots
-as you play (`hp=45, scene=fight-menu, money=12420`), gbax intersects
+Teach retrokix which memory addresses hold which gameplay values, by
+example. No per-game memory map ships with retrokix — you label snapshots
+as you play (`hp=45, scene=fight-menu, money=12420`), retrokix intersects
 the labels across captures and infers where each value lives.
 
 ## The capture / compile / refine loop
@@ -47,10 +47,10 @@ Same outcome — a `.dump` file with the sparse-filtered memory + a
 ## Compiling
 
 ```
-$ gbax state compile emerald
-compiled → /home/you/.gbax/states/<sha1>/compiled.json
+$ retrokix state compile emerald
+compiled → /home/you/.retrokix/states/<sha1>/compiled.json
 
-$ gbax state list emerald
+$ retrokix state list emerald
 captures: 7
   hp        numeric      0x02024382  (u8)
   max_hp    numeric      0x02024383  (u8)
@@ -58,14 +58,14 @@ captures: 7
   scene     categorical  0x03000fa4  (3 values)
 ```
 
-`gbax state ambiguous <rom>` lists tags where >1 address survives the
+`retrokix state ambiguous <rom>` lists tags where >1 address survives the
 intersection — those need more captures with varied values to
 disambiguate.
 
 ## Live readout
 
 ```
-$ gbax play emerald --watch-state
+$ retrokix play emerald --watch-state
 ┌─ state ─────────────────────────────────────────────────┐
 │ hp: 45  max_hp: 100  money: 12420  scene: fight-menu   │
 └─────────────────────────────────────────────────────────┘
@@ -173,7 +173,7 @@ differs.
 ## Storage layout
 
 ```
-~/.gbax/states/<rom-sha1>/
+~/.retrokix/states/<rom-sha1>/
 ├── captures/
 │   ├── 2026-06-10T14-21-40.dump
 │   ├── 2026-06-10T14-21-40.labels.json
@@ -182,7 +182,7 @@ differs.
 └── compiled.json                    # schema version 2
 ```
 
-`.dump` files are forward-compatible; recompile any time with `gbax
+`.dump` files are forward-compatible; recompile any time with `retrokix
 state compile <rom>` to re-run inference with newer algorithms.
 
 ## See also

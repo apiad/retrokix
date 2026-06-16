@@ -8,11 +8,11 @@ name: release
 # identity claim.
 #
 # Trusted publisher must be configured on PyPI first:
-#   https://pypi.org/manage/project/gbax/settings/publishing/
+#   https://pypi.org/manage/project/retrokix/settings/publishing/
 #   (or as a "pending publisher" before the project exists)
 # with:
 #   Owner: apiad
-#   Repo:  gbax
+#   Repo:  retrokix
 #   Workflow filename: release.yml
 #   Environment name: pypi
 
@@ -45,7 +45,7 @@ jobs:
       - name: Inspect wheel platform tag
         run: |
           ls -la dist/
-          /opt/python/cp311-cp311/bin/auditwheel show dist/gbax-*.whl
+          /opt/python/cp311-cp311/bin/auditwheel show dist/retrokix-*.whl
 
       - uses: actions/upload-artifact@v4
         with:

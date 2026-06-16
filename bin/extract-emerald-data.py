@@ -2,7 +2,7 @@
 """Extract structured JSON tables from a local pokeemerald clone.
 
 Reads pokeemerald source files and emits the JSON tables that the
-gbax.plugins.emerald_party plugin loads at runtime. Idempotent — run
+retrokix.plugins.emerald_party plugin loads at runtime. Idempotent — run
 after a `git pull` of pokeemerald.
 
 Data is © Nintendo / Game Freak / Creatures. Source:
@@ -17,7 +17,7 @@ import sys
 from pathlib import Path
 
 DEFAULT_POKEEMERALD = Path("/home/apiad/Workspace/.playground/pokeemerald")
-OUT_DIR = Path(__file__).parent.parent / "src" / "gbax" / "data"
+OUT_DIR = Path(__file__).parent.parent / "src" / "retrokix" / "data"
 
 GROWTH_RANK = {
     "MEDIUM_FAST": 0, "ERRATIC": 1, "FLUCTUATING": 2,

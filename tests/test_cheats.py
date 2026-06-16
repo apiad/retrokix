@@ -5,9 +5,9 @@ from __future__ import annotations
 import pytest
 from fastapi.testclient import TestClient
 
-from gbax.api.server import create_app
-from gbax.cheats import Cheat, _rom_key, cheats_for_rom
-from gbax.runtime import EmulatorRuntime
+from retrokix.api.server import create_app
+from retrokix.cheats import Cheat, _rom_key, cheats_for_rom
+from retrokix.runtime import EmulatorRuntime
 
 
 # --- DB lookup ---

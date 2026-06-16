@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from gbax.driver import MatchOutcome, RealtimeDriver
-from gbax.scenario import load_scenario_file
+from retrokix.driver import MatchOutcome, RealtimeDriver
+from retrokix.scenario import load_scenario_file
 
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -62,7 +62,7 @@ while True:
 
     sc_path = tmp_path / "long_scen.py"
     sc_path.write_text("""\
-from gbax.scenario import Scenario
+from retrokix.scenario import Scenario
 class LongScen(Scenario):
     name = "long"
     rom_sha1 = "b6a631b57969143ddcb7b85553e1e1ea4448a631"

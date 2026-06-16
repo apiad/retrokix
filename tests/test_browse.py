@@ -1,4 +1,4 @@
-"""Tests for `gbax browse` — pure helpers + a Textual Pilot smoke test."""
+"""Tests for `retrokix browse` — pure helpers + a Textual Pilot smoke test."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from gbax.browse import (
+from retrokix.browse import (
     BrowseApp,
     GroupRow,
     MAX_RESULTS,
@@ -15,7 +15,7 @@ from gbax.browse import (
     _title_key,
     _trim_name,
 )
-from gbax.library import RomEntry, RomLibrary
+from retrokix.library import RomEntry, RomLibrary
 
 
 # ---------- helpers ----------
@@ -151,7 +151,7 @@ async def test_browse_enter_on_single_variant_group_downloads(stub_lib, tmp_path
 async def test_browse_enter_on_multi_variant_group_opens_picker(stub_lib):
     """Group with >1 variants → Enter pushes the VariantPicker modal
     instead of downloading immediately."""
-    from gbax.browse import VariantPicker
+    from retrokix.browse import VariantPicker
 
     app = BrowseApp(lib=stub_lib, initial_query="emerald")
     async with app.run_test() as pilot:

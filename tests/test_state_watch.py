@@ -1,10 +1,10 @@
-"""Tests for gbax.state.watch — StateReader pulls live values from a runtime."""
+"""Tests for retrokix.state.watch — StateReader pulls live values from a runtime."""
 from __future__ import annotations
 
 import json
 from pathlib import Path
 
-from gbax.state.watch import StateReader
+from retrokix.state.watch import StateReader
 
 
 def _write_compiled(tmp_path: Path, payload):

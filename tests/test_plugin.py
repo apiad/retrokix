@@ -1,9 +1,9 @@
-"""Tests for gbax.plugin — registry, dispatch, context."""
+"""Tests for retrokix.plugin — registry, dispatch, context."""
 from __future__ import annotations
 
 import pytest
 
-from gbax.plugin import Plugin
+from retrokix.plugin import Plugin
 
 
 # ---- Plugin registry (decorators) ----
@@ -152,7 +152,7 @@ class _FakeRuntime:
 
 
 def _make_ctx(state_values=None, runtime=None, compiled_tags=None):
-    from gbax.plugin import PluginContext
+    from retrokix.plugin import PluginContext
     state_values = state_values or {}
     runtime = runtime or _FakeRuntime()
     compiled_tags = compiled_tags or {}
@@ -233,7 +233,7 @@ def test_ctx_set_categorical_raises():
 
 
 def test_ctx_press_queues_macro():
-    from gbax.input import Button
+    from retrokix.input import Button
     runtime = _FakeRuntime()
     ctx, _ = _make_ctx(runtime=runtime)
     ctx.press([Button.A, Button.DOWN], frames=3)
@@ -248,7 +248,7 @@ def test_ctx_press_accepts_string_button_names():
     runtime = _FakeRuntime()
     ctx, _ = _make_ctx(runtime=runtime)
     ctx.press(["a", "down"], frames=2)
-    from gbax.input import Button
+    from retrokix.input import Button
     macro = runtime.played_macros[0]
     assert macro.events[0] == (0, frozenset({Button.A, Button.DOWN}))
 
@@ -274,12 +274,12 @@ def test_ctx_log_calls_log_fn():
 
 
 def test_load_plugin_finds_single_instance(tmp_path):
-    from gbax.plugin import load_plugin
+    from retrokix.plugin import load_plugin
 
     plugin_file = tmp_path / "myplugin.py"
     plugin_file.write_text(
-        "import gbax\n"
-        "p = gbax.plugin()\n"
+        "import retrokix\n"
+        "p = retrokix.plugin()\n"
         "@p.on_setup\n"
         "def setup(ctx):\n"
         "    pass\n"
@@ -290,7 +290,7 @@ def test_load_plugin_finds_single_instance(tmp_path):
 
 
 def test_load_plugin_zero_instances_raises(tmp_path):
-    from gbax.plugin import load_plugin
+    from retrokix.plugin import load_plugin
 
     plugin_file = tmp_path / "empty.py"
     plugin_file.write_text("x = 1\n")
@@ -299,20 +299,20 @@ def test_load_plugin_zero_instances_raises(tmp_path):
 
 
 def test_load_plugin_multiple_instances_raises(tmp_path):
-    from gbax.plugin import load_plugin
+    from retrokix.plugin import load_plugin
 
     plugin_file = tmp_path / "two.py"
     plugin_file.write_text(
-        "import gbax\n"
-        "p1 = gbax.plugin()\n"
-        "p2 = gbax.plugin()\n"
+        "import retrokix\n"
+        "p1 = retrokix.plugin()\n"
+        "p2 = retrokix.plugin()\n"
     )
     with pytest.raises(RuntimeError, match="found 2"):
         load_plugin(plugin_file)
 
 
 def test_load_plugin_syntax_error_propagates(tmp_path):
-    from gbax.plugin import load_plugin
+    from retrokix.plugin import load_plugin
 
     plugin_file = tmp_path / "bad.py"
     plugin_file.write_text("def broken(:\n")
@@ -322,9 +322,9 @@ def test_load_plugin_syntax_error_propagates(tmp_path):
 
 def test_load_plugin_by_module_name():
     """The bundled pokemon.emerald informational plugin loads via dotted module name."""
-    from gbax.plugin import Plugin, load_plugin
+    from retrokix.plugin import Plugin, load_plugin
 
-    plugin = load_plugin("gbax.plugins.pokemon.emerald")
+    plugin = load_plugin("retrokix.plugins.pokemon.emerald")
     assert isinstance(plugin, Plugin)
     # Should have @p.route entries we registered.
     assert any(r[0] == "/party" for r in plugin.http_routes)

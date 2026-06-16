@@ -20,7 +20,7 @@ class CoreTagHook(BuildHookInterface):
     def initialize(self, version: str, build_data: dict) -> None:
         if self.target_name != "wheel":
             return
-        cores_dir = Path(self.root) / "src" / "gbax" / "cores"
+        cores_dir = Path(self.root) / "src" / "retrokix" / "cores"
         # Any bundled core makes the wheel platform-specific. Both .so
         # files are Linux x86_64; either presence flips the tag.
         if any((cores_dir / name).exists() for name in ("mgba_libretro.so", "fceumm_libretro.so")):

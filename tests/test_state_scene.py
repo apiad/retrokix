@@ -1,7 +1,7 @@
 """Tests for the v0.11 scene-detection classifier."""
 from __future__ import annotations
 
-from gbax.state.scene import (
+from retrokix.state.scene import (
     SceneClassifier,
     compute_phash_templates,
     find_memory_addresses,

@@ -8,8 +8,8 @@ from __future__ import annotations
 
 import sdl2
 
-from gbax.input import Button
-from gbax.render.gamepad import (
+from retrokix.input import Button
+from retrokix.render.gamepad import (
     STICK_DEADZONE,
     TRIGGER_THRESHOLD,
     PadManager,

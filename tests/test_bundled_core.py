@@ -9,8 +9,8 @@ from __future__ import annotations
 
 import pytest
 
-from gbax.cores import bundled_core_path
-from gbax.runtime import EmulatorRuntime, Mode
+from retrokix.cores import bundled_core_path
+from retrokix.runtime import EmulatorRuntime, Mode
 
 
 def test_bundled_core_loads_and_steps_one_frame(test_rom):

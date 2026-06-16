@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from gbax.input import Button, button_from_str
-from gbax.runtime import EmulatorRuntime
+from retrokix.input import Button, button_from_str
+from retrokix.runtime import EmulatorRuntime
 
 
 def test_button_enum_covers_ten_gba_buttons():

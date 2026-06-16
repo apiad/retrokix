@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from gbax.api.server import create_app
+from retrokix.api.server import create_app
 
 
 class _StubRuntime:

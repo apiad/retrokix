@@ -20,11 +20,11 @@ def test_sdl_renderer_constructs_and_presents():
     import sdl2
     import sdl2.ext
 
-    from gbax.render.sdl_renderer import SDLRenderer
+    from retrokix.render.sdl_renderer import SDLRenderer
 
     sdl2.ext.init()
     try:
-        window = sdl2.ext.Window("gbax-test", size=(240 * 2, 160 * 2), flags=sdl2.SDL_WINDOW_RESIZABLE)
+        window = sdl2.ext.Window("retrokix-test", size=(240 * 2, 160 * 2), flags=sdl2.SDL_WINDOW_RESIZABLE)
         renderer = SDLRenderer()
         renderer.init(window, gba_width=240, gba_height=160)
         renderer.present_frame(bytes(240 * 160 * 3))
@@ -42,11 +42,11 @@ def test_sdl_renderer_rejects_unknown_shader():
     import sdl2
     import sdl2.ext
 
-    from gbax.render.sdl_renderer import SDLRenderer
+    from retrokix.render.sdl_renderer import SDLRenderer
 
     sdl2.ext.init()
     try:
-        window = sdl2.ext.Window("gbax-test", size=(240, 160))
+        window = sdl2.ext.Window("retrokix-test", size=(240, 160))
         renderer = SDLRenderer()
         renderer.init(window, gba_width=240, gba_height=160)
         with pytest.raises(ValueError, match="unknown shader"):

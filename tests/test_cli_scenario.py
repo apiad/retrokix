@@ -1,4 +1,4 @@
-"""Tests for `gbax scenario create / list / validate`."""
+"""Tests for `retrokix scenario create / list / validate`."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ from pathlib import Path
 
 from typer.testing import CliRunner
 
-from gbax.cli import app
+from retrokix.cli import app
 
 
 runner = CliRunner()

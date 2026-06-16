@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Build fceumm_libretro.so and stage it for the gbax wheel.
+# Build fceumm_libretro.so and stage it for the retrokix wheel.
 #
 # Used by:
 #   - Developers on a fresh checkout: `bin/build-fceumm-core` produces the .so
-#     at src/gbax/cores/fceumm_libretro.so (the bundled path).
+#     at src/retrokix/cores/fceumm_libretro.so (the bundled path).
 #   - The CI release workflow (release.yml): runs inside the manylinux
 #     container before `python -m build`.
 #
@@ -66,13 +66,13 @@ if [[ -n "$BAD" ]]; then
   exit 1
 fi
 
-mkdir -p "$REPO_ROOT/src/gbax/cores"
-cp "$SO" "$REPO_ROOT/src/gbax/cores/fceumm_libretro.so"
+mkdir -p "$REPO_ROOT/src/retrokix/cores"
+cp "$SO" "$REPO_ROOT/src/retrokix/cores/fceumm_libretro.so"
 # FCEUmm ships its license at the repo root as Copying (GPLv2).
-cp "$BUILD_DIR/fceumm/Copying" "$REPO_ROOT/src/gbax/cores/LICENSE.FCEUmm"
+cp "$BUILD_DIR/fceumm/Copying" "$REPO_ROOT/src/retrokix/cores/LICENSE.FCEUmm"
 
 # Stamp FCEUMM_VERSION into the cores package __init__.
-INIT="$REPO_ROOT/src/gbax/cores/__init__.py"
+INIT="$REPO_ROOT/src/retrokix/cores/__init__.py"
 python3 - <<PY
 import re, pathlib
 p = pathlib.Path("$INIT")
@@ -84,4 +84,4 @@ else:
 p.write_text(new)
 PY
 
-echo "OK: bundled core at src/gbax/cores/fceumm_libretro.so (libretro-fceumm $FCEUMM_VERSION)"
+echo "OK: bundled core at src/retrokix/cores/fceumm_libretro.so (libretro-fceumm $FCEUMM_VERSION)"

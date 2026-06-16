@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import pytest
 
-from gbax import pins as pins_module
-from gbax.cheats import Cheat
-from gbax.runtime import EmulatorRuntime
+from retrokix import pins as pins_module
+from retrokix.cheats import Cheat
+from retrokix.runtime import EmulatorRuntime
 
 
 def test_load_returns_empty_when_no_file(tmp_path):

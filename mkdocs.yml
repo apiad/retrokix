@@ -1,9 +1,9 @@
-site_name: gbax
+site_name: retrokix
 site_description: Game Boy Advance you can drive — hacker-first GBA emulator with HTTP API.
-site_url: https://apiad.github.io/gbax/
+site_url: https://apiad.github.io/retrokix/
 site_author: Alejandro Piad
-repo_url: https://github.com/apiad/gbax
-repo_name: apiad/gbax
+repo_url: https://github.com/apiad/retrokix
+repo_name: apiad/retrokix
 edit_uri: edit/main/docs/
 copyright: Copyright &copy; 2026 Alejandro Piad — MPL-2.0
 
@@ -12,7 +12,7 @@ theme:
   custom_dir: overrides
   language: en
   palette:
-    - scheme: gbax
+    - scheme: retrokix
   font:
     text: Inter
     code: JetBrains Mono
@@ -47,9 +47,9 @@ extra_javascript:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/apiad/gbax
+      link: https://github.com/apiad/retrokix
     - icon: fontawesome/brands/python
-      link: https://pypi.org/project/gbax/
+      link: https://pypi.org/project/retrokix/
   generator: false
 
 markdown_extensions:
