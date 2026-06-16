@@ -1321,7 +1321,7 @@ wheels = [
 
 [[package]]
 name = "retrokix"
-version = "0.19.0"
+version = "0.20.0"
 source = { editable = "." }
 dependencies = [
     { name = "cffi" },
