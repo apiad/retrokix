@@ -45,6 +45,17 @@ if [[ ! -d "$BUILD_DIR/fceumm" ]]; then
 fi
 
 cd "$BUILD_DIR/fceumm"
+
+# Patch a known upstream buffer-overflow: libretro_core_options.h declares
+# `option_defs_us[MAX_CORE_OPTIONS]` and copies entries from `option_defs[]`
+# using `while(option_defs[i].key)`. `MAX_CORE_OPTIONS` is 42 but
+# `option_defs[]` has 52 real entries — on glibc with _FORTIFY_SOURCE=2 the
+# memcpy in set_variables() trips __chk_fail at game-load. Bump the cap so
+# the destination array fits the source. Remove this block once upstream
+# raises MAX_CORE_OPTIONS itself.
+sed -i -E 's/^#define MAX_CORE_OPTIONS [0-9]+/#define MAX_CORE_OPTIONS 64/' \
+  src/drivers/libretro/libretro_core_options.h
+
 make -f Makefile.libretro clean
 make -f Makefile.libretro -j"$(nproc)"
 
