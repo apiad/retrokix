@@ -256,6 +256,10 @@ def play_loop(
             watch_panel.__enter__()
 
     http_server_thread = None
+    # `app` is the FastAPI app when --listen is on, None otherwise. Read
+    # downstream by the audio callback to decide whether to publish
+    # frames over the WebSocket bus; must exist in both branches.
+    app = None
     if listen:
         import inspect
         import threading
