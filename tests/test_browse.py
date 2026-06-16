@@ -66,8 +66,11 @@ def test_group_entries_collapses_variants_and_canonicalizes_order():
 # ---------- pilot smoke ----------
 
 @pytest.fixture
-def stub_lib(monkeypatch):
-    lib = RomLibrary()
+def stub_lib(monkeypatch, tmp_path):
+    # Point the library at an empty tmp dir so `BrowseApp._refresh_local`
+    # doesn't pick up real ROMs from ~/.retrokix/roms and confuse the
+    # "owned → play, not owned → download" Enter behaviour.
+    lib = RomLibrary(roms_dir=tmp_path)
     stub_entries = [
         RomEntry(name="Pokemon - Emerald Version (USA, Europe).zip", size=6_976_143, sha1="aaa"),
         RomEntry(name="Pokemon - Emerald Version (Japan).zip", size=6_900_000, sha1="bbb"),

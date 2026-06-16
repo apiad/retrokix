@@ -341,9 +341,15 @@ def play_loop(
     try:
         from retrokix.render.sdl_renderer import SDLRenderer
 
+        # Pick window + renderer dims from the actual core geometry. The
+        # runtime pre-sizes its framebuffer from system_av_info() so
+        # `width`/`height` are correct before the first retro_run for
+        # any console (GBA 240x160, NES 256x240, SNES 256x224, …).
+        fb_w = runtime.width
+        fb_h = runtime.height
         window = sdl2.ext.Window(
             f"retrokix — {runtime.rom_path.name}",
-            size=(GBA_WIDTH * scale, GBA_HEIGHT * scale),
+            size=(fb_w * scale, fb_h * scale),
             flags=sdl2.SDL_WINDOW_RESIZABLE,
         )
         window.show()
@@ -360,7 +366,7 @@ def play_loop(
             renderer.current_shader = initial_shader
         else:
             renderer.current_shader = "linear"
-        renderer.init(window, GBA_WIDTH, GBA_HEIGHT)
+        renderer.init(window, fb_w, fb_h)
         if user_shader_path is not None:
             if hasattr(renderer, "load_user_shader"):
                 renderer.load_user_shader(user_shader_path)

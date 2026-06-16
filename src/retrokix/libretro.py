@@ -246,6 +246,19 @@ class LibretroCore:
         self._rom_data_c = data_c
         self._loaded = True
 
+        # Pre-size the framebuffer from the core's reported geometry.
+        # Until first retro_run, callers (play_loop, /stream info handshake,
+        # browser controller layout) read width/height to lay out a window;
+        # if we leave the GBA-default (240x160) in place, NES (256x240)
+        # and SNES (256x224) get the wrong window and stretch.
+        try:
+            av = self.system_av_info()
+            w, h = int(av.get("base_width", 0)), int(av.get("base_height", 0))
+            if w > 0 and h > 0 and (h, w) != self._framebuffer.shape[:2]:
+                self._framebuffer = np.zeros((h, w, 3), dtype=np.uint8)
+        except Exception:  # noqa: BLE001 — keep the GBA default on weirdness
+            pass
+
     def reset(self) -> None:
         self._lib.retro_reset()
 
