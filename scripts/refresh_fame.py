@@ -34,6 +34,13 @@ import urllib.request
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+# Wikipedia category that marks an article as the page of a specific
+# released video game. Genuine game articles carry "Category:<year>
+# video games" — franchise hubs ("Harry Potter", "The Legend of Zelda")
+# and non-game articles ("Titanic", "Egypt", "Aladdin") don't, even when
+# they share a name with a No-Intro entry.
+_YEAR_GAME_CATEGORY_RE = re.compile(r"^Category:\d{4} video games$")
+
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
@@ -135,25 +142,53 @@ def _opensearch(query: str) -> str | None:
     return None
 
 
+def _is_specific_video_game(article: str) -> bool:
+    """Return True iff the article's category list contains a
+    `<year> video games` marker — only specific released games carry
+    this. Filters out franchise hubs and non-game articles that share
+    a name with a No-Intro entry."""
+    enc = urllib.parse.quote(article)
+    data = _get(
+        f"https://en.wikipedia.org/w/api.php?action=query&titles={enc}"
+        f"&prop=categories&cllimit=max&format=json"
+    )
+    if not data:
+        return False
+    try:
+        page = next(iter(data["query"]["pages"].values()))
+    except (KeyError, StopIteration):
+        return False
+    for c in page.get("categories", []):
+        if _YEAR_GAME_CATEGORY_RE.match(c.get("title", "")):
+            return True
+    return False
+
+
 def _resolve_article(title: str) -> str | None:
     """Resolve a No-Intro group title to a canonical Wikipedia article.
 
     Strategy:
-      1. Try the cleaned bare title — gets a high-quality canonical hit
-         when the article shares a name with the game.
-      2. Validate by strict equality on normalized titles.
-      3. If the bare result is the wrong article (or no result), retry
-         with an explicit "(video game)" disambiguator.
-      4. Otherwise treat as unresolved.
+      1. Try the cleaned bare title.
+      2. Validate by token-set equality on normalized titles AND
+         confirm the article has a `<year> video games` category
+         (the year-of-release marker that distinguishes specific
+         games from franchise hubs and shared-name non-games).
+      3. If the bare result fails either check, retry with explicit
+         "(video game)" disambig.
+      4. Otherwise unresolved.
     """
     cleaned = _denoun_search_title(title)
     bare = _opensearch(cleaned)
     if bare and _looks_like_match(cleaned, bare):
-        return bare
+        time.sleep(SLEEP)
+        if _is_specific_video_game(bare):
+            return bare
     time.sleep(SLEEP)
     disambig = _opensearch(f"{cleaned} (video game)")
     if disambig and _looks_like_match(cleaned, disambig):
-        return disambig
+        time.sleep(SLEEP)
+        if _is_specific_video_game(disambig):
+            return disambig
     return None
 
 
