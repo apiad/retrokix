@@ -20,7 +20,6 @@ import sdl2
 import sdl2.ext
 
 from retrokix.input import Button
-from retrokix.libretro import GBA_HEIGHT, GBA_WIDTH
 from retrokix.runtime import EmulatorRuntime
 
 
