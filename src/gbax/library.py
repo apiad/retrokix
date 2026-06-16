@@ -355,6 +355,33 @@ def resolve_rom(query_or_path: str, roms_dir: Path | None = None) -> Path:
     return matches[0]
 
 
+# --- fame index ---
+
+_FAME_CACHE: dict[str, dict[str, dict]] | None = None
+
+
+def _load_fame() -> dict[str, dict[str, dict]]:
+    """Load bundled Wikipedia-pageviews fame index. Returns {} if absent
+    (dev tree without the snapshot, or a console with no entries yet).
+    Cached after first call."""
+    global _FAME_CACHE
+    if _FAME_CACHE is not None:
+        return _FAME_CACHE
+    try:
+        blob = _resource_files("gbax.data").joinpath("wikipedia_fame.json").read_text()
+        _FAME_CACHE = json.loads(blob)
+    except FileNotFoundError:
+        _FAME_CACHE = {}
+    return _FAME_CACHE
+
+
+def fame_score(console: str, title: str) -> int:
+    """Wikipedia pageviews over the last 12 months for (console, title).
+    Returns 0 when the snapshot has no entry — sorts to the bottom."""
+    info = _load_fame().get(console, {}).get(title)
+    return int(info.get("views_12mo", 0)) if info else 0
+
+
 # --- back-compat shims ---
 
 #: Legacy single-console default. Kept so older scripts importing

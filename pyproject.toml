@@ -71,6 +71,7 @@ packages = ["src/gbax"]
 "src/gbax/data/libretro_cheats_gba.json" = "gbax/data/libretro_cheats_gba.json"
 "src/gbax/data/no_intro_nes.json" = "gbax/data/no_intro_nes.json"
 "src/gbax/data/libretro_cheats_nes.json" = "gbax/data/libretro_cheats_nes.json"
+"src/gbax/data/wikipedia_fame.json" = "gbax/data/wikipedia_fame.json"
 "src/gbax/data/emerald_species.json" = "gbax/data/emerald_species.json"
 "src/gbax/data/emerald_growth_rates.json" = "gbax/data/emerald_growth_rates.json"
 "src/gbax/data/emerald_species_info.json" = "gbax/data/emerald_species_info.json"

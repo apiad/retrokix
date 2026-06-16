@@ -290,10 +290,15 @@ class RomGroup:
 
     `variants` is sorted USA/World → Europe → Japan/other, then
     shortest name (so the canonical base release ends up first).
+
+    `fame` is Wikipedia pageviews over the last 12 months — see
+    `library.fame_score`. Used to rank groups in the browse list;
+    0 when the snapshot has no entry for this title.
     """
 
     title: str
     variants: list["RomEntry"] = field(default_factory=list)
+    fame: int = 0
 
     @property
     def primary(self) -> "RomEntry":
@@ -306,14 +311,16 @@ class RomGroup:
 
 def _group_entries(entries: list["RomEntry"]) -> list[RomGroup]:
     """Collapse a flat entry list into per-title groups, preserving the
-    relative order of first appearance."""
-    by_title: dict[str, RomGroup] = {}
-    order: list[str] = []
+    relative order of first appearance. Each group's `fame` is set from
+    the bundled Wikipedia pageviews snapshot keyed by (console, title)."""
+    from gbax.library import fame_score
+    by_title: dict[tuple[str, str], RomGroup] = {}
+    order: list[tuple[str, str]] = []
     for e in entries:
-        key = _title_key(e.name)
+        key = (e.console, _title_key(e.name))
         g = by_title.get(key)
         if g is None:
-            g = RomGroup(title=key, variants=[])
+            g = RomGroup(title=key[1], variants=[], fame=fame_score(*key))
             by_title[key] = g
             order.append(key)
         g.variants.append(e)
@@ -321,6 +328,13 @@ def _group_entries(entries: list["RomEntry"]) -> list[RomGroup]:
     for g in by_title.values():
         g.variants.sort(key=lambda e: (_region_score(e.name.lower()), len(e.name)))
     return [by_title[k] for k in order]
+
+
+def _sort_by_fame(groups: list[RomGroup]) -> list[RomGroup]:
+    """DESC by fame, alphabetical title tiebreak. Groups with fame=0
+    (no Wikipedia article known) sort to the bottom but still
+    deterministically by title."""
+    return sorted(groups, key=lambda g: (-g.fame, g.title.lower()))
 
 
 def _fmt_size(b: int) -> str:
@@ -637,6 +651,26 @@ class BrowseApp(App):
                 return name[: -len(suffix)]
         return name
 
+    def _default_top_groups(self) -> list[RomGroup]:
+        """Default (empty-query) view: top groups ranked by Wikipedia
+        fame across all loaded consoles. Falls back to the curated
+        `_FAMOUS_QUERIES` cohort when the fame snapshot is missing or
+        too thin to populate MAX_RESULTS — partial smoke-test snapshots
+        otherwise put 95 alphabetical leftovers behind 5 famous picks."""
+        if self._famous_cache is not None:
+            return self._famous_cache
+        from gbax.library import _load_fame
+        fame = _load_fame()
+        ranked_count = sum(
+            1 for c in fame.values() for info in c.values()
+            if info.get("views_12mo", 0) > 0
+        )
+        if ranked_count >= MAX_RESULTS:
+            self._famous_cache = _sort_by_fame(_group_entries(self.lib.entries()))[:MAX_RESULTS]
+        else:
+            self._famous_cache = self._famous_groups()
+        return self._famous_cache
+
     def _famous_groups(self) -> list[RomGroup]:
         """Resolve the curated famous-games queries to grouped variants.
 
@@ -728,9 +762,9 @@ class BrowseApp(App):
         q = self.query_text.strip()
         is_default = not q
         if q:
-            groups = _group_entries(self.lib.search(q))
+            groups = _sort_by_fame(_group_entries(self.lib.search(q)))
         else:
-            groups = self._famous_groups()
+            groups = self._default_top_groups()
         self._results = groups[:MAX_RESULTS]
 
         listv = self.query_one("#results", ListView)
