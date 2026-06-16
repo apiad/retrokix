@@ -25,6 +25,70 @@ body:has(.gx-hero) .md-sidebar {
 }
 
 /* ============================================================
+ * Console roster — sits between hero and "Three commands".
+ * One row, 4 cells, separated by faint dividers.
+ * ============================================================ */
+.gx-roster {
+  position: relative;
+  padding: 1.5rem 1.25rem;
+  border-top: 1px solid var(--gx-border-soft);
+  border-bottom: 1px solid var(--gx-border-soft);
+  background:
+    linear-gradient(180deg,
+      rgba(167, 139, 250, 0.05) 0%,
+      rgba(167, 139, 250, 0.02) 100%);
+}
+.gx-roster__inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  align-items: center;
+}
+.gx-roster__cell {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 0;
+}
+.gx-roster__cell + .gx-roster__cell {
+  border-left: 1px solid var(--gx-border-soft);
+  padding-left: 1.5rem;
+}
+.gx-roster__icon {
+  font-size: 1.6rem;
+  line-height: 1;
+  flex: 0 0 auto;
+}
+.gx-roster__label {
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gx-text-soft);
+  margin-bottom: 0.15rem;
+}
+.gx-roster__value {
+  font-family: var(--gx-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--gx-text);
+}
+@media (max-width: 760px) {
+  .gx-roster__inner {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .gx-roster__cell + .gx-roster__cell {
+    border-left: 0;
+    padding-left: 0;
+  }
+  .gx-roster__cell:nth-child(2n) {
+    border-left: 1px solid var(--gx-border-soft);
+    padding-left: 1.5rem;
+  }
+}
+
+/* ============================================================
  * Shared building blocks.
  * ============================================================ */
 .gx-section {
@@ -209,7 +273,10 @@ body:has(.gx-hero) .md-sidebar {
 }
 .gx-wordmark {
   font-family: var(--gx-retro);
-  font-size: clamp(2.4rem, 6vw, 4.5rem);
+  /* 8 chars in the Press-Start retro font is wider than the old 4-char
+   * "gbax" wordmark — cap kept low so it never bleeds past the copy
+   * column and into the bezel visual at any viewport width. */
+  font-size: clamp(2rem, 4.2vw, 3rem);
   letter-spacing: 0.04em;
   background: linear-gradient(180deg, #f5f3ff 0%, #c4b5fd 60%, #a78bfa 100%);
   -webkit-background-clip: text;
@@ -220,6 +287,7 @@ body:has(.gx-hero) .md-sidebar {
     0 2px 0 rgba(0, 0, 0, 0.35);
   line-height: 1;
   display: inline-block;
+  max-width: 100%;
 }
 .gx-hero__tagline {
   font-family: var(--gx-display);
