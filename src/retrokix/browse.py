@@ -26,7 +26,7 @@ from textual.binding import Binding
 from textual.containers import Container, Horizontal, Vertical
 from textual.reactive import reactive
 from textual.screen import ModalScreen
-from textual.widgets import Footer, Header, Input, ListItem, ListView, ProgressBar, Static
+from textual.widgets import Footer, Header, Input, ListItem, ListView, Static
 
 if TYPE_CHECKING:
     from retrokix.library import RomEntry, RomLibrary
@@ -693,16 +693,6 @@ class BrowseApp(App):
         background: $boost;
         color: $text-muted;
     }
-    /* Progress bar hides above the status line. We toggle visibility
-     * via `bar.styles.display = "block"/"none"` instead of a CSS class —
-     * class names starting with `--` collide with the CSS custom-property
-     * prefix and the rule wouldn't match. */
-    #dl-progress {
-        dock: bottom;
-        height: 1;
-        padding: 0 2;
-        display: none;
-    }
     """
 
     BINDINGS = [
@@ -732,6 +722,8 @@ class BrowseApp(App):
         self._famous_cache: list[RomGroup] | None = None
         self._local_stems: set[str] = set()
         self._local_paths: dict[str, Path] = {}
+        self._dl_name: str = ""
+        self._dl_total: int = 1
 
     def _refresh_local(self) -> None:
         """Re-scan the on-disk ROM folder. Stems (filename minus suffix)
@@ -835,7 +827,6 @@ class BrowseApp(App):
                 id="q",
             )
         yield ListView(id="results")
-        yield ProgressBar(id="dl-progress", total=100, show_eta=False)
         yield Static("", id="status")
         yield Footer()
 
@@ -967,24 +958,20 @@ class BrowseApp(App):
 
     def _download(self, entry: "RomEntry") -> None:
         self._downloading = True
-        name = _trim_name(entry.name, 50)
-        total = max(entry.size, 1)
-        bar = self.query_one("#dl-progress", ProgressBar)
-        bar.update(total=total, progress=0)
-        bar.styles.display = "block"
-        self._set_status(f"downloading {name} ({_fmt_size(entry.size)})…")
+        self._dl_name = _trim_name(entry.name, 40)
+        self._dl_total = max(entry.size, 1)
+        self._set_status(self._format_progress(0))
 
         # The HTTP stream fires `progress_cb` per 64 KB chunk — many
         # hundreds of times per second on a fast link. Throttle to whole
-        # percent ticks so we don't flood `call_from_thread` (which
-        # serializes on the message bus and can stall the UI).
+        # percent ticks so we don't flood `call_from_thread`.
         last_pct = [-1]
         def cb(downloaded: int, _total: int) -> None:
-            pct = int(downloaded * 100 / total) if total else 100
+            pct = int(downloaded * 100 / self._dl_total) if self._dl_total else 100
             if pct == last_pct[0]:
                 return
             last_pct[0] = pct
-            self.call_from_thread(self._on_progress, downloaded, total)
+            self.call_from_thread(self._on_progress, downloaded)
 
         self.run_worker(
             lambda: self.lib.download(entry, progress=False, progress_cb=cb),
@@ -994,12 +981,26 @@ class BrowseApp(App):
             description=f"download {entry.name}",
         )
 
-    def _on_progress(self, downloaded: int, total: int) -> None:
-        try:
-            bar = self.query_one("#dl-progress", ProgressBar)
-        except Exception:  # noqa: BLE001 — widget gone, nothing to update
-            return
-        bar.update(progress=min(downloaded, total))
+    def _format_progress(self, downloaded: int) -> str:
+        """Render a textual progress bar inline in the status line —
+        more reliable than a ProgressBar widget (which has composite
+        layout quirks under dock:bottom + height:1)."""
+        total = max(self._dl_total, 1)
+        pct = min(100, int(downloaded * 100 / total))
+        width = 24
+        filled = width * pct // 100
+        bar = "█" * filled + "░" * (width - filled)
+        mb_done = downloaded / 1_048_576
+        mb_total = total / 1_048_576
+        return (
+            f"downloading {self._dl_name}  "
+            f"[#a78bfa]{bar}[/]  {pct:>3d}%  "
+            f"[dim]{mb_done:>5.1f}/{mb_total:.1f} MB[/]"
+        )
+
+    def _on_progress(self, downloaded: int) -> None:
+        if self._downloading:
+            self._set_status(self._format_progress(downloaded))
 
     def on_worker_state_changed(self, event) -> None:
         from textual.worker import WorkerState
@@ -1007,16 +1008,13 @@ class BrowseApp(App):
         if event.worker.name != "rom-download":
             return
         state = event.state
-        bar = self.query_one("#dl-progress", ProgressBar)
         if state == WorkerState.SUCCESS:
             self._downloading = False
-            bar.styles.display = "none"
             path: Path = event.worker.result
             # Hand the path back to the wrapper CLI — it'll exec `play`.
             self.exit(path)
         elif state == WorkerState.ERROR:
             self._downloading = False
-            bar.styles.display = "none"
             err = event.worker.error
             self._set_status(f"error: {err}")
 
