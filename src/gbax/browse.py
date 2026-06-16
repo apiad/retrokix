@@ -279,11 +279,15 @@ class RomGroup:
     `fame` is Wikipedia pageviews over the last 12 months — see
     `library.fame_score`. Used to rank groups in the browse list;
     0 when the snapshot has no entry for this title.
+
+    `stars` is the percentile bucket of `fame` within the snapshot —
+    see `library.fame_stars`. 0–5 inclusive.
     """
 
     title: str
     variants: list["RomEntry"] = field(default_factory=list)
     fame: int = 0
+    stars: int = 0
 
     @property
     def primary(self) -> "RomEntry":
@@ -297,15 +301,19 @@ class RomGroup:
 def _group_entries(entries: list["RomEntry"]) -> list[RomGroup]:
     """Collapse a flat entry list into per-title groups, preserving the
     relative order of first appearance. Each group's `fame` is set from
-    the bundled Wikipedia pageviews snapshot keyed by (console, title)."""
-    from gbax.library import fame_score
+    the bundled Wikipedia pageviews snapshot keyed by (console, title);
+    `stars` is the corresponding 0–5 percentile bucket."""
+    from gbax.library import fame_score, fame_stars
     by_title: dict[tuple[str, str], RomGroup] = {}
     order: list[tuple[str, str]] = []
     for e in entries:
         key = (e.console, _title_key(e.name))
         g = by_title.get(key)
         if g is None:
-            g = RomGroup(title=key[1], variants=[], fame=fame_score(*key))
+            g = RomGroup(
+                title=key[1], variants=[],
+                fame=fame_score(*key), stars=fame_stars(*key),
+            )
             by_title[key] = g
             order.append(key)
         g.variants.append(e)
@@ -357,6 +365,12 @@ def _console_badge(slug: str | None) -> str:
     return f"[{color}]{slug.upper()}[/]"
 
 
+def _stars_cell(n: int) -> str:
+    """Five-character star rating — gold for filled, slate-dim for empty."""
+    n = max(0, min(5, n))
+    return f"[#facc15]{'★' * n}[/][#475569]{'★' * (5 - n)}[/]"
+
+
 def _pretty_name(name: str) -> str:
     """Strip the .zip suffix and dim the (region/language) tail so the
     title carries the visual weight."""
@@ -396,6 +410,7 @@ class GroupRow(ListItem):
                 _console_badge(self.group.primary.console),
                 classes="row-console",
             )
+            yield Static(_stars_cell(self.group.stars), classes="row-stars")
             yield Static(f"{self.group.title}{extra}", classes="row-name")
             yield Static(
                 f"[dim]{_fmt_size(self.group.primary.size)}[/dim]",
@@ -565,6 +580,12 @@ class BrowseApp(App):
     .row-console {
         width: 4;
         min-width: 4;
+        height: 1;
+        padding: 0 1 0 0;
+    }
+    .row-stars {
+        width: 6;
+        min-width: 6;
         height: 1;
         padding: 0 1 0 0;
     }

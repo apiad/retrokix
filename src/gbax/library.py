@@ -404,6 +404,50 @@ def fame_score(console: str, title: str) -> int:
     return int(info.get("views_12mo", 0)) if info else 0
 
 
+# Quantile boundaries for the star rating:
+# 5★ = top 2% of ranked titles, 4★ = top 10%, 3★ = top 25%, 2★ = top
+# 50%, 1★ = anything ranked above zero, 0★ = unranked. Cuts adapt to
+# whatever's in the loaded snapshot.
+_STAR_QUANTILES: tuple[float, ...] = (0.02, 0.10, 0.25, 0.50)
+_FAME_THRESHOLDS: list[int] | None = None
+
+
+def _fame_thresholds() -> list[int]:
+    """Return view-count cuts indexed by star tier (5★ first, then 4★…)."""
+    global _FAME_THRESHOLDS
+    if _FAME_THRESHOLDS is not None:
+        return _FAME_THRESHOLDS
+    fame = _load_fame()
+    views = sorted(
+        (int(i["views_12mo"]) for c in fame.values() for i in c.values()
+         if i.get("views_12mo", 0) > 0),
+        reverse=True,
+    )
+    if not views:
+        _FAME_THRESHOLDS = [0, 0, 0, 0, 1]
+        return _FAME_THRESHOLDS
+    cuts = []
+    for p in _STAR_QUANTILES:
+        idx = max(0, min(len(views) - 1, int(len(views) * p) - 1))
+        cuts.append(views[idx])
+    cuts.append(1)  # 1★ floor: any positive views
+    _FAME_THRESHOLDS = cuts
+    return _FAME_THRESHOLDS
+
+
+def fame_stars(console: str, title: str) -> int:
+    """0–5 stars based on where (console, title) sits in the snapshot's
+    fame distribution. 0 = unranked (no Wikipedia data) or fame=0;
+    5 = top 2% of ranked titles."""
+    score = fame_score(console, title)
+    if score <= 0:
+        return 0
+    for stars, cut in zip((5, 4, 3, 2, 1), _fame_thresholds()):
+        if score >= cut:
+            return stars
+    return 0
+
+
 # --- back-compat shims ---
 
 #: Legacy single-console default. Kept so older scripts importing
