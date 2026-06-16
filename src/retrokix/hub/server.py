@@ -1,11 +1,14 @@
 """FastAPI app for the retrokix hub.
 
-The hub has three responsibilities:
+The hub has these responsibilities:
 
-  GET /                — landing page (game grid + search).
-  GET /api/library     — JSON of owned ROMs grouped/sorted by fame.
-  POST /games/launch   — spawn a child play --no-sdl, return its play URL.
-  GET /play/{game_id}  — 302 to the child's /stream?mode=controller.
+  GET  /                          — landing page (game grid + search).
+  GET  /api/library               — JSON: owned + top-N unowned per console.
+  GET  /api/games                 — JSON: currently-spawned children.
+  POST /games/launch              — spawn child for an owned ROM, return URL.
+  POST /games/download            — start download job for an unowned ROM.
+  GET  /downloads/{id}/events     — SSE stream of progress + ready/failed.
+  GET  /play/{game_id}            — 302 to the child's /stream?mode=controller.
 
 Per-game runtimes live in subprocesses, not in this app. See
 `hub/state.py`.
@@ -13,67 +16,46 @@ Per-game runtimes live in subprocesses, not in this app. See
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+import json
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 from pydantic import BaseModel
 
 from retrokix import __version__
+from retrokix.hub.downloads import DownloadManager
+from retrokix.hub.library_view import HubGroup, build_library_view
 from retrokix.hub.state import HubState
 from retrokix.hub.templates import render_landing
 from retrokix.library import (
-    CONSOLES,
     ALL_ROM_EXTS,
+    CONSOLES,
     DEFAULT_ROMS_DIR,
     console_for_path,
-    fame_score,
-    fame_stars,
-    list_local_roms,
-    title_key,
 )
-
-
-@dataclass
-class LibraryGroup:
-    """One title (one or more variants on disk) for the hub grid."""
-
-    title: str
-    console: str
-    fame: int
-    stars: int
-    variants: list[Path]  # absolute paths to owned ROMs
-
-    @property
-    def primary(self) -> Path:
-        return self.variants[0]
-
-
-def _build_owned_library(roms_dir: Path) -> list[LibraryGroup]:
-    """Collapse on-disk ROMs into per-title groups, fame-sorted DESC."""
-    groups: dict[tuple[str, str], LibraryGroup] = {}
-    for path in list_local_roms(roms_dir):
-        console = console_for_path(path) or "gba"
-        # `title_key` strips the trailing extension and the region tag.
-        key_title = title_key(path.name)
-        key = (console, key_title)
-        g = groups.get(key)
-        if g is None:
-            g = LibraryGroup(
-                title=key_title,
-                console=console,
-                fame=fame_score(console, key_title),
-                stars=fame_stars(console, key_title),
-                variants=[],
-            )
-            groups[key] = g
-        g.variants.append(path)
-    return sorted(groups.values(), key=lambda g: (-g.fame, g.title.lower()))
 
 
 class LaunchRequest(BaseModel):
     rom_path: str
+
+
+class DownloadRequest(BaseModel):
+    rom_name: str
+    console: str
+
+
+def _serialize_group(g: HubGroup) -> dict:
+    return {
+        "title": g.title,
+        "console": g.console,
+        "fame": g.fame,
+        "stars": g.stars,
+        "owned": g.owned,
+        "primary_path": str(g.primary_path) if g.primary_path else None,
+        "archive_name": g.archive_name,
+        "variant_count": g.variant_count,
+    }
 
 
 def create_hub_app(
@@ -81,39 +63,32 @@ def create_hub_app(
     host: str = "127.0.0.1",
     roms_dir: Path | None = None,
     hub_state: HubState | None = None,
+    download_manager: DownloadManager | None = None,
 ) -> FastAPI:
     """Build the hub's FastAPI app.
 
-    Pass `hub_state` to inject a test double; otherwise a default
-    HubState is constructed bound to `host`.
+    Pass `hub_state` and/or `download_manager` to inject test doubles;
+    otherwise defaults bound to `host` + `roms_dir` are constructed.
     """
     roms_dir = Path(roms_dir) if roms_dir else DEFAULT_ROMS_DIR
     state = hub_state or HubState(host=host)
+    downloads = download_manager or DownloadManager(hub=state, roms_dir=roms_dir)
 
     app = FastAPI(title="retrokix hub", version=__version__)
     app.state.hub = state
+    app.state.downloads = downloads
     app.state.roms_dir = roms_dir
 
     @app.get("/", response_class=HTMLResponse)
     def landing() -> HTMLResponse:
-        groups = _build_owned_library(roms_dir)
+        groups = build_library_view(roms_dir)
         return HTMLResponse(render_landing(groups, version=__version__))
 
     @app.get("/api/library")
     def library() -> dict:
-        groups = _build_owned_library(roms_dir)
+        groups = build_library_view(roms_dir)
         return {
-            "groups": [
-                {
-                    "title": g.title,
-                    "console": g.console,
-                    "fame": g.fame,
-                    "stars": g.stars,
-                    "primary_path": str(g.primary),
-                    "variant_count": len(g.variants),
-                }
-                for g in groups
-            ],
+            "groups": [_serialize_group(g) for g in groups],
             "consoles": {
                 slug: {"label": info.label}
                 for slug, info in CONSOLES.items()
@@ -135,6 +110,31 @@ def create_hub_app(
             "console": gp.console,
             "rom": rom.name,
         }
+
+    @app.post("/games/download")
+    def download(req: DownloadRequest) -> dict:
+        if req.console not in CONSOLES:
+            raise HTTPException(400, f"unknown console: {req.console!r}")
+        job = downloads.start(req.rom_name, req.console)
+        return {
+            "job_id": job.job_id,
+            "events_url": f"/downloads/{job.job_id}/events",
+        }
+
+    @app.get("/downloads/{job_id}/events")
+    def download_events(job_id: str):
+        job = downloads.get(job_id)
+        if job is None:
+            raise HTTPException(404, f"unknown job: {job_id}")
+
+        def stream():
+            for ev in downloads.events(job_id):
+                yield f"data: {json.dumps(ev)}\n\n"
+
+        return StreamingResponse(stream(), media_type="text/event-stream", headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+        })
 
     @app.get("/play/{game_id}")
     def play(game_id: str) -> RedirectResponse:

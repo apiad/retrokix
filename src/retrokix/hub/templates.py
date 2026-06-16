@@ -21,7 +21,7 @@ import html
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from retrokix.hub.server import LibraryGroup
+    from retrokix.hub.library_view import HubGroup
 
 
 _HEAD = """<!doctype html>
@@ -196,11 +196,42 @@ _HEAD = """<!doctype html>
     color: var(--accent);
     font-weight: 600;
   }
+  .tile.is-unowned {
+    border-style: dashed;
+    border-color: var(--border-soft);
+  }
+  .tile.is-unowned:hover {
+    border-color: rgba(167,139,250,0.45);
+    border-style: solid;
+  }
+  .tile.is-unowned .tile__action {
+    color: var(--text-dim);
+  }
   .tile.is-launching {
     border-color: var(--emerald);
+    border-style: solid;
   }
   .tile.is-launching .tile__action {
     color: var(--emerald);
+  }
+  .tile.is-downloading {
+    border-color: var(--accent);
+    border-style: solid;
+  }
+  .tile__progress {
+    position: relative;
+    height: 4px;
+    background: var(--bg-2);
+    border-radius: 4px;
+    overflow: hidden;
+    display: none;
+  }
+  .tile.is-downloading .tile__progress { display: block; }
+  .tile__progress__bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent-deep), var(--accent));
+    transition: width 0.2s linear;
   }
   .empty {
     padding: 3rem 1rem;
@@ -271,29 +302,87 @@ _FOOT = """
     toastT = setTimeout(() => toastEl.classList.remove('is-visible'), 2400);
   }}
 
-  document.querySelectorAll('[data-rom]').forEach(el => {{
-    el.addEventListener('click', async ev => {{
+  async function launchOwned(el) {{
+    el.classList.add('is-launching');
+    el.querySelector('.tile__action').textContent = 'launching…';
+    try {{
+      const resp = await fetch('/games/launch', {{
+        method: 'POST',
+        headers: {{'content-type': 'application/json'}},
+        body: JSON.stringify({{rom_path: el.dataset.rom}}),
+      }});
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const {{url, rom}} = await resp.json();
+      window.open(url, '_blank');
+      toast('▶ launched ' + rom);
+    }} catch (err) {{
+      toast('launch failed: ' + err.message, 'error');
+    }} finally {{
+      setTimeout(() => {{
+        el.classList.remove('is-launching');
+        el.querySelector('.tile__action').textContent = '▶ play';
+      }}, 1200);
+    }}
+  }}
+
+  async function downloadAndLaunch(el) {{
+    const bar = el.querySelector('.tile__progress__bar');
+    el.classList.add('is-downloading');
+    const action = el.querySelector('.tile__action');
+    action.textContent = 'starting…';
+    try {{
+      const resp = await fetch('/games/download', {{
+        method: 'POST',
+        headers: {{'content-type': 'application/json'}},
+        body: JSON.stringify({{
+          rom_name: el.dataset.archive,
+          console: el.dataset.console,
+        }}),
+      }});
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const {{events_url}} = await resp.json();
+      await new Promise((resolve, reject) => {{
+        const es = new EventSource(events_url);
+        es.onmessage = (m) => {{
+          let ev;
+          try {{ ev = JSON.parse(m.data); }} catch (e) {{ return; }}
+          if (ev.type === 'progress') {{
+            bar.style.width = ev.percent + '%';
+            action.textContent = '⬇ ' + Math.round(ev.percent) + '%';
+          }} else if (ev.type === 'ready') {{
+            window.open(ev.url, '_blank');
+            toast('▶ downloaded + launched ' + ev.rom);
+            es.close();
+            resolve();
+          }} else if (ev.type === 'failed') {{
+            es.close();
+            reject(new Error(ev.error || 'download failed'));
+          }}
+        }};
+        es.onerror = () => {{
+          es.close();
+          reject(new Error('event stream lost'));
+        }};
+      }});
+    }} catch (err) {{
+      toast('download failed: ' + err.message, 'error');
+    }} finally {{
+      setTimeout(() => {{
+        el.classList.remove('is-downloading');
+        bar.style.width = '0%';
+        action.innerHTML = '⬇ download &amp; play';
+      }}, 1600);
+    }}
+  }}
+
+  document.querySelectorAll('.tile').forEach(el => {{
+    el.addEventListener('click', ev => {{
       ev.preventDefault();
-      const rom = el.dataset.rom;
-      el.classList.add('is-launching');
-      el.querySelector('.tile__action').textContent = 'launching…';
-      try {{
-        const resp = await fetch('/games/launch', {{
-          method: 'POST',
-          headers: {{'content-type': 'application/json'}},
-          body: JSON.stringify({{rom_path: rom}}),
-        }});
-        if (!resp.ok) throw new Error('HTTP ' + resp.status);
-        const {{url, rom: romName}} = await resp.json();
-        window.open(url, '_blank');
-        toast('▶ launched ' + romName);
-      }} catch (err) {{
-        toast('launch failed: ' + err.message, 'error');
-      }} finally {{
-        setTimeout(() => {{
-          el.classList.remove('is-launching');
-          el.querySelector('.tile__action').textContent = '▶ play';
-        }}, 1200);
+      if (el.classList.contains('is-launching') || el.classList.contains('is-downloading')) return;
+      if (el.dataset.rom) {{
+        launchOwned(el);
+      }} else if (el.dataset.archive) {{
+        downloadAndLaunch(el);
       }}
     }});
   }});
@@ -333,29 +422,42 @@ def _stars(n: int) -> str:
     return "★" * n + "<span style='color:var(--text-soft)'>" + ("☆" * (5 - n)) + "</span>"
 
 
-def _tile(group: "LibraryGroup") -> str:
+def _tile(group: "HubGroup") -> str:
     title = html.escape(group.title)
-    rom = html.escape(str(group.primary))
     stars = _stars(group.stars)
     extra = ""
-    if len(group.variants) > 1:
+    if group.variant_count > 1:
         extra = (
-            f"<span class='tile__row__extra'>+{len(group.variants) - 1} variants</span>"
+            f"<span class='tile__row__extra'>+{group.variant_count - 1} variants</span>"
         )
+
+    if group.owned:
+        action = "▶ play"
+        cls = "tile"
+        data = f'data-rom="{html.escape(str(group.primary_path))}"'
+    else:
+        action = "⬇ download &amp; play"
+        cls = "tile is-unowned"
+        data = (
+            f'data-archive="{html.escape(group.archive_name or "")}" '
+            f'data-console="{html.escape(group.console)}"'
+        )
+
     return (
-        f'<button class="tile" data-rom="{rom}" '
+        f'<button class="{cls}" {data} '
         f'data-search="{title.lower()}">'
         f'<div class="tile__title">{title}</div>'
         f'<div class="tile__row">'
         f'<span class="tile__stars">{stars}</span>'
         f'{extra}'
-        f'<span class="tile__action">▶ play</span>'
+        f'<span class="tile__action">{action}</span>'
         f'</div>'
+        f'<div class="tile__progress"><div class="tile__progress__bar"></div></div>'
         f'</button>'
     )
 
 
-def _section(console: str, groups: list["LibraryGroup"]) -> str:
+def _section(console: str, groups: list["HubGroup"]) -> str:
     label = _CONSOLE_LABELS.get(console, console.upper())
     tiles = "\n".join(_tile(g) for g in groups)
     return (
@@ -371,7 +473,7 @@ def _section(console: str, groups: list["LibraryGroup"]) -> str:
     )
 
 
-def render_landing(groups: "list[LibraryGroup]", *, version: str) -> str:
+def render_landing(groups: "list[HubGroup]", *, version: str) -> str:
     """Render the hub landing — fame-ranked, console-grouped tile grid."""
     head = _HEAD
     header = (
@@ -395,7 +497,7 @@ def render_landing(groups: "list[LibraryGroup]", *, version: str) -> str:
         return head + header + main + _FOOT.format(version=html.escape(version))
 
     # Stable console order with known consoles first, then any others
-    by_console: dict[str, list[LibraryGroup]] = {}
+    by_console: dict[str, list[HubGroup]] = {}
     for g in groups:
         by_console.setdefault(g.console, []).append(g)
     ordered: list[str] = []
