@@ -47,9 +47,33 @@ def test_landing_returns_html_with_owned_roms(client: TestClient):
     # Both owned ROMs surface as clickable tiles
     assert "Pokemon - Emerald Version" in body
     assert "Super Mario Bros." in body
-    # Console badges
+    # Console chips
     assert "[GBA]" in body
     assert "[NES]" in body
+
+
+def test_landing_uses_stream_visual_language(client: TestClient):
+    """Same palette/typography as /stream so the hub feels coherent."""
+    body = client.get("/").text
+    # Palette tokens
+    assert "--bg: #0b0a14" in body
+    assert "--accent: #a78bfa" in body
+    # Typography
+    assert "JetBrains+Mono" in body
+    assert "Press+Start+2P" in body
+    # HUB badge + search bar
+    assert "badge" in body and "HUB" in body
+    assert 'id="search"' in body
+
+
+def test_landing_groups_by_console_with_full_label(client: TestClient):
+    body = client.get("/").text
+    # Sectioned: every owned console gets its own console-section
+    assert 'data-console="gba"' in body
+    assert 'data-console="nes"' in body
+    # Full label in the header alongside the chip
+    assert "Game Boy Advance" in body
+    assert "Nintendo Entertainment System" in body
 
 
 def test_landing_empty_library_shows_friendly_message(tmp_path: Path, fake_hub: HubState):
