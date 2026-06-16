@@ -375,6 +375,7 @@ def play(
     cheats: str | None = typer.Option(None, "--cheats", help="Comma-separated cheat slugs to enable at boot."),
     couch_room: str | None = typer.Option(None, "--couch-room", help="Couch room code to join (default 'default'). Generate one with `retrokix couch room-code`."),
     no_sdl: bool = typer.Option(False, "--no-sdl", help="Skip the SDL window — run headless and play in a browser tab. Implies --listen and auto-opens http://127.0.0.1:<port>/stream?mode=controller."),
+    open_browser: bool = typer.Option(True, "--open-browser/--no-open-browser", help="With --no-sdl, auto-open the viewer URL in the default browser. The hub spawns children with --no-open-browser; humans almost always want the default."),
     load: Path | None = typer.Option(None, "--load", help="Load this save state file at boot (after the ROM is mounted). Use this for one-shot resumes; Ctrl+L during play always reloads the latest running save."),
 ) -> None:
     """Boot ROM in free-run mode with an SDL window."""
@@ -415,7 +416,7 @@ def play(
                 runtime,
                 host=listen_host,
                 port=listen_port,
-                open_browser=True,
+                open_browser=open_browser,
             )
             return
 
@@ -441,39 +442,36 @@ def play(
 
 @app.command()
 def serve(
-    rom: str = typer.Argument(..., help="Path to a .gba, or a fuzzy query against ~/.retrokix/roms/."),
-    host: str = typer.Option("127.0.0.1", "--host"),
-    port: int = typer.Option(8420, "--port"),
-    free_run: bool = typer.Option(False, "--free-run", help="Start in free-run mode instead of step."),
-    core_path: Path | None = typer.Option(None, "--core", help="Path to libretro core .so."),
+    host: str = typer.Option("127.0.0.1", "--host", help="Hub bind host."),
+    port: int = typer.Option(8420, "--port", help="Hub bind port."),
+    roms_dir: Path | None = typer.Option(None, "--roms-dir", help="Override ~/.retrokix/roms/ as the library root."),
+    open_browser: bool = typer.Option(True, "--open-browser/--no-open-browser", help="Auto-open the hub landing page in the default browser at start."),
 ) -> None:
-    """Boot ROM and serve a FastAPI controller API."""
+    """Run the retrokix hub — landing page, fame-ranked game grid, per-game tabs.
+
+    The hub itself is a small FastAPI app. Each launched game runs as its
+    own subprocess (`retrokix play --no-sdl`) on an allocated port; the
+    hub redirects the new browser tab to that child's /stream endpoint.
+    """
     import uvicorn
+    import webbrowser
 
-    from retrokix.api.server import create_app
-    from retrokix.library import resolve_rom
-    from retrokix.runtime import EmulatorRuntime, Mode
+    from retrokix.hub.server import create_hub_app
 
-    try:
-        rom_path = resolve_rom(rom)
-    except (FileNotFoundError, RuntimeError) as exc:
-        typer.echo(str(exc), err=True)
-        raise typer.Exit(code=1) from exc
+    application = create_hub_app(host=host, roms_dir=roms_dir)
+    typer.echo(f"retrokix hub on http://{host}:{port}")
+    typer.echo("  endpoints: /  /api/library  /api/games  /games/launch  /play/{game_id}")
 
-    mode = Mode.FREE if free_run else Mode.STEP
-    runtime = EmulatorRuntime(rom_path, core_path=core_path, mode=mode)
+    if open_browser:
+        try:
+            webbrowser.open(f"http://{host}:{port}/", new=2)
+        except Exception:
+            pass
 
-    if mode == Mode.FREE:
-        runtime.start_free_run_ticker()
-
-    application = create_app(runtime)
-    typer.echo(f"retrokix serving {rom_path.name} on http://{host}:{port}")
-    typer.echo(f"  mode={runtime.mode.value}  rom_sha1={runtime.rom_sha1}")
-    typer.echo("  endpoints: /mode /step /speed /frame /buttons /memory /frame_count")
     try:
         uvicorn.run(application, host=host, port=port, log_level="warning")
     finally:
-        runtime.close()
+        application.state.hub.shutdown_all()
 
 
 scenario_app = typer.Typer(help="Manage scenarios for `retrokix train` / `retrokix tournament`.")
