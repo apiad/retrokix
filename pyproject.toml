@@ -1,6 +1,6 @@
 [project]
 name = "retrokix"
-version = "1.0.0"
+version = "1.1.0"
 description = "Hacker-first, scriptable multi-console emulator (GBA + NES + SNES) with HTTP API"
 readme = "README.md"
 license = { text = "MPL-2.0" }
