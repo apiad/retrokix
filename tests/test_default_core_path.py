@@ -11,7 +11,7 @@ def test_env_var_wins_over_bundled(monkeypatch, tmp_path):
     bundled.write_bytes(b"\x7fELF")
 
     monkeypatch.setenv("GBAX_CORE_PATH", str(env_path))
-    monkeypatch.setattr("gbax.cores.bundled_core_path", lambda: bundled)
+    monkeypatch.setattr("gbax.cores.bundled_core_path", lambda *_: bundled)
 
     assert _default_core_path() == env_path
 
@@ -21,14 +21,14 @@ def test_bundled_wins_over_dev_fixture_when_no_env(monkeypatch, tmp_path):
     bundled.write_bytes(b"\x7fELF")
 
     monkeypatch.delenv("GBAX_CORE_PATH", raising=False)
-    monkeypatch.setattr("gbax.cores.bundled_core_path", lambda: bundled)
+    monkeypatch.setattr("gbax.cores.bundled_core_path", lambda *_: bundled)
 
     assert _default_core_path() == bundled
 
 
 def test_dev_fixture_is_last_resort(monkeypatch):
     monkeypatch.delenv("GBAX_CORE_PATH", raising=False)
-    monkeypatch.setattr("gbax.cores.bundled_core_path", lambda: None)
+    monkeypatch.setattr("gbax.cores.bundled_core_path", lambda *_: None)
 
     result = _default_core_path()
     # Returns the dev fixture path even if the file doesn't exist —

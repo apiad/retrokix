@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+# Build fceumm_libretro.so and stage it for the gbax wheel.
+#
+# Used by:
+#   - Developers on a fresh checkout: `bin/build-fceumm-core` produces the .so
+#     at src/gbax/cores/fceumm_libretro.so (the bundled path).
+#   - The CI release workflow (release.yml): runs inside the manylinux
+#     container before `python -m build`.
+#
+# Defaults to the SHA pinned in .fceumm-version. Override with
+# --fceumm-version=<sha> or by setting FCEUMM_VERSION in the environment.
+#
+# Companion to bin/build-core (mGBA). FCEUmm uses plain Make, not CMake,
+# so the two scripts are siblings instead of sharing a parameterized core.
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$REPO_ROOT"
+
+FCEUMM_VERSION="${FCEUMM_VERSION:-$(cat .fceumm-version)}"
+BUILD_DIR=""
+for arg in "$@"; do
+  case "$arg" in
+    --fceumm-version=*) FCEUMM_VERSION="${arg#*=}" ;;
+    --build-dir=*)      BUILD_DIR="${arg#*=}" ;;
+    *) echo "unknown arg: $arg" >&2; exit 2 ;;
+  esac
+done
+: "${BUILD_DIR:=/tmp/fceumm-build-${FCEUMM_VERSION}}"
+
+echo "Building fceumm_libretro.so from libretro-fceumm $FCEUMM_VERSION in $BUILD_DIR"
+
+if [[ ! -d "$BUILD_DIR/fceumm" ]]; then
+  mkdir -p "$BUILD_DIR"
+  # Fetch a source tarball at the pinned SHA instead of `git clone` —
+  # libretro-fceumm's full git history is large and we've hit repeated
+  # HTTP/2 stream cancels + connection timeouts on smart-HTTP fetches.
+  # A tarball is a single GET, retried by curl, and ~10x smaller.
+  TARBALL="$BUILD_DIR/fceumm-$FCEUMM_VERSION.tar.gz"
+  curl -fsSL --retry 5 --retry-delay 3 \
+    "https://codeload.github.com/libretro/libretro-fceumm/tar.gz/$FCEUMM_VERSION" \
+    -o "$TARBALL"
+  tar -xzf "$TARBALL" -C "$BUILD_DIR"
+  mv "$BUILD_DIR/libretro-fceumm-$FCEUMM_VERSION" "$BUILD_DIR/fceumm"
+fi
+
+cd "$BUILD_DIR/fceumm"
+make -f Makefile.libretro clean
+make -f Makefile.libretro -j"$(nproc)"
+
+SO="$BUILD_DIR/fceumm/fceumm_libretro.so"
+[[ -f "$SO" ]] || { echo "build produced no $SO" >&2; exit 1; }
+
+# Symbol presence — same trap that catches LTO-empty .so files for mGBA.
+if ! nm -D "$SO" 2>/dev/null | grep -q '\bretro_run\b'; then
+  echo "FATAL: $SO has no retro_run symbol." >&2
+  exit 1
+fi
+
+# ldd allowlist — only manylinux-baseline libraries permitted.
+ALLOWED='linux-vdso\.|ld-linux-x86-64\.|libc\.|libm\.|libpthread\.|libdl\.|libgcc_s\.|libstdc\+\+\.|libz\.'
+BAD="$(ldd "$SO" | grep '=>' | grep -Ev "$ALLOWED" || true)"
+if [[ -n "$BAD" ]]; then
+  echo "FATAL: $SO links libraries outside manylinux baseline:" >&2
+  echo "$BAD" >&2
+  exit 1
+fi
+
+mkdir -p "$REPO_ROOT/src/gbax/cores"
+cp "$SO" "$REPO_ROOT/src/gbax/cores/fceumm_libretro.so"
+# FCEUmm ships its license at the repo root as Copying (GPLv2).
+cp "$BUILD_DIR/fceumm/Copying" "$REPO_ROOT/src/gbax/cores/LICENSE.FCEUmm"
+
+# Stamp FCEUMM_VERSION into the cores package __init__.
+INIT="$REPO_ROOT/src/gbax/cores/__init__.py"
+python3 - <<PY
+import re, pathlib
+p = pathlib.Path("$INIT")
+text = p.read_text()
+if re.search(r'^FCEUMM_VERSION\s*=', text, flags=re.M):
+    new = re.sub(r'^FCEUMM_VERSION\s*=.*$', f'FCEUMM_VERSION = "$FCEUMM_VERSION"', text, count=1, flags=re.M)
+else:
+    new = text.rstrip() + f'\nFCEUMM_VERSION = "$FCEUMM_VERSION"\n'
+p.write_text(new)
+PY
+
+echo "OK: bundled core at src/gbax/cores/fceumm_libretro.so (libretro-fceumm $FCEUMM_VERSION)"

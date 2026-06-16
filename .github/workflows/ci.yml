@@ -29,6 +29,9 @@ jobs:
           # so existing tests keep finding it.
           cp src/gbax/cores/mgba_libretro.so tests/cores/mgba_libretro.so
 
+      - name: Build fceumm_libretro.so
+        run: bin/build-fceumm-core
+
       - name: Install gbax + dev deps
         run: pip install -e ".[dev]"
 

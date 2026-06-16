@@ -166,6 +166,94 @@ _FAMOUS_QUERIES: tuple[str, ...] = (
     "Classic NES Series - The Legend of Zelda",
     "Classic NES Series - Metroid",
     "Classic NES Series - Donkey Kong",
+    # ---------- NES classics ----------
+    # Token-based AND match, sorted USA/World > Europe > Japan, shortest
+    # name wins within a region. Queries below are tuned against the
+    # 2024 No-Intro NES set so the canonical USA release lands first.
+    # Mario
+    "Super Mario Bros. (World",
+    "Super Mario Bros. 2 (USA",
+    "Super Mario Bros. 3 (USA",
+    # Zelda
+    "Legend of Zelda, The (USA)",
+    "Zelda II - The Adventure of Link (USA)",
+    # Metroid / Mother
+    "Metroid (USA)",
+    "EarthBound Beginnings",
+    # Mega Man 1-6
+    "Mega Man (USA)",
+    "Mega Man 2 (USA)",
+    "Mega Man 3 (USA)",
+    "Mega Man 4 (USA)",
+    "Mega Man 5 (USA)",
+    "Mega Man 6 (USA)",
+    # Castlevania trilogy
+    "Castlevania (USA)",
+    "Castlevania II - Simon's Quest (USA)",
+    "Castlevania III - Dracula's Curse (USA)",
+    # Konami / Contra
+    "Contra (USA)",
+    "Super C (USA)",
+    "Gradius (USA)",
+    "Life Force (USA)",
+    # Square / Enix RPGs
+    "Final Fantasy (USA)",
+    "Dragon Warrior (USA)",
+    "Dragon Warrior II",
+    "Dragon Warrior III",
+    "Dragon Warrior IV",
+    "Crystalis (USA)",
+    "Faxanadu (USA)",
+    # Nintendo first-party
+    "Punch-Out!! (USA)",
+    "Kid Icarus (USA",
+    "Excitebike (USA",
+    "Duck Hunt (World)",
+    "StarTropics (USA)",
+    "Ice Climber (USA",
+    "Balloon Fight (USA",
+    "Pinball (Europe, Asia)",
+    "Donkey Kong (World) (Rev",
+    "Donkey Kong Jr. (World)",
+    "Donkey Kong 3 (World)",
+    "Tetris (USA)",
+    # Tecmo / Capcom / Konami staples
+    "Ninja Gaiden (USA)",
+    "Ninja Gaiden II",
+    "Ninja Gaiden III",
+    "Bionic Commando (USA)",
+    "DuckTales (USA",
+    "DuckTales 2 (USA",
+    "Chip 'n Dale - Rescue Rangers (USA",
+    "Mighty Final Fight (USA",
+    # Beat-'em-ups / brawlers
+    "Double Dragon (USA",
+    "Double Dragon II",
+    "Double Dragon III",
+    "River City Ransom (USA)",
+    "Battletoads (USA)",
+    "Battletoads-Double Dragon (USA)",
+    # Sega/other ports + cult
+    "Adventure Island (USA)",
+    "Adventure Island II (USA",
+    "Adventure Island 3 (USA",
+    "Bubble Bobble (USA)",
+    "Kirby's Adventure (USA)",
+    "Blaster Master (USA)",
+    "Solomon's Key (USA)",
+    "Rygar (USA)",
+    "Shadow of the Ninja (USA",
+    "Solstice (USA",
+    "Snake's Revenge (USA",
+    "Metal Gear (USA)",
+    # Sports / racing
+    "R.C. Pro-Am (USA",
+    "Skate or Die (USA",
+    "Tecmo Bowl (USA",
+    "Tecmo Super Bowl (USA",
+    # Cult RPG/strategy
+    "Maniac Mansion (USA",
+    "Adventures of Lolo (USA",
 )
 
 
@@ -255,6 +343,21 @@ def _marker(owned: bool) -> str:
     return "[#34d399]●[/]" if owned else " "
 
 
+_CONSOLE_BADGE_COLORS = {
+    # GBA: muted purple/indigo; NES: warm red — mirrors the consoles'
+    # own brand palettes loosely enough to be readable on dark terminals.
+    "gba": "#a78bfa",
+    "nes": "#f87171",
+}
+
+
+def _console_badge(slug: str | None) -> str:
+    if not slug:
+        return "   "
+    color = _CONSOLE_BADGE_COLORS.get(slug, "#94a3b8")
+    return f"[{color}]{slug.upper()}[/]"
+
+
 def _pretty_name(name: str) -> str:
     """Strip the .zip suffix and dim the (region/language) tail so the
     title carries the visual weight."""
@@ -290,6 +393,10 @@ class GroupRow(ListItem):
         )
         with Horizontal(classes="row"):
             yield Static(_marker(self.owned), classes="row-marker")
+            yield Static(
+                _console_badge(self.group.primary.console),
+                classes="row-console",
+            )
             yield Static(f"{self.group.title}{extra}", classes="row-name")
             yield Static(
                 f"[dim]{_fmt_size(self.group.primary.size)}[/dim]",
@@ -308,6 +415,7 @@ class VariantRow(ListItem):
     def compose(self) -> ComposeResult:
         with Horizontal(classes="row"):
             yield Static(_marker(self.owned), classes="row-marker")
+            yield Static(_console_badge(self.entry.console), classes="row-console")
             yield Static(_pretty_name(self.entry.name), classes="row-name")
             yield Static(
                 f"[dim]{_fmt_size(self.entry.size)}[/dim]",
@@ -454,6 +562,12 @@ class BrowseApp(App):
     .row-marker {
         width: 2;
         height: 1;
+    }
+    .row-console {
+        width: 4;
+        min-width: 4;
+        height: 1;
+        padding: 0 1 0 0;
     }
     .row-name {
         width: 1fr;

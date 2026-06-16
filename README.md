@@ -207,9 +207,13 @@ and need `$GBAX_CORE_PATH` set. Full coverage in
 
 ## Status
 
-- **Alpha.** v0.17.0. Works on Linux x86_64. macOS / Windows / ARM
+- **Alpha.** v0.18.0. Works on Linux x86_64. macOS / Windows / ARM
   are PR-welcome.
-- **MPL-2.0.** Same license as the underlying mGBA core.
+- **Multi-console.** GBA via mGBA and NES via FCEUmm — both shipped in
+  the wheel. The runtime picks a core from the ROM extension; `gbax
+  browse` shows a per-row console badge and merges both libraries.
+- **MPL-2.0.** Same license as the underlying mGBA core. The bundled
+  FCEUmm core is GPLv2 — see `cores/LICENSE.FCEUmm`.
 - **No ROMs bundled.** `gbax download` pulls from the public No-Intro
   mirror at archive.org. Use it for games you own; respect your
   local laws.
@@ -229,10 +233,12 @@ Past releases: see [GitHub Releases](https://github.com/apiad/gbax/releases).
 
 ## Credits
 
-- **[mGBA](https://github.com/mgba-emu/mgba)** by endrift — the
+- **[mGBA](https://github.com/mgba-emu/mgba)** by endrift — the GBA
   emulator core doing the actual heavy lifting. MPL-2.0.
+- **[FCEUmm](https://github.com/libretro/libretro-fceumm)** — the NES
+  core we ship for `.nes` ROMs. GPLv2.
 - **[No-Intro](https://no-intro.org)** — the canonical ROM-naming and
-  SHA-1 reference.
+  SHA-1 reference for both consoles.
 - **archive.org** — hosts the No-Intro snapshot we point at by default.
 - **[libretro-database](https://github.com/libretro/libretro-database)** —
   the cheat-code corpus we vendor.

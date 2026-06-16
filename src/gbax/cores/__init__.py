@@ -5,10 +5,10 @@ package. `bundled_core_path()` returns its path if present, else None —
 callers (the runtime, tests) fall back to `$GBAX_CORE_PATH` or the
 dev-only fixture at `tests/cores/`.
 
-`MGBA_VERSION` is the upstream mGBA tag the bundled binary was built
-from. The `bin/build-core` script rewrites this string at build time;
-the sentinel below is what an unbundled tree (dev clone, sdist install)
-reports.
+`MGBA_VERSION` / `FCEUMM_VERSION` are the upstream versions the bundled
+binaries were built from. The `bin/build-core` and `bin/build-fceumm-core`
+scripts rewrite these strings at build time; the sentinels below are
+what an unbundled tree (dev clone, sdist install) reports.
 """
 from __future__ import annotations
 
@@ -16,6 +16,7 @@ from importlib.resources import files as _files_impl
 from pathlib import Path
 
 MGBA_VERSION = "0.10.5"
+FCEUMM_VERSION = "c0c52ad0eb36cdbfc66e9bdb72efc83103e85e22"
 
 
 def _files(package: str):

@@ -1,6 +1,6 @@
 [project]
 name = "gbax"
-version = "0.17.0"
+version = "0.18.0"
 description = "Hacker-first, scriptable GBA emulator with HTTP API"
 readme = "README.md"
 license = { text = "MPL-2.0" }
@@ -69,6 +69,8 @@ packages = ["src/gbax"]
 [tool.hatch.build.targets.wheel.force-include]
 "src/gbax/data/no_intro_gba.json" = "gbax/data/no_intro_gba.json"
 "src/gbax/data/libretro_cheats_gba.json" = "gbax/data/libretro_cheats_gba.json"
+"src/gbax/data/no_intro_nes.json" = "gbax/data/no_intro_nes.json"
+"src/gbax/data/libretro_cheats_nes.json" = "gbax/data/libretro_cheats_nes.json"
 "src/gbax/data/emerald_species.json" = "gbax/data/emerald_species.json"
 "src/gbax/data/emerald_growth_rates.json" = "gbax/data/emerald_growth_rates.json"
 "src/gbax/data/emerald_species_info.json" = "gbax/data/emerald_species_info.json"
@@ -90,6 +92,8 @@ packages = ["src/gbax"]
 "src/gbax/cores/__init__.py" = "gbax/cores/__init__.py"
 "src/gbax/cores/mgba_libretro.so" = "gbax/cores/mgba_libretro.so"
 "src/gbax/cores/LICENSE.mGBA" = "gbax/cores/LICENSE.mGBA"
+"src/gbax/cores/fceumm_libretro.so" = "gbax/cores/fceumm_libretro.so"
+"src/gbax/cores/LICENSE.FCEUmm" = "gbax/cores/LICENSE.FCEUmm"
 "src/gbax/render/shaders/__init__.py" = "gbax/render/shaders/__init__.py"
 "src/gbax/render/shaders/_vertex.wgsl" = "gbax/render/shaders/_vertex.wgsl"
 "src/gbax/render/shaders/nearest.wgsl" = "gbax/render/shaders/nearest.wgsl"
@@ -120,6 +124,8 @@ packages = ["src/gbax"]
 exclude = [
   "src/gbax/cores/mgba_libretro.so",
   "src/gbax/cores/LICENSE.mGBA",
+  "src/gbax/cores/fceumm_libretro.so",
+  "src/gbax/cores/LICENSE.FCEUmm",
 ]
 
 [tool.hatch.build.hooks.custom]
