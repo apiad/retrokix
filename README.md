@@ -31,6 +31,23 @@ $ retrokix play emerald
 Pokémon Emerald, in a window, with sound. The wheel ships a prebuilt
 `mgba_libretro.so`; no cmake, no apt-get, no `$RETROKIX_CORE_PATH`.
 
+## The game hub
+
+```
+$ retrokix serve
+retrokix hub on http://127.0.0.1:8420
+```
+
+Open the URL: a fame-ranked grid of every owned ROM plus the top 24
+unowned titles per console. Click an owned tile → it opens in a new
+tab, playing. Click an unowned tile → it downloads from the bundled
+archive.org mirror with a live progress bar, then opens in a new tab.
+Type in the search box: every keystroke filters across all **14,000+
+ROMs** in the bundled No-Intro index. The hub spawns one
+`retrokix play --no-sdl` subprocess per launched game on its own
+port (libretro core crash kills one tab, not the hub) and reaps
+children with no active viewers after 60 seconds idle.
+
 ## The cooperative loop
 
 Launch retrokix with both the keyboard surface and the HTTP API:
@@ -95,6 +112,12 @@ discover the next memory address, build the next algorithm.
   portrait and landscape. Play from a phone, a laptop, or any window
   in between. Pass `--no-sdl` to skip the SDL window entirely — the
   browser tab becomes the console.
+- **Game hub** — `retrokix serve` boots a small FastAPI app that
+  serves a fame-ranked tile grid of your owned library plus the top
+  24 unowned per console, with full-library search across all
+  14,000+ bundled titles. Click to launch (new tab); click to
+  download then launch. One subprocess per active game, idle reaper
+  cleans up after itself. Same visual language as `/stream`.
 - One `pip install`, one MPL-2.0 license, Linux x86_64 today.
 
 ## Discovery toolkit
@@ -154,26 +177,32 @@ flowchart TB
         direction LR
         kbd([Keyboard])
         http([HTTP client<br/>script · LLM · shell])
+        browser([Browser tab])
     end
 
     subgraph cli["retrokix CLI (Typer)"]
         play["retrokix play"]
-        serve["retrokix serve"]
+        serve["retrokix serve<br/>(hub)"]
         other["search · download · state · macro · pin · …"]
     end
 
     sdl["SDL renderer<br/>window + audio + input"]
-    api["FastAPI server<br/>/frame /buttons /memory /step<br/>/action /capture_state /plugins/…"]
+    api["FastAPI server<br/>/frame /buttons /memory /step<br/>/action /capture_state /plugins/…<br/>/stream + /healthz"]
+    hub["Hub app<br/>/ landing · /api/search · /api/library<br/>/games/launch · /downloads/{id}/events<br/>+ idle reaper"]
+    children["one child play --no-sdl<br/>per active game"]
     rt["EmulatorRuntime<br/>step · framebuffer · memory · save slots<br/>thread-safe via RLock"]
     plugins["Plugins<br/>Python @on_* handlers + @p.route()"]
     lr["LibretroCore<br/>~300 LOC cffi shim"]
-    so["mgba_libretro.so"]
+    so["mgba_libretro.so · fceumm_libretro.so · snes9x_libretro.so"]
 
     kbd --> sdl
     http --> api
+    browser --> hub
     play --> sdl
     play -.--> api
-    serve --> api
+    serve --> hub
+    hub --> children
+    children --> api
     sdl --> rt
     api --> rt
     plugins --> rt
@@ -183,7 +212,7 @@ flowchart TB
 
     classDef ext fill:#eef,stroke:#33a,stroke-width:1px;
     classDef core fill:#fef9c3,stroke:#a16207,stroke-width:1px;
-    class kbd,http ext;
+    class kbd,http,browser ext;
     class so core;
 ```
 
@@ -210,7 +239,7 @@ and need `$RETROKIX_CORE_PATH` set. Full coverage in
 
 ## Status
 
-- **Alpha.** v0.20.0. Works on Linux x86_64. macOS / Windows / ARM
+- **Stable.** v1.1.0. Works on Linux x86_64. macOS / Windows / ARM
   are PR-welcome.
 - **Multi-console.** GBA via mGBA, NES via FCEUmm, SNES via snes9x —
   all three shipped in the wheel. The runtime picks a core from the

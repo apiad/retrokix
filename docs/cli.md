@@ -230,25 +230,70 @@ In `play`, pinned F-keys toggle the specific cheat (autoloading it from the
 catalog if needed). Unpinned F-keys fall back to "toggle the Nth currently
 active cheat" — handy if you just `--cheats foo,bar` without setting pins.
 
-## `retrokix serve <rom>`
+## `retrokix serve`
 
-Same boot, but no window. Exposes a FastAPI controller API on
-`127.0.0.1:8420`. Default mode is `step` — the emulator is paused until a
-controller posts `/step?frames=N`.
+Boots the **game hub** — a small FastAPI app that serves a fame-ranked
+tile grid of your owned library plus the top 24 unowned titles per
+console, with full-library search across all 14,000+ bundled No-Intro
+titles. Click a tile to launch in a new browser tab.
 
 ```
-$ retrokix serve emerald
-retrokix serving Pokemon - Emerald Version (USA, Europe).gba on http://127.0.0.1:8420
-  mode=step  rom_sha1=f3ae088181bf583e55daf962a92bb46f4f1d07b7
-  endpoints: /mode /step /speed /frame /buttons /memory /frame_count
+$ retrokix serve
+retrokix hub on http://127.0.0.1:8420
+  endpoints: /  /api/library  /api/games  /games/launch  /play/{game_id}
 ```
+
+The hub does NOT host emulator runtimes itself. Each launched game
+runs as its own subprocess — essentially `retrokix play --no-sdl` on
+a kernel-allocated port — so a libretro core crash kills one tab,
+not the hub.
+
+Endpoints:
+
+- `GET /` — landing page (fame-ranked grid + search box).
+- `GET /api/library` — JSON: owned ROMs + top-24-per-console showcase.
+- `GET /api/games` — JSON: currently spawned child processes.
+- `GET /api/search?q=…` — JSON: fame-ranked search across the full library.
+- `GET /api/search.html?q=…` — pre-rendered HTML fragment (used by the
+  landing's debounced search input).
+- `POST /games/launch` — `{rom_path}` → spawns child, returns
+  `{game_id, url}`.
+- `POST /games/download` — `{rom_name, console}` → starts a download
+  job, returns `{job_id, events_url}`.
+- `GET /downloads/{job_id}/events` — Server-Sent Events stream with
+  `progress` + `ready` (or `failed`) terminal events. On `ready`,
+  the payload carries the play URL — one round-trip from the client.
+- `GET /play/{game_id}` — 302 redirect to the child's
+  `/stream?mode=controller`.
+
+The hub also runs an `IdleReaper` thread: every 30 s it polls each
+child's `/healthz` endpoint for the live count of open `/stream` and
+`/stream/audio` WebSockets. Children younger than 20 s are skipped
+(initial-load grace). Children with zero viewers for at least 60 s
+straight get SIGTERMed and removed from the registry.
 
 Flags:
-- `--host`, `--port` — defaults `127.0.0.1:8420`.
-- `--free-run` — start in free-run mode (60 fps wall-clock) instead of step.
-- `--core <path>` — same as `play`.
 
-See [`api.md`](api.md) for the full endpoint surface.
+- `--host`, `--port` — defaults `127.0.0.1:8420`.
+- `--roms-dir <path>` — override `~/.retrokix/roms/` as the library root.
+- `--open-browser` / `--no-open-browser` — auto-open the landing page
+  at start (default: open).
+
+### What changed in v1.1
+
+`retrokix serve` used to take a ROM argument and boot a single-game
+FastAPI controller — but that mode added nothing over
+`retrokix play --no-sdl` (which already boots the same FastAPI app
+*and* opens the browser tab). The flag was scrapped in favour of the
+hub. If you want the old per-game-API behaviour, use:
+
+```
+$ retrokix play <rom> --no-sdl --no-open-browser
+```
+
+See [`api.md`](api.md) for the per-child endpoint surface (`/frame`,
+`/buttons`, `/memory`, `/step`, `/action`, `/capture_state`,
+`/plugins/...`).
 
 ## `retrokix version`
 

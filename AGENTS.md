@@ -1,17 +1,22 @@
 # retrokix — agent orientation
 
-`retrokix` is a hacker-first GBA emulator. Pip-installable Python CLI, native
-libmgba bindings, FastAPI for scripted/AI play. Linux-only v1.
+`retrokix` is a hacker-first multi-console emulator (GBA + NES + SNES).
+Pip-installable Python CLI, native libretro bindings, FastAPI for
+scripted/AI play, a hub command that serves the whole library in a
+browser. Linux-only v1.
 
 ## Architecture
 
 See `vault/Atlas/Architecture/2026-06-09-retrokix-design.md` (canonical spec).
 
 `retrokix.libretro.LibretroCore` (`src/retrokix/libretro.py`) is the thin cffi
-binding to a libretro core's `.so` — currently mGBA's. Single
-`EmulatorRuntime` (`src/retrokix/runtime.py`) wraps that. Two clients of the
-runtime: SDL renderer (`render/sdl.py`) for `retrokix play`, FastAPI server
-(`api/`) for `retrokix serve`. CLI dispatch in `cli.py`.
+binding to a libretro core's `.so` (mGBA, FCEUmm, snes9x, selected by ROM
+extension). Single `EmulatorRuntime` (`src/retrokix/runtime.py`) wraps that.
+Clients of the runtime: SDL renderer (`render/sdl.py`) for `retrokix play`,
+FastAPI server (`api/`) for headless / web play. The hub
+(`src/retrokix/hub/`) is a separate small FastAPI app that spawns one
+`retrokix play --no-sdl` subprocess per launched game; it doesn't host
+any runtime itself. CLI dispatch in `cli.py`.
 
 We don't depend on mGBA's upstream Python bindings — they're patchy on
 modern toolchains. The libretro ABI is stable, well-documented, and lets
