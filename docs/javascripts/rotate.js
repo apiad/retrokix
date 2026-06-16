@@ -19,11 +19,19 @@
   /** @typedef {{ slug: string, title: string, download: string, rom: string,
    *             plugin: string, route: string, json: string }} Game */
 
-  /** @type {Game[]} */
+  /** Console label shown on the bezel — short enough to fit at 7px. */
+  const LABEL_GBA  = "GAME BOY ADVANCE";
+  const LABEL_NES  = "NINTENDO ENT. SYSTEM";
+  const LABEL_SNES = "SUPER NINTENDO";
+
+  /** @type {Game[]}
+   * Top picks per console: 4 GBA + 3 NES + 3 SNES, interleaved so the
+   * marquee cycles through every console in every pass. */
   const GAMES = [
     {
       slug: "pokemon-emerald",
       title: "Pokémon Emerald",
+      label: LABEL_GBA,
       download: "pokemon emerald",
       rom: "emerald",
       plugin: "retrokix.plugins.emerald_party",
@@ -39,8 +47,43 @@
 }`,
     },
     {
+      slug: "super-mario-world",
+      title: "Super Mario World",
+      label: LABEL_SNES,
+      download: "super mario world",
+      rom: "mario world",
+      plugin: "retrokix.plugins.smw_progress",
+      route: "/plugins/smw_progress/state",
+      json: `{
+  "world": "donut_plains",
+  "level": "secret_1",
+  "lives": 7, "coins": 42,
+  "yoshi": "green",
+  "powerup": "cape",
+  "exits_unlocked": 26
+}`,
+    },
+    {
+      slug: "super-mario-bros",
+      title: "Super Mario Bros.",
+      label: LABEL_NES,
+      download: "super mario bros",
+      rom: "smb",
+      plugin: "retrokix.plugins.smb_state",
+      route: "/plugins/smb_state/state",
+      json: `{
+  "world": "1-1",
+  "score": 12500,
+  "lives": 3,
+  "coins": 8,
+  "powerup": "fire",
+  "time_remaining": 287
+}`,
+    },
+    {
       slug: "zelda-minish-cap",
       title: "Zelda: The Minish Cap",
+      label: LABEL_GBA,
       download: "zelda minish cap",
       rom: "minish-cap",
       plugin: "retrokix.plugins.zelda_inventory",
@@ -55,8 +98,43 @@
 }`,
     },
     {
+      slug: "zelda-link-to-the-past",
+      title: "Zelda: A Link to the Past",
+      label: LABEL_SNES,
+      download: "zelda link to the past",
+      rom: "link to the past",
+      plugin: "retrokix.plugins.lttp_inventory",
+      route: "/plugins/lttp_inventory/inventory",
+      json: `{
+  "hearts": 7.5, "max_hearts": 10,
+  "rupees": 218,
+  "sword": "master",
+  "shield": "fire",
+  "pendants": ["courage", "power"],
+  "dungeon": "tower_of_hera"
+}`,
+    },
+    {
+      slug: "legend-of-zelda-nes",
+      title: "The Legend of Zelda",
+      label: LABEL_NES,
+      download: "legend of zelda",
+      rom: "zelda",
+      plugin: "retrokix.plugins.zelda1_inventory",
+      route: "/plugins/zelda1_inventory/inventory",
+      json: `{
+  "hearts": 4, "max_hearts": 6,
+  "rupees": 73,
+  "sword": "white",
+  "bombs": 8, "max_bombs": 12,
+  "triforce_pieces": 2,
+  "overworld": "lake_hylia"
+}`,
+    },
+    {
       slug: "metroid-fusion",
       title: "Metroid Fusion",
+      label: LABEL_GBA,
       download: "metroid fusion",
       rom: "metroid-fusion",
       plugin: "retrokix.plugins.samus_status",
@@ -70,8 +148,25 @@
 }`,
     },
     {
+      slug: "chrono-trigger",
+      title: "Chrono Trigger",
+      label: LABEL_SNES,
+      download: "chrono trigger",
+      rom: "chrono",
+      plugin: "retrokix.plugins.chrono_party",
+      route: "/plugins/chrono_party/party",
+      json: `{
+  "era": "600_AD",
+  "active": ["Crono", "Marle", "Frog"],
+  "gold": 4720,
+  "crono": { "lv": 22, "hp": 374, "mp": 41 },
+  "next_event": "magus_lair"
+}`,
+    },
+    {
       slug: "castlevania-aria-of-sorrow",
       title: "Castlevania: Aria of Sorrow",
+      label: LABEL_GBA,
       download: "castlevania aria of sorrow",
       rom: "aria-of-sorrow",
       plugin: "retrokix.plugins.aria_souls",
@@ -86,95 +181,20 @@
 }`,
     },
     {
-      slug: "advance-wars",
-      title: "Advance Wars",
-      download: "advance wars",
-      rom: "advance-wars",
-      plugin: "retrokix.plugins.aw_battlefield",
-      route: "/plugins/aw_battlefield/state",
+      slug: "mega-man-2",
+      title: "Mega Man 2",
+      label: LABEL_NES,
+      download: "mega man 2",
+      rom: "mega man 2",
+      plugin: "retrokix.plugins.mm2_loadout",
+      route: "/plugins/mm2_loadout/loadout",
       json: `{
-  "day": 7,
-  "current_co": "andy",
-  "funds": 4200,
-  "units": 9, "enemy_units": 11,
-  "captured_props": 6,
-  "weather": "clear"
-}`,
-    },
-    {
-      slug: "final-fantasy-tactics-advance",
-      title: "Final Fantasy Tactics Advance",
-      download: "final fantasy tactics advance",
-      rom: "ffta",
-      plugin: "retrokix.plugins.ffta_clan",
-      route: "/plugins/ffta_clan/roster",
-      json: `{
-  "clan": "Cygnus",
-  "law": "no_fire",
-  "missions_cleared": 23,
-  "leader": { "name": "Marche",
-              "job": "Hunter",
-              "level": 18,
-              "race": "human" }
-}`,
-    },
-    {
-      slug: "mario-luigi-superstar-saga",
-      title: "Mario & Luigi: Superstar Saga",
-      download: "mario luigi superstar saga",
-      rom: "mlss",
-      plugin: "retrokix.plugins.mlss_bros",
-      route: "/plugins/mlss_bros/status",
-      json: `{
-  "mario": { "hp": 84, "bp": 24, "level": 12 },
-  "luigi": { "hp": 78, "bp": 28, "level": 12 },
-  "coins": 312,
-  "bros_attack": "splash_bros"
-}`,
-    },
-    {
-      slug: "golden-sun",
-      title: "Golden Sun",
-      download: "golden sun",
-      rom: "golden-sun",
-      plugin: "retrokix.plugins.golden_sun_djinn",
-      route: "/plugins/golden_sun_djinn/party",
-      json: `{
-  "leader": "Isaac",
-  "level": 16,
-  "hp": 178, "pp": 47,
-  "djinn": { "venus": 5, "mars": 3 },
-  "psynergy": ["move", "growth", "ragnarok"]
-}`,
-    },
-    {
-      slug: "wario-land-4",
-      title: "Wario Land 4",
-      download: "wario land 4",
-      rom: "wario-land-4",
-      plugin: "retrokix.plugins.wario_run",
-      route: "/plugins/wario_run/state",
-      json: `{
-  "level": "the_curious_factory",
-  "coins": 87,
-  "treasures": 3, "max_treasures": 4,
-  "time_remaining_s": 142,
-  "form": "puffy"
-}`,
-    },
-    {
-      slug: "doom",
-      title: "Doom",
-      download: "doom",
-      rom: "doom",
-      plugin: "retrokix.plugins.doom_hud",
-      route: "/plugins/doom_hud/state",
-      json: `{
-  "map": "E1M2",
-  "health": 67, "armor": 50,
-  "weapon": "shotgun",
-  "ammo": { "shells": 18, "bullets": 100 },
-  "kills": 12, "secrets": 1
+  "stage": "wood_man",
+  "lives": 5,
+  "health": 24,
+  "weapons": ["mega_buster", "metal_blade", "air_shooter"],
+  "etanks": 2,
+  "robot_masters_defeated": 5
 }`,
     },
   ];
@@ -226,6 +246,8 @@
         next = game.plugin;
       } else if (key === "route") {
         next = game.route;
+      } else if (key === "label") {
+        next = game.label;
       } else {
         return;
       }
