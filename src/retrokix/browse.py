@@ -693,14 +693,15 @@ class BrowseApp(App):
         background: $boost;
         color: $text-muted;
     }
+    /* Progress bar hides above the status line. We toggle visibility
+     * via `bar.styles.display = "block"/"none"` instead of a CSS class —
+     * class names starting with `--` collide with the CSS custom-property
+     * prefix and the rule wouldn't match. */
     #dl-progress {
         dock: bottom;
         height: 1;
         padding: 0 2;
         display: none;
-    }
-    #dl-progress.--visible {
-        display: block;
     }
     """
 
@@ -970,10 +971,19 @@ class BrowseApp(App):
         total = max(entry.size, 1)
         bar = self.query_one("#dl-progress", ProgressBar)
         bar.update(total=total, progress=0)
-        bar.add_class("--visible")
+        bar.styles.display = "block"
         self._set_status(f"downloading {name} ({_fmt_size(entry.size)})…")
 
+        # The HTTP stream fires `progress_cb` per 64 KB chunk — many
+        # hundreds of times per second on a fast link. Throttle to whole
+        # percent ticks so we don't flood `call_from_thread` (which
+        # serializes on the message bus and can stall the UI).
+        last_pct = [-1]
         def cb(downloaded: int, _total: int) -> None:
+            pct = int(downloaded * 100 / total) if total else 100
+            if pct == last_pct[0]:
+                return
+            last_pct[0] = pct
             self.call_from_thread(self._on_progress, downloaded, total)
 
         self.run_worker(
@@ -1000,13 +1010,13 @@ class BrowseApp(App):
         bar = self.query_one("#dl-progress", ProgressBar)
         if state == WorkerState.SUCCESS:
             self._downloading = False
-            bar.remove_class("--visible")
+            bar.styles.display = "none"
             path: Path = event.worker.result
             # Hand the path back to the wrapper CLI — it'll exec `play`.
             self.exit(path)
         elif state == WorkerState.ERROR:
             self._downloading = False
-            bar.remove_class("--visible")
+            bar.styles.display = "none"
             err = event.worker.error
             self._set_status(f"error: {err}")
 
