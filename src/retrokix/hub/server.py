@@ -25,9 +25,15 @@ from pydantic import BaseModel
 
 from retrokix import __version__
 from retrokix.hub.downloads import DownloadManager
-from retrokix.hub.library_view import HubGroup, build_library_view
+from retrokix.hub.library_view import (
+    SEARCH_LIMIT,
+    HubGroup,
+    build_library_view,
+    search_library,
+    warm_search_index,
+)
 from retrokix.hub.state import HubState
-from retrokix.hub.templates import render_landing
+from retrokix.hub.templates import render_landing, render_search_fragment
 from retrokix.library import (
     ALL_ROM_EXTS,
     CONSOLES,
@@ -78,11 +84,29 @@ def create_hub_app(
     app.state.hub = state
     app.state.downloads = downloads
     app.state.roms_dir = roms_dir
+    # Build the cross-console title index now so the first /api/search
+    # keystroke doesn't pay the JSON-parse cost.
+    warm_search_index()
 
     @app.get("/", response_class=HTMLResponse)
     def landing() -> HTMLResponse:
         groups = build_library_view(roms_dir)
         return HTMLResponse(render_landing(groups, version=__version__))
+
+    @app.get("/api/search")
+    def search(q: str = "", limit: int = SEARCH_LIMIT) -> dict:
+        groups = search_library(q, roms_dir, limit=limit)
+        return {
+            "query": q,
+            "limit": limit,
+            "count": len(groups),
+            "groups": [_serialize_group(g) for g in groups],
+        }
+
+    @app.get("/api/search.html", response_class=HTMLResponse)
+    def search_html(q: str = "", limit: int = SEARCH_LIMIT) -> HTMLResponse:
+        groups = search_library(q, roms_dir, limit=limit)
+        return HTMLResponse(render_search_fragment(groups, query=q))
 
     @app.get("/api/library")
     def library() -> dict:

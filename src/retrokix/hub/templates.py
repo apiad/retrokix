@@ -180,6 +180,19 @@ _HEAD = """<!doctype html>
     line-height: 1.3;
     word-break: break-word;
   }
+  .tile__console {
+    display: inline-block;
+    font-family: "Press Start 2P", monospace;
+    font-size: 0.5rem;
+    letter-spacing: 0.04em;
+    color: var(--accent-hot);
+    border: 1px solid rgba(240,171,252,0.35);
+    background: rgba(240,171,252,0.06);
+    border-radius: 4px;
+    padding: 0.2rem 0.4rem;
+    margin-right: 0.45rem;
+    vertical-align: middle;
+  }
   .tile__row {
     display: flex;
     align-items: center;
@@ -233,10 +246,43 @@ _HEAD = """<!doctype html>
     background: linear-gradient(90deg, var(--accent-deep), var(--accent));
     transition: width 0.2s linear;
   }
+  /* ============================================================
+   * Search results — hide showcase when active, show flat grid.
+   * ============================================================ */
+  body.is-searching .console-section { display: none; }
+  body:not(.is-searching) #search-results { display: none; }
+  #search-results {
+    margin-bottom: 2.2rem;
+  }
+  .search-result__meta {
+    color: var(--text-soft);
+    font-size: 0.8rem;
+    margin-bottom: 0.8rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .search-result__meta code {
+    color: var(--accent);
+    background: rgba(167,139,250,0.08);
+    border: 1px solid rgba(167,139,250,0.18);
+    padding: 0.1em 0.45em;
+    border-radius: 4px;
+    margin: 0 0.2em;
+  }
+  header .search.is-busy {
+    border-color: var(--accent);
+  }
   .empty {
     padding: 3rem 1rem;
     text-align: center;
     color: var(--text-soft);
+  }
+  .empty code {
+    color: var(--accent);
+    background: rgba(167,139,250,0.08);
+    border: 1px solid rgba(167,139,250,0.18);
+    padding: 0.1em 0.45em;
+    border-radius: 4px;
   }
   .empty code {
     color: var(--accent);
@@ -375,34 +421,71 @@ _FOOT = """
     }}
   }}
 
-  document.querySelectorAll('.tile').forEach(el => {{
-    el.addEventListener('click', ev => {{
-      ev.preventDefault();
-      if (el.classList.contains('is-launching') || el.classList.contains('is-downloading')) return;
-      if (el.dataset.rom) {{
-        launchOwned(el);
-      }} else if (el.dataset.archive) {{
-        downloadAndLaunch(el);
-      }}
+  function wireTiles(scope) {{
+    const root = scope || document;
+    root.querySelectorAll('.tile').forEach(el => {{
+      if (el.dataset.wired) return;
+      el.dataset.wired = '1';
+      el.addEventListener('click', ev => {{
+        ev.preventDefault();
+        if (el.classList.contains('is-launching') || el.classList.contains('is-downloading')) return;
+        if (el.dataset.rom) {{
+          launchOwned(el);
+        }} else if (el.dataset.archive) {{
+          downloadAndLaunch(el);
+        }}
+      }});
     }});
-  }});
+  }}
+  wireTiles(document);
 
+  // Full-library search — fetches /api/search.html over the entire
+  // No-Intro index (not just the showcase), debounced 140ms.
   const searchEl = document.getElementById('search');
   if (searchEl) {{
+    const resultsEl = document.getElementById('search-results');
+    let searchT;
+    let currentSeq = 0;
+
+    function exitSearch() {{
+      document.body.classList.remove('is-searching');
+      resultsEl.innerHTML = '';
+    }}
+
+    async function runSearch(q) {{
+      const mySeq = ++currentSeq;
+      searchEl.classList.add('is-busy');
+      try {{
+        const resp = await fetch('/api/search.html?q=' + encodeURIComponent(q));
+        if (mySeq !== currentSeq) return;  // stale; newer keystroke in flight
+        const html = await resp.text();
+        resultsEl.innerHTML = html;
+        document.body.classList.add('is-searching');
+        wireTiles(resultsEl);
+      }} catch (err) {{
+        // Keep showcase visible; show a small error in the results pane
+        resultsEl.innerHTML = '<div class="empty">search failed: ' + err.message + '</div>';
+        document.body.classList.add('is-searching');
+      }} finally {{
+        if (mySeq === currentSeq) searchEl.classList.remove('is-busy');
+      }}
+    }}
+
     searchEl.addEventListener('input', () => {{
-      const q = searchEl.value.toLowerCase().trim();
-      const tokens = q.split(/\\s+/).filter(Boolean);
-      let anyVisible = false;
-      document.querySelectorAll('.tile').forEach(t => {{
-        const hay = (t.dataset.search || '').toLowerCase();
-        const ok = tokens.every(tk => hay.includes(tk));
-        t.classList.toggle('hidden', !ok);
-        if (ok) anyVisible = true;
-      }});
-      document.querySelectorAll('.console-section').forEach(s => {{
-        const hasAny = s.querySelectorAll('.tile:not(.hidden)').length > 0;
-        s.classList.toggle('hidden', !hasAny);
-      }});
+      clearTimeout(searchT);
+      const q = searchEl.value.trim();
+      if (!q) {{
+        exitSearch();
+        return;
+      }}
+      searchT = setTimeout(() => runSearch(q), 140);
+    }});
+
+    searchEl.addEventListener('keydown', (ev) => {{
+      if (ev.key === 'Escape') {{
+        searchEl.value = '';
+        exitSearch();
+      }}
     }});
   }}
 </script>
@@ -422,13 +505,19 @@ def _stars(n: int) -> str:
     return "★" * n + "<span style='color:var(--text-soft)'>" + ("☆" * (5 - n)) + "</span>"
 
 
-def _tile(group: "HubGroup") -> str:
+def _tile(group: "HubGroup", *, show_console_chip: bool = False) -> str:
     title = html.escape(group.title)
     stars = _stars(group.stars)
     extra = ""
     if group.variant_count > 1:
         extra = (
             f"<span class='tile__row__extra'>+{group.variant_count - 1} variants</span>"
+        )
+
+    chip = ""
+    if show_console_chip:
+        chip = (
+            f'<span class="tile__console">{html.escape(group.console.upper())}</span>'
         )
 
     if group.owned:
@@ -446,7 +535,7 @@ def _tile(group: "HubGroup") -> str:
     return (
         f'<button class="{cls}" {data} '
         f'data-search="{title.lower()}">'
-        f'<div class="tile__title">{title}</div>'
+        f'<div class="tile__title">{chip}{title}</div>'
         f'<div class="tile__row">'
         f'<span class="tile__stars">{stars}</span>'
         f'{extra}'
@@ -454,6 +543,23 @@ def _tile(group: "HubGroup") -> str:
         f'</div>'
         f'<div class="tile__progress"><div class="tile__progress__bar"></div></div>'
         f'</button>'
+    )
+
+
+def render_search_fragment(groups: "list[HubGroup]", *, query: str) -> str:
+    """HTML fragment for /api/search.html — a flat grid of result tiles."""
+    if not groups:
+        q = html.escape(query)
+        return (
+            f'<div class="empty">no matches for <code>{q}</code> across the '
+            'No-Intro index. Try a different spelling or fewer tokens.</div>'
+        )
+    tiles = "\n".join(_tile(g, show_console_chip=True) for g in groups)
+    return (
+        f'<div class="search-result__meta">'
+        f'{len(groups)} result{"s" if len(groups) != 1 else ""}'
+        f' for <code>{html.escape(query)}</code></div>'
+        f'<div class="grid">{tiles}</div>'
     )
 
 
@@ -509,5 +615,10 @@ def render_landing(groups: "list[HubGroup]", *, version: str) -> str:
             ordered.append(slug)
 
     sections = "\n".join(_section(c, by_console[c]) for c in ordered)
-    main = f'<main>{sections}</main>'
+    main = (
+        '<main>'
+        '<section id="search-results"></section>'
+        f'{sections}'
+        '</main>'
+    )
     return head + header + main + _FOOT.format(version=html.escape(version))

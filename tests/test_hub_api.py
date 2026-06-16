@@ -215,3 +215,68 @@ def test_download_endpoint_returns_job_id_and_events_url(client: TestClient, mon
 def test_download_events_unknown_job_returns_404(client: TestClient):
     r = client.get("/downloads/nope/events")
     assert r.status_code == 404
+
+
+# ============================================================
+# Slice 5 — full library search
+# ============================================================
+
+
+def test_search_empty_query_returns_empty(client: TestClient):
+    r = client.get("/api/search?q=")
+    assert r.status_code == 200
+    data = r.json()
+    assert data["count"] == 0
+    assert data["groups"] == []
+
+
+def test_search_finds_unowned_titles_outside_showcase(client: TestClient):
+    """Pikmin, Wolfenstein, etc. aren't in the fixture owned set but
+    are in the bundled No-Intro index — they should surface here."""
+    r = client.get("/api/search?q=wolfenstein")
+    assert r.status_code == 200
+    data = r.json()
+    assert data["count"] > 0
+    titles = [g["title"].lower() for g in data["groups"]]
+    assert any("wolfenstein" in t for t in titles)
+
+
+def test_search_matches_multi_token(client: TestClient):
+    r = client.get("/api/search?q=mario+kart")
+    data = r.json()
+    assert data["count"] > 0
+    # Every result has both tokens in its title
+    for g in data["groups"]:
+        assert "mario" in g["title"].lower()
+        assert "kart" in g["title"].lower()
+
+
+def test_search_html_returns_html_fragment(client: TestClient):
+    r = client.get("/api/search.html?q=tetris")
+    assert r.status_code == 200
+    body = r.text
+    assert "search-result__meta" in body
+    assert "Tetris" in body
+    # Tile carries a console chip in search results
+    assert "tile__console" in body
+
+
+def test_search_html_no_matches_friendly(client: TestClient):
+    r = client.get("/api/search.html?q=xyzzyqwert")
+    body = r.text
+    assert "no matches" in body.lower()
+
+
+def test_search_owned_first(client: TestClient, roms_dir: Path):
+    """When a query hits both owned and unowned variants, owned tile
+    appears first."""
+    r = client.get("/api/search?q=pokemon+emerald")
+    data = r.json()
+    assert data["count"] > 0
+    assert data["groups"][0]["owned"] is True
+
+
+def test_landing_includes_search_results_placeholder(client: TestClient):
+    """The landing has the empty container that JS will populate."""
+    body = client.get("/").text
+    assert 'id="search-results"' in body

@@ -25,6 +25,7 @@ from retrokix.library import (
 
 
 SHOWCASE_PER_CONSOLE = 24
+SEARCH_LIMIT = 300
 
 
 @dataclass
@@ -120,6 +121,80 @@ def _showcase_unowned(
     return out
 
 
+_SEARCH_INDEX: dict[str, list[tuple[str, list[RomEntry]]]] | None = None
+
+
+def _full_index() -> dict[str, list[tuple[str, list[RomEntry]]]]:
+    """Cached per-console index: console_slug → [(title, [variants...]), ...].
+
+    Built once at first access (a few hundred ms to read the bundled
+    JSONs); reused across every /api/search call thereafter.
+    """
+    global _SEARCH_INDEX
+    if _SEARCH_INDEX is None:
+        cache: dict[str, list[tuple[str, list[RomEntry]]]] = {}
+        for slug in CONSOLES:
+            entries = RomLibrary(console=slug).entries()
+            by_title: dict[str, list[RomEntry]] = {}
+            for e in entries:
+                by_title.setdefault(title_key(e.name), []).append(e)
+            cache[slug] = list(by_title.items())
+        _SEARCH_INDEX = cache
+    return _SEARCH_INDEX
+
+
+def warm_search_index() -> None:
+    """Force index build (call at hub startup so the first /api/search
+    request doesn't pay the JSON-parse cost)."""
+    _full_index()
+
+
+def search_library(
+    query: str,
+    roms_dir: Path,
+    *,
+    limit: int = SEARCH_LIMIT,
+) -> list[HubGroup]:
+    """Match `query` across every owned + bundled title.
+
+    Tokens are space-separated and ALL must appear (case-insensitive)
+    in the title key. Owned matches surface first, then unowned —
+    each sub-block fame-sorted DESC.
+    """
+    tokens = [t.lower() for t in query.split() if t]
+    if not tokens:
+        return []
+    owned = _owned_groups(roms_dir)
+
+    owned_matches: list[HubGroup] = []
+    for key, g in owned.items():
+        if all(t in g.title.lower() for t in tokens):
+            owned_matches.append(g)
+    owned_keys = set(owned.keys())
+
+    unowned_matches: list[HubGroup] = []
+    for slug, by_title in _full_index().items():
+        for title, variants in by_title:
+            if (slug, title) in owned_keys:
+                continue
+            if not all(t in title.lower() for t in tokens):
+                continue
+            primary = _canonical_variant(variants)
+            unowned_matches.append(HubGroup(
+                title=title,
+                console=slug,
+                fame=fame_score(slug, title),
+                stars=fame_stars(slug, title),
+                owned=False,
+                archive_name=primary.name,
+                variant_count=len(variants),
+            ))
+
+    owned_matches.sort(key=lambda g: (-g.fame, g.title.lower()))
+    unowned_matches.sort(key=lambda g: (-g.fame, g.title.lower()))
+    return (owned_matches + unowned_matches)[:limit]
+
+
 def build_library_view(
     roms_dir: Path,
     *,
@@ -141,4 +216,12 @@ def build_library_view(
     return owned_list + unowned
 
 
-__all__ = ["HubGroup", "build_library_view", "SHOWCASE_PER_CONSOLE", "ALL_ROM_EXTS"]
+__all__ = [
+    "HubGroup",
+    "build_library_view",
+    "search_library",
+    "warm_search_index",
+    "SHOWCASE_PER_CONSOLE",
+    "SEARCH_LIMIT",
+    "ALL_ROM_EXTS",
+]
