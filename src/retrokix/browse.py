@@ -943,7 +943,13 @@ class BrowseApp(App):
         group = self._results[idx]
         owned = self._group_local_path(group)
         if owned is not None:
-            self.exit(owned)
+            # Brief visual confirmation so the user sees *something* happen
+            # before the TUI tears down and the SDL window pops up. Without
+            # this, an owned-ROM Enter looks identical to a no-op.
+            self._set_status(
+                f"[#34d399]●[/]  launching {_trim_name(owned.name, 60)}…"
+            )
+            self.set_timer(0.35, lambda: self.exit(owned))
             return
         if len(group.variants) == 1:
             self._download(group.primary)
