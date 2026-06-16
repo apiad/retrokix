@@ -1,7 +1,7 @@
 [project]
 name = "retrokix"
-version = "0.19.0"
-description = "Hacker-first, scriptable multi-console emulator (GBA + NES) with HTTP API"
+version = "0.20.0"
+description = "Hacker-first, scriptable multi-console emulator (GBA + NES + SNES) with HTTP API"
 readme = "README.md"
 license = { text = "MPL-2.0" }
 requires-python = ">=3.11"
