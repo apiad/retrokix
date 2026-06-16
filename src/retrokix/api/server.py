@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import time
+
 from fastapi import FastAPI
 
 from retrokix import __version__
@@ -28,6 +30,19 @@ def create_app(runtime: EmulatorRuntime) -> FastAPI:
     # PCM bytes from the libretro core fan out via this bus to any
     # /stream/audio/ws subscribers.
     app.state.audio_bus = AudioBus()
+    # Tracked by the /stream WS handlers; read by the hub's idle reaper
+    # via /healthz to decide when a child has no viewers and can be
+    # killed. Plain int — all WS handlers run on the same event loop.
+    app.state.ws_clients = 0
+    app.state.started_at = time.time()
+
+    @app.get("/healthz")
+    def healthz() -> dict:
+        return {
+            "ws_clients": int(app.state.ws_clients),
+            "uptime": time.time() - app.state.started_at,
+        }
+
     app.include_router(build_control_router())
     app.include_router(build_frame_router())
     app.include_router(build_buttons_router())

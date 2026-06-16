@@ -76,6 +76,7 @@ def build_router() -> APIRouter:
         await websocket.accept()
         bus = websocket.app.state.audio_bus
         q = bus.subscribe()
+        websocket.app.state.ws_clients += 1
         try:
             while True:
                 try:
@@ -91,6 +92,7 @@ def build_router() -> APIRouter:
             return
         finally:
             bus.unsubscribe(q)
+            websocket.app.state.ws_clients = max(0, websocket.app.state.ws_clients - 1)
 
     @router.websocket("/stream/ws")
     async def stream_ws(
@@ -100,6 +102,7 @@ def build_router() -> APIRouter:
         format: str = _DEFAULT_FORMAT,
     ) -> None:
         await websocket.accept()
+        websocket.app.state.ws_clients += 1
         rt = websocket.app.state.runtime
         fps = max(_MIN_FPS, min(_MAX_FPS, fps))
         quality = max(_MIN_Q, min(_MAX_Q, quality))
@@ -191,6 +194,7 @@ def build_router() -> APIRouter:
                 await recv_task
             except (asyncio.CancelledError, WebSocketDisconnect):
                 pass
+            websocket.app.state.ws_clients = max(0, websocket.app.state.ws_clients - 1)
 
     return router
 

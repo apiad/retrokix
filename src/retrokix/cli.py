@@ -456,9 +456,13 @@ def serve(
     import uvicorn
     import webbrowser
 
+    from retrokix.hub.reaper import IdleReaper
     from retrokix.hub.server import create_hub_app
 
     application = create_hub_app(host=host, roms_dir=roms_dir)
+    reaper = IdleReaper(application.state.hub)
+    reaper.start()
+
     typer.echo(f"retrokix hub on http://{host}:{port}")
     typer.echo("  endpoints: /  /api/library  /api/games  /games/launch  /play/{game_id}")
 
@@ -471,6 +475,7 @@ def serve(
     try:
         uvicorn.run(application, host=host, port=port, log_level="warning")
     finally:
+        reaper.stop()
         application.state.hub.shutdown_all()
 
 
