@@ -844,7 +844,10 @@ _VIEWER_HTML = """<!doctype html>
   }
 
   /* NES has no L/R shoulder buttons. When the runtime tells us
-   * console=nes the bezel hides the shoulders entirely. */
+   * console=nes the bezel hides the shoulders entirely. SNES has
+   * L/R but the GBA-shaped bezel doesn't accurately model the SNES
+   * face-button cross — for v1 we leave the GBA layout in place
+   * and let users hit L/R/A/B as-is. */
   body[data-console="nes"] .gba__shoulder { display: none; }
   body[data-console="nes"] .gba__shoulders { height: 0; min-height: 0; }
 

@@ -68,6 +68,18 @@ CONSOLES: dict[str, ConsoleInfo] = {
         cheats_json="libretro_cheats_nes.json",
         core_so="fceumm_libretro.so",
     ),
+    "snes": ConsoleInfo(
+        slug="snes",
+        label="Super Nintendo Entertainment System",
+        archive_item="ef_nintendo_snes_no-intro_2024-04-20",
+        # No-Intro standardizes on .sfc, but .smc / .swc / .fig appear in
+        # older dumps. Accept all four — `_extract_first_rom` picks the
+        # first matching member from each .zip.
+        rom_exts=(".sfc", ".smc", ".swc", ".fig"),
+        bundle_json="no_intro_snes.json",
+        cheats_json="libretro_cheats_snes.json",
+        core_so="snes9x_libretro.so",
+    ),
 }
 
 #: All ROM extensions any console knows about — for local-disk discovery.

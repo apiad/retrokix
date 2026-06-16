@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+# Build snes9x_libretro.so and stage it for the retrokix wheel.
+#
+# Used by:
+#   - Developers on a fresh checkout: `bin/build-snes9x-core` produces the .so
+#     at src/retrokix/cores/snes9x_libretro.so (the bundled path).
+#   - The CI release workflow (release.yml): runs inside the manylinux
+#     container before `python -m build`.
+#
+# Defaults to the SHA pinned in .snes9x-version. Override with
+# --snes9x-version=<sha> or by setting SNES9X_VERSION in the environment.
+#
+# snes9x's libretro Makefile lives under libretro/. Plain Make, no CMake.
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$REPO_ROOT"
+
+SNES9X_VERSION="${SNES9X_VERSION:-$(cat .snes9x-version)}"
+BUILD_DIR=""
+for arg in "$@"; do
+  case "$arg" in
+    --snes9x-version=*) SNES9X_VERSION="${arg#*=}" ;;
+    --build-dir=*)      BUILD_DIR="${arg#*=}" ;;
+    *) echo "unknown arg: $arg" >&2; exit 2 ;;
+  esac
+done
+: "${BUILD_DIR:=/tmp/snes9x-build-${SNES9X_VERSION}}"
+
+echo "Building snes9x_libretro.so from libretro/snes9x $SNES9X_VERSION in $BUILD_DIR"
+
+if [[ ! -d "$BUILD_DIR/snes9x" ]]; then
+  mkdir -p "$BUILD_DIR"
+  # Tarball fetch (same rationale as fceumm — dodges sporadic
+  # smart-HTTP failures on big repos).
+  TARBALL="$BUILD_DIR/snes9x-$SNES9X_VERSION.tar.gz"
+  curl -fsSL --retry 5 --retry-delay 3 \
+    "https://codeload.github.com/libretro/snes9x/tar.gz/$SNES9X_VERSION" \
+    -o "$TARBALL"
+  tar -xzf "$TARBALL" -C "$BUILD_DIR"
+  mv "$BUILD_DIR/snes9x-$SNES9X_VERSION" "$BUILD_DIR/snes9x"
+fi
+
+cd "$BUILD_DIR/snes9x/libretro"
+make clean
+make -j"$(nproc)"
+
+SO="$BUILD_DIR/snes9x/libretro/snes9x_libretro.so"
+[[ -f "$SO" ]] || { echo "build produced no $SO" >&2; exit 1; }
+
+# Symbol presence — catches LTO-empty .so files.
+if ! nm -D "$SO" 2>/dev/null | grep -q '\bretro_run\b'; then
+  echo "FATAL: $SO has no retro_run symbol." >&2
+  exit 1
+fi
+
+# ldd allowlist — only manylinux-baseline libraries permitted.
+ALLOWED='linux-vdso\.|ld-linux-x86-64\.|libc\.|libm\.|libpthread\.|libdl\.|libgcc_s\.|libstdc\+\+\.|libz\.'
+BAD="$(ldd "$SO" | grep '=>' | grep -Ev "$ALLOWED" || true)"
+if [[ -n "$BAD" ]]; then
+  echo "FATAL: $SO links libraries outside manylinux baseline:" >&2
+  echo "$BAD" >&2
+  exit 1
+fi
+
+mkdir -p "$REPO_ROOT/src/retrokix/cores"
+cp "$SO" "$REPO_ROOT/src/retrokix/cores/snes9x_libretro.so"
+# snes9x ships its license at the repo root as LICENSE (custom; effectively
+# permissive non-commercial — see file for full terms).
+cp "$BUILD_DIR/snes9x/LICENSE" "$REPO_ROOT/src/retrokix/cores/LICENSE.snes9x"
+
+# Stamp SNES9X_VERSION into the cores package __init__.
+INIT="$REPO_ROOT/src/retrokix/cores/__init__.py"
+python3 - <<PY
+import re, pathlib
+p = pathlib.Path("$INIT")
+text = p.read_text()
+if re.search(r'^SNES9X_VERSION\s*=', text, flags=re.M):
+    new = re.sub(r'^SNES9X_VERSION\s*=.*$', f'SNES9X_VERSION = "$SNES9X_VERSION"', text, count=1, flags=re.M)
+else:
+    new = text.rstrip() + f'\nSNES9X_VERSION = "$SNES9X_VERSION"\n'
+p.write_text(new)
+PY
+
+echo "OK: bundled core at src/retrokix/cores/snes9x_libretro.so (libretro/snes9x $SNES9X_VERSION)"

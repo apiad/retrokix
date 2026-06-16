@@ -1,7 +1,7 @@
 name: release
 
 # Build the manylinux x86_64 wheel (with bundled mgba_libretro.so +
-# fceumm_libretro.so) + sdist on every published GitHub release,
+# fceumm_libretro.so + snes9x_libretro.so) + sdist on every release,
 # then publish both to PyPI
 # via trusted publishing (OIDC). No tokens stored anywhere — the
 # publish job requests a short-lived token from PyPI using GitHub's
@@ -35,6 +35,9 @@ jobs:
 
       - name: Build fceumm_libretro.so + stage into wheel
         run: bin/build-fceumm-core
+
+      - name: Build snes9x_libretro.so + stage into wheel
+        run: bin/build-snes9x-core
 
       - name: Build wheel + sdist
         run: |

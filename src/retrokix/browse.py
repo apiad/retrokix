@@ -254,6 +254,89 @@ _FAMOUS_QUERIES: tuple[str, ...] = (
     # Cult RPG/strategy
     "Maniac Mansion (USA",
     "Adventures of Lolo (USA",
+    # ---------- SNES classics ----------
+    # Same shape as the NES cohort — tuned against the 2024 No-Intro
+    # SNES set so the canonical USA release wins each group.
+    # Mario / Zelda / Metroid
+    "Super Mario World (USA",
+    "Super Mario World 2 - Yoshi's Island (USA)",
+    "Super Mario All-Stars (USA)",
+    "Super Mario All-Stars + Super Mario World (USA)",
+    "Super Mario Kart (USA)",
+    "Super Mario RPG - Legend of the Seven Stars (USA)",
+    "Legend of Zelda, The - A Link to the Past (USA)",
+    "Super Metroid (Japan, USA)",
+    # Donkey Kong Country
+    "Donkey Kong Country (USA",
+    "Donkey Kong Country 2 - Diddy's Kong Quest (USA",
+    "Donkey Kong Country 3 - Dixie Kong's Double Trouble! (USA",
+    # Square / Enix JRPGs
+    "Chrono Trigger (USA)",
+    "Final Fantasy III (USA)",
+    "Final Fantasy II (USA)",
+    "Final Fantasy V (Japan)",
+    "Final Fantasy - Mystic Quest (USA)",
+    "Secret of Mana (USA)",
+    "Seiken Densetsu 3 (Japan)",
+    "EarthBound (USA)",
+    "Lufia & The Fortress of Doom (USA)",
+    "Lufia II - Rise of the Sinistrals (USA)",
+    "Breath of Fire (USA)",
+    "Breath of Fire II (USA)",
+    "Illusion of Gaia (USA)",
+    "Terranigma (Europe)",
+    "Soul Blazer (USA)",
+    "Ogre Battle - The March of the Black Queen (USA)",
+    "Tactics Ogre - Let Us Cling Together (Japan)",
+    # Mega Man X / Castlevania / Contra
+    "Mega Man X (USA)",
+    "Mega Man X2 (USA)",
+    "Mega Man X3 (USA)",
+    "Mega Man 7 (USA)",
+    "Super Castlevania IV (USA)",
+    "Castlevania - Dracula X (USA)",
+    "Super C (USA)",
+    "Contra III - The Alien Wars (USA)",
+    "Super Probotector - Alien Rebels (Europe)",
+    # Fighting / brawlers
+    "Street Fighter II - The World Warrior (USA)",
+    "Street Fighter II Turbo (USA)",
+    "Super Street Fighter II (USA)",
+    "Mortal Kombat (USA)",
+    "Mortal Kombat II (USA)",
+    "Mortal Kombat 3 (USA)",
+    "Killer Instinct (USA",
+    "Final Fight (USA)",
+    "Final Fight 2 (USA)",
+    "Final Fight 3 (USA)",
+    "Teenage Mutant Ninja Turtles IV - Turtles in Time (USA)",
+    # Action / adventure / shmup
+    "Star Fox (USA)",
+    "Star Fox - Super Weekend (USA)",
+    "F-Zero (USA",
+    "Pilotwings (USA",
+    "Super Punch-Out!! (USA",
+    "Kirby Super Star (USA)",
+    "Kirby's Dream Course (USA",
+    "Kirby's Dream Land 3 (USA",
+    "Yoshi's Island (USA",
+    "Yoshi's Cookie (USA",
+    "Yoshi's Safari (USA",
+    "ActRaiser (USA",
+    "ActRaiser 2 (USA",
+    "Demon's Crest (USA",
+    "Gradius III (USA",
+    "R-Type III - The Third Lightning (USA)",
+    "Super R-Type (USA",
+    "U.N. Squadron (USA",
+    "Axelay (USA",
+    # Sports / racing
+    "NBA Jam (USA",
+    "NBA Jam - Tournament Edition (USA",
+    "Tetris & Dr. Mario (USA",
+    "Tetris Attack (USA)",
+    "Super Tennis (USA",
+    "Super Mario Kart (USA",
 )
 
 
@@ -351,10 +434,11 @@ def _marker(owned: bool) -> str:
 
 
 _CONSOLE_BADGE_COLORS = {
-    # GBA: muted purple/indigo; NES: warm red — mirrors the consoles'
-    # own brand palettes loosely enough to be readable on dark terminals.
+    # GBA: muted purple/indigo; NES: warm red; SNES: amber — echoes the
+    # NA SNES brand palette and stays readable on dark terminals.
     "gba": "#a78bfa",
     "nes": "#f87171",
+    "snes": "#f59e0b",
 }
 
 

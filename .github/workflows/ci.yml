@@ -32,6 +32,9 @@ jobs:
       - name: Build fceumm_libretro.so
         run: bin/build-fceumm-core
 
+      - name: Build snes9x_libretro.so
+        run: bin/build-snes9x-core
+
       - name: Install retrokix + dev deps
         run: pip install -e ".[dev]"
 

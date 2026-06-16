@@ -174,7 +174,11 @@ def test_console_for_path_dispatches_by_extension(tmp_path):
 
     assert console_for_path(tmp_path / "rom.gba") == "gba"
     assert console_for_path(tmp_path / "rom.nes") == "nes"
-    assert console_for_path(tmp_path / "rom.smc") is None
+    # All four SNES extensions resolve to the same slug.
+    for ext in (".sfc", ".smc", ".swc", ".fig"):
+        assert console_for_path(tmp_path / f"rom{ext}") == "snes", ext
+    # Unknown extensions still fall through.
+    assert console_for_path(tmp_path / "rom.iso") is None
     assert console_for_path("Pokemon.gba") == "gba"
 
 

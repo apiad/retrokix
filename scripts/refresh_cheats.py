@@ -52,6 +52,12 @@ CONSOLES: dict[str, dict[str, object]] = {
             r"\s*\((?:Game Genie|Action Replay|GG|AR|Pro Action Replay)(?:[^)]*)\)$"
         ),
     },
+    "snes": {
+        "dir": "cht/Nintendo - Super Nintendo Entertainment System",
+        "suffix_re": re.compile(
+            r"\s*\((?:Game Genie|Pro Action Replay|Action Replay|GG|PAR|AR)(?:[^)]*)\)$"
+        ),
+    },
 }
 
 

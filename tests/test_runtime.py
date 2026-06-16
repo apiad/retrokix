@@ -290,3 +290,9 @@ def test_default_core_path_picks_console_specific_core(tmp_path):
     gba_rom.write_bytes(b"\x00" * 16)
     path = _default_core_path(gba_rom)
     assert path.name == "mgba_libretro.so"
+
+    for ext in (".sfc", ".smc", ".swc", ".fig"):
+        snes_rom = tmp_path / f"fake{ext}"
+        snes_rom.write_bytes(b"\x00" * 16)
+        path = _default_core_path(snes_rom)
+        assert path.name == "snes9x_libretro.so", f"{ext} should map to snes9x"

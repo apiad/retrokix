@@ -71,6 +71,8 @@ packages = ["src/retrokix"]
 "src/retrokix/data/libretro_cheats_gba.json" = "retrokix/data/libretro_cheats_gba.json"
 "src/retrokix/data/no_intro_nes.json" = "retrokix/data/no_intro_nes.json"
 "src/retrokix/data/libretro_cheats_nes.json" = "retrokix/data/libretro_cheats_nes.json"
+"src/retrokix/data/no_intro_snes.json" = "retrokix/data/no_intro_snes.json"
+"src/retrokix/data/libretro_cheats_snes.json" = "retrokix/data/libretro_cheats_snes.json"
 "src/retrokix/data/wikipedia_fame.json" = "retrokix/data/wikipedia_fame.json"
 "src/retrokix/data/emerald_species.json" = "retrokix/data/emerald_species.json"
 "src/retrokix/data/emerald_growth_rates.json" = "retrokix/data/emerald_growth_rates.json"
@@ -95,6 +97,8 @@ packages = ["src/retrokix"]
 "src/retrokix/cores/LICENSE.mGBA" = "retrokix/cores/LICENSE.mGBA"
 "src/retrokix/cores/fceumm_libretro.so" = "retrokix/cores/fceumm_libretro.so"
 "src/retrokix/cores/LICENSE.FCEUmm" = "retrokix/cores/LICENSE.FCEUmm"
+"src/retrokix/cores/snes9x_libretro.so" = "retrokix/cores/snes9x_libretro.so"
+"src/retrokix/cores/LICENSE.snes9x" = "retrokix/cores/LICENSE.snes9x"
 "src/retrokix/render/shaders/__init__.py" = "retrokix/render/shaders/__init__.py"
 "src/retrokix/render/shaders/_vertex.wgsl" = "retrokix/render/shaders/_vertex.wgsl"
 "src/retrokix/render/shaders/nearest.wgsl" = "retrokix/render/shaders/nearest.wgsl"
@@ -127,6 +131,8 @@ exclude = [
   "src/retrokix/cores/LICENSE.mGBA",
   "src/retrokix/cores/fceumm_libretro.so",
   "src/retrokix/cores/LICENSE.FCEUmm",
+  "src/retrokix/cores/snes9x_libretro.so",
+  "src/retrokix/cores/LICENSE.snes9x",
 ]
 
 [tool.hatch.build.hooks.custom]

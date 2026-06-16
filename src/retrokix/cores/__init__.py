@@ -32,3 +32,4 @@ def bundled_core_path(filename: str = "mgba_libretro.so") -> Path | None:
     table records each one's `core_so`)."""
     candidate = Path(str(_files("retrokix.cores") / filename))
     return candidate if candidate.exists() else None
+SNES9X_VERSION = "185488cd83aaf274752a742c94d45561cbecb7af"

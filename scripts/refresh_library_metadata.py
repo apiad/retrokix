@@ -32,6 +32,10 @@ CONSOLES: dict[str, dict[str, object]] = {
         "item": "ef_nintendo_entertainment_-system_-no-intro_2024-04-23",
         "rom_exts": (".nes",),
     },
+    "snes": {
+        "item": "ef_nintendo_snes_no-intro_2024-04-20",
+        "rom_exts": (".sfc", ".smc", ".swc", ".fig"),
+    },
 }
 
 
