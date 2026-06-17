@@ -38,9 +38,11 @@ def create_app(runtime: EmulatorRuntime) -> FastAPI:
 
     @app.get("/healthz")
     def healthz() -> dict:
+        qos = getattr(app.state, "stream_qos", None)
         return {
             "ws_clients": int(app.state.ws_clients),
             "uptime": time.time() - app.state.started_at,
+            "stream_qos": qos.snapshot() if qos is not None else None,
         }
 
     app.include_router(build_control_router())

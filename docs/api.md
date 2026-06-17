@@ -141,15 +141,33 @@ source that combines via set-union.
 
 Query params:
 
-| Param     | Default | Range / values     | Meaning                          |
-| --------- | ------- | ------------------ | -------------------------------- |
-| `fps`     | `30`    | `1..60`            | Target frame rate.               |
-| `format`  | `raw`   | `raw \| jpeg`      | Frame encoding (see below).      |
-| `quality` | `92`    | `10..95`           | JPEG quality (when `format=jpeg`). |
-| `mode`    | `viewer`| `viewer \| controller` | Used by the HTML viewer; the WS itself is symmetric. |
+| Param           | Default | Range / values     | Meaning                          |
+| --------------- | ------- | ------------------ | -------------------------------- |
+| `fps`           | `30`    | `1..60`            | Target frame rate.               |
+| `format`        | `raw`   | `raw \| jpeg`      | Frame encoding (see below).      |
+| `quality`       | `92`    | `10..95`           | JPEG ceiling (when `format=jpeg`). Adaptive QoS may push lower; see below. |
+| `quality_floor` | `30`    | `10..95`           | JPEG floor. Quality never drops below this even on a saturated link. |
+| `mode`          | `viewer`| `viewer \| controller` | Used by the HTML viewer; the WS itself is symmetric. |
 
 Out-of-range values are clamped; unknown `format=` falls back to
 `raw`.
+
+#### QoS — always in sync, never queued
+
+The send loop holds at most ONE `send_bytes` in flight per WebSocket.
+On each frame interval:
+- If the previous send is still pending, the tick **drops the frame**
+  entirely — no sampling, no encoding. When the send completes, the
+  next tick reads the **latest** framebuffer.
+- If the previous send completed, we record its wall-time and adapt:
+  an EWMA of `send_dur / interval` drives JPEG quality between
+  `quality_floor` and `quality` (the ceiling). High ratio → drop
+  quality by 5; low ratio → recover.
+
+Result: clients never see backlogged stale frames, and the encoder
+shifts toward a leaner JPEG when the link can't keep up. Drop counts
+and live quality are exposed at `GET /healthz` as
+`stream_qos.{sent, dropped, quality, ratio_ewma, last_send_ms}`.
 
 #### Wire format
 

@@ -46,11 +46,13 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
 from PIL import Image
 
+from retrokix.api.qos import QosState
 from retrokix.input import button_from_str
 
 
 _MIN_FPS, _MAX_FPS, _DEFAULT_FPS = 1, 60, 30
 _MIN_Q, _MAX_Q, _DEFAULT_Q = 10, 95, 92
+_DEFAULT_Q_FLOOR = 30
 _VALID_FORMATS = ("raw", "jpeg")
 _DEFAULT_FORMAT = "raw"
 
@@ -100,17 +102,26 @@ def build_router() -> APIRouter:
         fps: int = _DEFAULT_FPS,
         quality: int = _DEFAULT_Q,
         format: str = _DEFAULT_FORMAT,
+        quality_floor: int = _DEFAULT_Q_FLOOR,
     ) -> None:
         await websocket.accept()
         websocket.app.state.ws_clients += 1
         rt = websocket.app.state.runtime
         fps = max(_MIN_FPS, min(_MAX_FPS, fps))
         quality = max(_MIN_Q, min(_MAX_Q, quality))
+        quality_floor = max(_MIN_Q, min(_MAX_Q, quality_floor))
         fmt = format.lower() if isinstance(format, str) else _DEFAULT_FORMAT
         if fmt not in _VALID_FORMATS:
             fmt = _DEFAULT_FORMAT
         interval = 1.0 / fps
         loop = asyncio.get_event_loop()
+
+        qos = QosState(
+            initial_quality=quality,
+            quality_floor=quality_floor,
+            quality_ceiling=quality,
+        )
+        websocket.app.state.stream_qos = qos
 
         async def _receive_loop() -> None:
             """Parse text messages from the client.
@@ -143,6 +154,7 @@ def build_router() -> APIRouter:
                     app.state.fast_forward = bool(parsed.get("on", False))
 
         recv_task = asyncio.create_task(_receive_loop())
+        send_task: "asyncio.Task | None" = None
         try:
             # First message: an info handshake so the browser can size
             # its canvas before frames arrive. Console-agnostic — works
@@ -162,25 +174,58 @@ def build_router() -> APIRouter:
                 "console": console_slug,
             }))
 
+            # QoS — drop old frames + adaptive JPEG quality.
+            # We hold ONE in-flight send_bytes task at a time. On each
+            # tick, if the previous send is still running, we skip the
+            # frame entirely (don't sample, don't encode). When the
+            # send completes we sample the LATEST framebuffer — never
+            # backlogged stale frames.
+            #
+            # The wrapped coroutine below records its own start/end
+            # times inside the task. That matters for the EWMA: a
+            # task that finished in 1 ms but whose `done()` we only
+            # observed on the next 33 ms tick still reports a 1 ms
+            # send_dur, so we don't ratchet quality down for nothing.
+
+            async def _send_timed(payload: bytes) -> float:
+                t_send_start = loop.time()
+                await websocket.send_bytes(payload)
+                return loop.time() - t_send_start
+
             # RGBA scratch buffer; reallocated if the framebuffer ever
             # resizes (rare but legal — some cores switch resolution
             # mid-game, e.g. SNES hi-res sprites).
             rgba_buf: "np.ndarray | None" = None
             while True:
                 t0 = loop.time()
-                fb = rt.framebuffer()
-                if fmt == "raw":
-                    h, w = fb.shape[0], fb.shape[1]
-                    if rgba_buf is None or rgba_buf.shape[:2] != (h, w):
-                        rgba_buf = np.empty((h, w, 4), dtype=np.uint8)
-                        rgba_buf[..., 3] = 0xFF
-                    rgba_buf[..., :3] = fb
-                    payload: bytes = rgba_buf.tobytes()
+
+                if send_task is not None and send_task.done():
+                    exc = send_task.exception()
+                    if exc is not None:
+                        raise exc
+                    qos.record_send(send_task.result(), interval)
+                    send_task = None
+
+                if send_task is None:
+                    fb = rt.framebuffer()
+                    if fmt == "raw":
+                        h, w = fb.shape[0], fb.shape[1]
+                        if rgba_buf is None or rgba_buf.shape[:2] != (h, w):
+                            rgba_buf = np.empty((h, w, 4), dtype=np.uint8)
+                            rgba_buf[..., 3] = 0xFF
+                        rgba_buf[..., :3] = fb
+                        payload: bytes = rgba_buf.tobytes()
+                    else:
+                        buf = BytesIO()
+                        Image.fromarray(fb).save(
+                            buf, format="JPEG", quality=qos.quality,
+                        )
+                        payload = buf.getvalue()
+                    send_task = asyncio.create_task(_send_timed(payload))
                 else:
-                    buf = BytesIO()
-                    Image.fromarray(fb).save(buf, format="JPEG", quality=quality)
-                    payload = buf.getvalue()
-                await websocket.send_bytes(payload)
+                    # Previous send still in flight — skip this frame.
+                    qos.record_drop()
+
                 elapsed = loop.time() - t0
                 await asyncio.sleep(max(0.0, interval - elapsed))
         except WebSocketDisconnect:
@@ -194,6 +239,12 @@ def build_router() -> APIRouter:
                 await recv_task
             except (asyncio.CancelledError, WebSocketDisconnect):
                 pass
+            if send_task is not None and not send_task.done():
+                send_task.cancel()
+                try:
+                    await send_task
+                except (asyncio.CancelledError, WebSocketDisconnect, RuntimeError):
+                    pass
             websocket.app.state.ws_clients = max(0, websocket.app.state.ws_clients - 1)
 
     return router
