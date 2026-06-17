@@ -4,6 +4,37 @@ All notable changes to this project are documented here. Format: Keep a Changelo
 
 ## [Unreleased]
 
+## [v1.2.0] - 2026-06-17
+
+Stream QoS — the browser stays in sync with the runtime even on a
+slow link. The `/stream/ws` send loop now holds at most one
+`send_bytes` in flight per connection: if a tick fires while the
+previous send is still pending, the frame is dropped entirely
+(no sample, no encode). When the send completes, the next tick
+reads the **latest** framebuffer, never a queued stale one. For
+`format=jpeg`, an EWMA of `send_dur / interval` drives quality
+adaptively between `quality_floor` (new, default 30) and `quality`
+(now the ceiling).
+
+### Features
+- (stream): drop-old-frames send loop — single in-flight send per
+  WS, dropped tick when busy. Clients never see backlogged stale
+  frames.
+- (stream): adaptive JPEG quality between configured floor and
+  ceiling via send-duration EWMA. Quality steps down 5 above an
+  80 % interval-utilisation ratio, recovers below 40 %.
+- (stream): new query param `quality_floor` (default 30) on
+  `WS /stream/ws`. `quality` is now the ceiling.
+- (api): `/healthz` reports `stream_qos` = `{sent, dropped, quality,
+  ratio_ewma, last_send_ms}` for any in-flight stream WS — useful
+  for the hub reaper and external observers.
+
+### Other
+- (lint): drop unused `GBA_{WIDTH,HEIGHT}` imports from
+  `render/sdl.py`. Whole-tree `ruff check src/ tests/` is now clean.
+- docs/api.md `WS /stream/ws` section documents the new
+  `quality_floor` param and the QoS callout.
+
 ## [v1.1.0] - 2026-06-16
 
 The game-hub release. `retrokix serve` is now a self-served library

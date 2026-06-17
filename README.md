@@ -239,7 +239,7 @@ and need `$RETROKIX_CORE_PATH` set. Full coverage in
 
 ## Status
 
-- **Stable.** v1.1.0. Works on Linux x86_64. macOS / Windows / ARM
+- **Stable.** v1.2.0. Works on Linux x86_64. macOS / Windows / ARM
   are PR-welcome.
 - **Multi-console.** GBA via mGBA, NES via FCEUmm, SNES via snes9x —
   all three shipped in the wheel. The runtime picks a core from the
