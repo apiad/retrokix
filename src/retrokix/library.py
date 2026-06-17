@@ -80,6 +80,28 @@ CONSOLES: dict[str, ConsoleInfo] = {
         cheats_json="libretro_cheats_snes.json",
         core_so="snes9x_libretro.so",
     ),
+    "gb": ConsoleInfo(
+        slug="gb",
+        label="Game Boy",
+        # The maintained No-Intro mirror — note this one ships per-game
+        # .7z, not .zip like the GBA/NES/SNES mirrors. _extract_first_rom
+        # handles both.
+        archive_item="No-Intro_GB",
+        rom_exts=(".gb",),
+        bundle_json="no_intro_gb.json",
+        cheats_json="libretro_cheats_gb.json",
+        # Same mGBA core as GBA — it also plays GB and GBC.
+        core_so="mgba_libretro.so",
+    ),
+    "gbc": ConsoleInfo(
+        slug="gbc",
+        label="Game Boy Color",
+        archive_item="No-Intro_GBC",
+        rom_exts=(".gbc",),
+        bundle_json="no_intro_gbc.json",
+        cheats_json="libretro_cheats_gbc.json",
+        core_so="mgba_libretro.so",
+    ),
 }
 
 #: All ROM extensions any console knows about — for local-disk discovery.
@@ -118,12 +140,21 @@ class RomEntry:
         return self.name.lower().endswith(".zip")
 
     @property
+    def is_7z(self) -> bool:
+        return self.name.lower().endswith(".7z")
+
+    @property
+    def is_archive(self) -> bool:
+        """Archive containing the real ROM, vs a raw ROM file."""
+        return self.is_zip or self.is_7z
+
+    @property
     def title(self) -> str:
-        """Filename without trailing .zip / .gba / .nes / etc — useful
-        for grouping and for the cheats-by-rom lookup key."""
+        """Filename without trailing .zip / .7z / .gba / .nes / etc —
+        useful for grouping and for the cheats-by-rom lookup key."""
         n = self.name
         lower = n.lower()
-        for ext in (".zip",) + ALL_ROM_EXTS:
+        for ext in (".zip", ".7z") + ALL_ROM_EXTS:
             if lower.endswith(ext):
                 return n[: -len(ext)]
         return n
@@ -269,7 +300,7 @@ class RomLibrary:
                 show_progress=progress,
                 progress_cb=progress_cb,
             )
-            if entry.is_zip:
+            if entry.is_archive:
                 rom_exts = info.rom_exts if info else ALL_ROM_EXTS
                 final = _extract_first_rom(tmp_path, self.roms_dir, rom_exts)
             else:
@@ -330,14 +361,40 @@ def _stream_download(
         raise last_exc
 
 
-def _extract_first_rom(zip_path: Path, dest_dir: Path, rom_exts: tuple[str, ...]) -> Path:
-    """Extract the first member of `zip_path` whose extension is in
-    `rom_exts`. Returns the path of the file written to `dest_dir`."""
-    with zipfile.ZipFile(zip_path, "r") as z:
+def _extract_first_rom(arc_path: Path, dest_dir: Path, rom_exts: tuple[str, ...]) -> Path:
+    """Extract the first member of `arc_path` whose extension is in
+    `rom_exts`. Supports .zip (GBA/NES/SNES No-Intro mirrors) and .7z
+    (GB/GBC No-Intro mirror). Returns the path of the file written to
+    `dest_dir`."""
+    suffix = arc_path.suffix.lower()
+    if suffix == ".7z":
+        import py7zr  # lazy: only loaded when GB/GBC ROMs are touched
+        with py7zr.SevenZipFile(arc_path, "r") as z:
+            members = [n for n in z.getnames() if n.lower().endswith(rom_exts)]
+            if not members:
+                raise RuntimeError(
+                    f"no member with extension in {rom_exts!r} found inside {arc_path}"
+                )
+            member = members[0]
+            out = dest_dir / Path(member).name
+            target_dir = dest_dir
+            z.extract(targets=[member], path=target_dir)
+            # py7zr extracts with the member's relative path; if a
+            # subdirectory was present, normalize the file into dest_dir.
+            extracted = target_dir / member
+            if extracted != out:
+                shutil.move(str(extracted), out)
+                # Best-effort cleanup of any orphan parent dirs.
+                parent = extracted.parent
+                while parent != target_dir and parent.exists() and not any(parent.iterdir()):
+                    parent.rmdir()
+                    parent = parent.parent
+            return out
+    with zipfile.ZipFile(arc_path, "r") as z:
         members = [n for n in z.namelist() if n.lower().endswith(rom_exts)]
         if not members:
             raise RuntimeError(
-                f"no member with extension in {rom_exts!r} found inside {zip_path}"
+                f"no member with extension in {rom_exts!r} found inside {arc_path}"
             )
         member = members[0]
         out = dest_dir / Path(member).name

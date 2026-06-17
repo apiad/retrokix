@@ -27,14 +27,15 @@ dependencies = [
   "typer>=0.12",
   "fastapi>=0.110",
   "uvicorn>=0.29",
-  "websockets>=12",  # WebSocket transport for /stream — uvicorn ships without by default
+  "websockets>=12", # WebSocket transport for /stream — uvicorn ships without by default
   "numpy>=1.26",
   "pillow>=10",
   "pysdl2>=0.9.16",
   "pysdl2-dll>=2.30",
-  "cffi>=1.17",  # used by retrokix.libretro to bind the libretro ABI
-  "imagehash>=4.3",  # pHash/dHash for scene-detection fallback
-  "textual>=0.80",  # interactive ROM browser (retrokix browse)
+  "cffi>=1.17", # used by retrokix.libretro to bind the libretro ABI
+  "imagehash>=4.3", # pHash/dHash for scene-detection fallback
+  "textual>=0.80", # interactive ROM browser (retrokix browse)
+  "py7zr>=1.1.0",
 ]
 
 [project.urls]
@@ -73,6 +74,10 @@ packages = ["src/retrokix"]
 "src/retrokix/data/libretro_cheats_nes.json" = "retrokix/data/libretro_cheats_nes.json"
 "src/retrokix/data/no_intro_snes.json" = "retrokix/data/no_intro_snes.json"
 "src/retrokix/data/libretro_cheats_snes.json" = "retrokix/data/libretro_cheats_snes.json"
+"src/retrokix/data/no_intro_gb.json" = "retrokix/data/no_intro_gb.json"
+"src/retrokix/data/libretro_cheats_gb.json" = "retrokix/data/libretro_cheats_gb.json"
+"src/retrokix/data/no_intro_gbc.json" = "retrokix/data/no_intro_gbc.json"
+"src/retrokix/data/libretro_cheats_gbc.json" = "retrokix/data/libretro_cheats_gbc.json"
 "src/retrokix/data/wikipedia_fame.json" = "retrokix/data/wikipedia_fame.json"
 "src/retrokix/data/emerald_species.json" = "retrokix/data/emerald_species.json"
 "src/retrokix/data/emerald_growth_rates.json" = "retrokix/data/emerald_growth_rates.json"

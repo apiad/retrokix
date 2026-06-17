@@ -498,6 +498,8 @@ _CONSOLE_LABELS: dict[str, str] = {
     "gba": "Game Boy Advance",
     "nes": "Nintendo Entertainment System",
     "snes": "Super Nintendo Entertainment System",
+    "gb": "Game Boy",
+    "gbc": "Game Boy Color",
 }
 
 
@@ -607,7 +609,7 @@ def render_landing(groups: "list[HubGroup]", *, version: str) -> str:
     for g in groups:
         by_console.setdefault(g.console, []).append(g)
     ordered: list[str] = []
-    for slug in ("gba", "nes", "snes"):
+    for slug in ("gba", "gb", "gbc", "snes", "nes"):
         if slug in by_console:
             ordered.append(slug)
     for slug in by_console:

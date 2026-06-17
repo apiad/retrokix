@@ -36,6 +36,16 @@ CONSOLES: dict[str, dict[str, object]] = {
         "item": "ef_nintendo_snes_no-intro_2024-04-20",
         "rom_exts": (".sfc", ".smc", ".swc", ".fig"),
     },
+    "gb": {
+        # GB / GBC mirrors ship per-game .7z (not .zip). _extract_first_rom
+        # handles both archive shapes — see retrokix.library.
+        "item": "No-Intro_GB",
+        "rom_exts": (".gb",),
+    },
+    "gbc": {
+        "item": "No-Intro_GBC",
+        "rom_exts": (".gbc",),
+    },
 }
 
 
@@ -64,8 +74,8 @@ def refresh(console: str) -> None:
     for f in meta.get("files", []):
         name = f.get("name", "")
         lower = name.lower()
-        # Accept the canonical .zip per-rom shape plus a bare-rom fallback.
-        if not (lower.endswith(".zip") or lower.endswith(rom_exts)):
+        # Accept the canonical .zip / .7z per-rom shape plus a bare-rom fallback.
+        if not (lower.endswith((".zip", ".7z")) or lower.endswith(rom_exts)):
             continue
         entries.append({
             "name": name,

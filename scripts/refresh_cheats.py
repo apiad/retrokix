@@ -58,6 +58,18 @@ CONSOLES: dict[str, dict[str, object]] = {
             r"\s*\((?:Game Genie|Pro Action Replay|Action Replay|GG|PAR|AR)(?:[^)]*)\)$"
         ),
     },
+    "gb": {
+        "dir": "cht/Nintendo - Game Boy",
+        "suffix_re": re.compile(
+            r"\s*\((?:Game Genie|GameShark|Game Shark|Pro Action Replay|GG|GS|PAR)(?:[^)]*)\)$"
+        ),
+    },
+    "gbc": {
+        "dir": "cht/Nintendo - Game Boy Color",
+        "suffix_re": re.compile(
+            r"\s*\((?:Game Genie|GameShark|Game Shark|Pro Action Replay|GG|GS|PAR)(?:[^)]*)\)$"
+        ),
+    },
 }
 
 
