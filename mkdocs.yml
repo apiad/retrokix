@@ -1,5 +1,5 @@
 site_name: retrokix
-site_description: Retro consoles you can drive — hacker-first multi-console emulator (GBA + NES + SNES) with HTTP API and self-served game hub.
+site_description: Retro consoles you can drive — hacker-first multi-console emulator (GB + GBC + GBA + NES + SNES) with HTTP API and self-served game hub.
 site_url: https://apiad.github.io/retrokix/
 site_author: Alejandro Piad
 repo_url: https://github.com/apiad/retrokix

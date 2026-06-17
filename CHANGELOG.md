@@ -4,6 +4,36 @@ All notable changes to this project are documented here. Format: Keep a Changelo
 
 ## [Unreleased]
 
+## [v1.3.0] - 2026-06-17
+
+Game Boy + Game Boy Color as 4th and 5th consoles. The bundled mGBA
+core (`valid_extensions = "gba|gb|gbc|sgb"`) already plays both, so
+the wiring was extending `CONSOLES`, teaching the downloader about
+`.7z` archives (No-Intro's GB/GBC mirror ships per-game .7z, not the
+.zip the other consoles use), and adding the two new sections to the
+hub. Bundled catalog jumps from **14,166** ROM variants to **~17,993**
+across five consoles.
+
+### Features
+- (consoles): GB + GBC via the bundled mGBA core. 1,896 GB + 1,931
+  GBC titles, fame-rankable and downloadable from archive.org's
+  `No-Intro_GB` / `No-Intro_GBC` mirrors.
+- (library): `.7z` archive extraction via `py7zr` (new pure-Python
+  dep, ~200 KB). `_extract_first_rom` handles both `.zip` and `.7z`
+  shapes; raw ROM downloads still work as before.
+- (cheats): GB + GBC bundles compiled from libretro-database — 11,770
+  GB cheats across 1,087 ROMs, 7,373 GBC cheats across 786 ROMs.
+- (hub): GB + GBC sections appear in the landing grid with their own
+  console chips. Search reaches every new title; download → play →
+  reaper all work generically.
+
+### Pending
+- (data/fame): Wikipedia 12-month pageviews for GB + GBC titles are
+  still computing at release time (~3 hr for ~2,800 title groups).
+  Until that lands as a patch commit, GB/GBC titles render with 0
+  stars and sort alphabetically within their section. Existing
+  GBA/NES/SNES fame data is unaffected.
+
 ## [v1.2.0] - 2026-06-17
 
 Stream QoS — the browser stays in sync with the runtime even on a

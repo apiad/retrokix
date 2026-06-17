@@ -10,15 +10,15 @@
 
 ---
 
-**retrokix is an emulator you can talk to.** It plays Game Boy Advance,
-NES, and Super Nintendo games in a window with sound and a keyboard —
-and in the same session, it exposes the framebuffer, memory bus, and
-input as an HTTP API any coding agent can reach. Use it to speedrun
-Pokémon Emerald with Claude Code looking over your shoulder, or to test
-a neurosymbolic policy against 14,000+ hand-crafted GBA + NES + SNES
-environments where the level designers were genre masters. Same
-emulator, same session, same API. Whether you're the player or the
-algorithm, you're in the loop together.
+**retrokix is an emulator you can talk to.** It plays Game Boy, Game
+Boy Color, Game Boy Advance, NES, and Super Nintendo games in a window
+with sound and a keyboard — and in the same session, it exposes the
+framebuffer, memory bus, and input as an HTTP API any coding agent can
+reach. Use it to speedrun Pokémon Emerald with Claude Code looking over
+your shoulder, or to test a neurosymbolic policy against 17,000+
+hand-crafted GB + GBC + GBA + NES + SNES environments where the level
+designers were genre masters. Same emulator, same session, same API.
+Whether you're the player or the algorithm, you're in the loop together.
 
 ## Three commands
 
@@ -42,7 +42,7 @@ Open the URL: a fame-ranked grid of every owned ROM plus the top 24
 unowned titles per console. Click an owned tile → it opens in a new
 tab, playing. Click an unowned tile → it downloads from the bundled
 archive.org mirror with a live progress bar, then opens in a new tab.
-Type in the search box: every keystroke filters across all **14,000+
+Type in the search box: every keystroke filters across all **17,000+
 ROMs** in the bundled No-Intro index. The hub spawns one
 `retrokix play --no-sdl` subprocess per launched game on its own
 port (libretro core crash kills one tab, not the hub) and reaps
@@ -89,10 +89,10 @@ discover the next memory address, build the next algorithm.
 
 ## What you get
 
-- **14,000+ ROMs** across GBA + NES + SNES in a fuzzy-searchable
-  bundled No-Intro index, ranked by Wikipedia 12-month pageviews with
-  a 0–5 star column in `retrokix browse`. `retrokix download` pulls
-  from the public archive.org mirror.
+- **17,000+ ROMs** across GB + GBC + GBA + NES + SNES in a
+  fuzzy-searchable bundled No-Intro index, ranked by Wikipedia
+  12-month pageviews with a 0–5 star column in `retrokix browse`.
+  `retrokix download` pulls from the public archive.org mirror.
 - **One HTTP API** exposing the framebuffer, full memory bus, input,
   cheat codes, save states, and an atomic `/action` for multi-step
   agent plans.
@@ -239,12 +239,12 @@ and need `$RETROKIX_CORE_PATH` set. Full coverage in
 
 ## Status
 
-- **Stable.** v1.2.0. Works on Linux x86_64. macOS / Windows / ARM
+- **Stable.** v1.3.0. Works on Linux x86_64. macOS / Windows / ARM
   are PR-welcome.
-- **Multi-console.** GBA via mGBA, NES via FCEUmm, SNES via snes9x —
-  all three shipped in the wheel. The runtime picks a core from the
-  ROM extension; `retrokix browse` shows a per-row console badge and
-  merges every library.
+- **Multi-console.** GBA / GB / GBC via mGBA (the same bundled core
+  plays all three), NES via FCEUmm, SNES via snes9x. The runtime
+  picks a core from the ROM extension; `retrokix browse` shows a
+  per-row console badge and merges every library.
 - **MPL-2.0.** Same license as the underlying mGBA core. The bundled
   FCEUmm core is GPLv2 (see `cores/LICENSE.FCEUmm`) and the bundled
   snes9x core is under its own permissive non-commercial terms

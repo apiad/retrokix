@@ -1,6 +1,6 @@
 # retrokix — agent orientation
 
-`retrokix` is a hacker-first multi-console emulator (GBA + NES + SNES).
+`retrokix` is a hacker-first multi-console emulator (GBA + GB + GBC + NES + SNES).
 Pip-installable Python CLI, native libretro bindings, FastAPI for
 scripted/AI play, a hub command that serves the whole library in a
 browser. Linux-only v1.
