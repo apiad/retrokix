@@ -302,6 +302,13 @@ class RomLibrary:
             )
             if entry.is_archive:
                 rom_exts = info.rom_exts if info else ALL_ROM_EXTS
+                # GB and GBC cross-pollinate inside No-Intro: a Yellow
+                # archive in the GBC mirror packs the .gb binary (Yellow
+                # is CGB-enhanced but runs on original GB too), and the
+                # reverse happens occasionally too. Accept either inside
+                # a GB-family archive so the extract step doesn't fail.
+                if entry.console in ("gb", "gbc"):
+                    rom_exts = (".gb", ".gbc")
                 final = _extract_first_rom(tmp_path, self.roms_dir, rom_exts)
             else:
                 final = self.roms_dir / entry.name

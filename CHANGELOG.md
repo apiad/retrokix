@@ -4,6 +4,17 @@ All notable changes to this project are documented here. Format: Keep a Changelo
 
 ## [Unreleased]
 
+## [v1.3.1] - 2026-06-17
+
+### Fixes
+- (library): accept either `.gb` or `.gbc` inside any GB-family archive.
+  Pokemon Yellow lives in the No-Intro_GBC mirror (CGB+SGB enhanced) but
+  the packed binary is `.gb` because Yellow also runs on the original
+  Game Boy. The extract step previously filtered on the entry's console
+  extension only and rejected the archive with "no member with extension
+  in ('.gbc',) found inside …". Regression covered in
+  `tests/test_library_extract.py`.
+
 ## [v1.3.0] - 2026-06-17
 
 Game Boy + Game Boy Color as 4th and 5th consoles. The bundled mGBA
