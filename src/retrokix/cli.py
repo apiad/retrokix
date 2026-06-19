@@ -359,6 +359,41 @@ def list_roms() -> None:
 
 
 @app.command()
+def art(
+    console: str | None = typer.Option(None, "--console", help="Limit to one console (gba|nes|…). Default: all owned consoles."),
+    force: bool = typer.Option(False, "--force", help="Re-fetch even if cached art is already on disk."),
+) -> None:
+    """Backfill libretro-thumbnails art (snap / boxart / title) for every
+    ROM in ~/.retrokix/roms/. Safe to re-run — only fetches what's missing
+    unless --force is passed. Future downloads grab their own art
+    automatically; this command is for ROMs already on disk."""
+    from retrokix.art import KINDS, fetch_art_for_rom
+    from retrokix.library import CONSOLES, console_for_path, list_local_roms
+
+    if console is not None and console not in CONSOLES:
+        typer.echo(f"--console {console!r}: choices are {', '.join(sorted(CONSOLES))}", err=True)
+        raise typer.Exit(code=1)
+
+    roms = list_local_roms()
+    if console is not None:
+        roms = [p for p in roms if console_for_path(p) == console]
+    if not roms:
+        typer.echo("no local ROMs match")
+        return
+
+    totals: dict[str, int] = {"hit": 0, "cached": 0, "missing": 0, "error": 0, "unknown_console": 0}
+    for i, p in enumerate(roms, 1):
+        result = fetch_art_for_rom(p, force=force)
+        labels = " ".join(f"{k}:{result.get(k, '?')}" for k in KINDS)
+        typer.echo(f"  [{i}/{len(roms)}] {p.name:<55.55s}  {labels}")
+        for status in result.values():
+            totals[status] = totals.get(status, 0) + 1
+
+    summary = ", ".join(f"{k}={v}" for k, v in totals.items() if v)
+    typer.echo(f"\nDone. {summary}.")
+
+
+@app.command()
 def play(
     rom: str = typer.Argument(..., help="Path to a .gba, or a fuzzy query against ~/.retrokix/roms/."),
     scale: int = typer.Option(3, "--scale", help="Window scale factor (windowed mode only)."),

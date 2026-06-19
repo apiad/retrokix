@@ -47,6 +47,7 @@ class ConsoleInfo:
     bundle_json: str   # bundled file under retrokix/data/
     cheats_json: str
     core_so: str       # libretro core filename under retrokix/cores/
+    libretro_thumbnails_repo: str  # libretro-thumbnails/<repo> for box/snap/title art
 
 
 CONSOLES: dict[str, ConsoleInfo] = {
@@ -58,6 +59,7 @@ CONSOLES: dict[str, ConsoleInfo] = {
         bundle_json="no_intro_gba.json",
         cheats_json="libretro_cheats_gba.json",
         core_so="mgba_libretro.so",
+        libretro_thumbnails_repo="Nintendo_-_Game_Boy_Advance",
     ),
     "nes": ConsoleInfo(
         slug="nes",
@@ -67,6 +69,7 @@ CONSOLES: dict[str, ConsoleInfo] = {
         bundle_json="no_intro_nes.json",
         cheats_json="libretro_cheats_nes.json",
         core_so="fceumm_libretro.so",
+        libretro_thumbnails_repo="Nintendo_-_Nintendo_Entertainment_System",
     ),
     "snes": ConsoleInfo(
         slug="snes",
@@ -79,6 +82,7 @@ CONSOLES: dict[str, ConsoleInfo] = {
         bundle_json="no_intro_snes.json",
         cheats_json="libretro_cheats_snes.json",
         core_so="snes9x_libretro.so",
+        libretro_thumbnails_repo="Nintendo_-_Super_Nintendo_Entertainment_System",
     ),
     "gb": ConsoleInfo(
         slug="gb",
@@ -92,6 +96,7 @@ CONSOLES: dict[str, ConsoleInfo] = {
         cheats_json="libretro_cheats_gb.json",
         # Same mGBA core as GBA — it also plays GB and GBC.
         core_so="mgba_libretro.so",
+        libretro_thumbnails_repo="Nintendo_-_Game_Boy",
     ),
     "gbc": ConsoleInfo(
         slug="gbc",
@@ -101,6 +106,7 @@ CONSOLES: dict[str, ConsoleInfo] = {
         bundle_json="no_intro_gbc.json",
         cheats_json="libretro_cheats_gbc.json",
         core_so="mgba_libretro.so",
+        libretro_thumbnails_repo="Nintendo_-_Game_Boy_Color",
     ),
 }
 
@@ -313,6 +319,15 @@ class RomLibrary:
             else:
                 final = self.roms_dir / entry.name
                 shutil.move(str(tmp_path), final)
+            # Best-effort: fetch box/snap/title art in the background so a
+            # successful ROM download is never delayed or broken by art
+            # fetching. Import locally to keep the import graph cheap when
+            # art is never used.
+            try:
+                from retrokix.art import fetch_art_for_rom_background
+                fetch_art_for_rom_background(final)
+            except Exception:
+                pass
             return final
         finally:
             if tmp_path.exists():

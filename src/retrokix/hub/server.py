@@ -20,7 +20,7 @@ import json
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, StreamingResponse
 from pydantic import BaseModel
 
 from retrokix import __version__
@@ -118,6 +118,28 @@ def create_hub_app(
                 for slug, info in CONSOLES.items()
             },
         }
+
+    @app.get("/art")
+    def art(path: str, kind: str = "snap"):
+        """Serve cached libretro-thumbnails art for a downloaded ROM.
+
+        `path` must point inside `roms_dir`; `kind` is snap|boxart|title.
+        404 when no art is cached (either upstream had nothing or we
+        haven't fetched yet).
+        """
+        from retrokix.art import KINDS, art_path_if_present
+        if kind not in KINDS:
+            raise HTTPException(400, f"kind must be one of {KINDS}")
+        rom = Path(path).resolve()
+        roms_root = roms_dir.resolve()
+        try:
+            rom.relative_to(roms_root)
+        except ValueError as exc:
+            raise HTTPException(400, "path must live inside roms_dir") from exc
+        art_path = art_path_if_present(rom, kind)
+        if art_path is None:
+            raise HTTPException(404, "no art cached")
+        return FileResponse(art_path, media_type="image/png")
 
     @app.post("/games/launch")
     def launch(req: LaunchRequest) -> dict:

@@ -18,6 +18,7 @@ Landing shape:
 from __future__ import annotations
 
 import html
+import urllib.parse
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -173,6 +174,16 @@ _HEAD = """<!doctype html>
     transform: translateY(-1px);
   }
   .tile:active { transform: translateY(0); }
+  .tile__art {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    background: #0a0a0f;
+    border-radius: 6px;
+    image-rendering: pixelated;
+    margin-bottom: 0.15rem;
+  }
   .tile__title {
     color: var(--text);
     font-size: 0.88rem;
@@ -522,6 +533,19 @@ def _tile(group: "HubGroup", *, show_console_chip: bool = False) -> str:
             f'<span class="tile__console">{html.escape(group.console.upper())}</span>'
         )
 
+    art_html = ""
+    if group.owned and group.primary_path is not None:
+        from retrokix.art import best_art_for_rom
+        if best_art_for_rom(group.primary_path) is not None:
+            src = (
+                f"/art?path={urllib.parse.quote(str(group.primary_path))}"
+                f"&kind=snap"
+            )
+            art_html = (
+                f'<img class="tile__art" src="{html.escape(src)}" alt="" '
+                f'loading="lazy" onerror="this.style.display=\'none\'">'
+            )
+
     if group.owned:
         action = "▶ play"
         cls = "tile"
@@ -537,6 +561,7 @@ def _tile(group: "HubGroup", *, show_console_chip: bool = False) -> str:
     return (
         f'<button class="{cls}" {data} '
         f'data-search="{title.lower()}">'
+        f'{art_html}'
         f'<div class="tile__title">{chip}{title}</div>'
         f'<div class="tile__row">'
         f'<span class="tile__stars">{stars}</span>'

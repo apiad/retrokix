@@ -280,3 +280,55 @@ def test_landing_includes_search_results_placeholder(client: TestClient):
     """The landing has the empty container that JS will populate."""
     body = client.get("/").text
     assert 'id="search-results"' in body
+
+
+def test_art_serves_cached_png(client: TestClient, roms_dir: Path, tmp_path: Path, monkeypatch):
+    """/art serves the cached PNG when art exists for the requested ROM."""
+    from retrokix import art
+
+    rom = roms_dir / "Pokemon - Emerald Version (USA, Europe).gba"
+    # Place art at the default cache root by monkeypatching DEFAULT_ART_ROOT.
+    cache = tmp_path / "art_cache"
+    monkeypatch.setattr(art, "DEFAULT_ART_ROOT", cache)
+    paths = art.art_paths_for_rom(rom)
+    paths["snap"].parent.mkdir(parents=True, exist_ok=True)
+    paths["snap"].write_bytes(b"\x89PNG\r\n\x1a\n" + b"X" * 32)
+
+    r = client.get(f"/art?path={rom}&kind=snap")
+    assert r.status_code == 200
+    assert r.headers["content-type"] == "image/png"
+    assert r.content.startswith(b"\x89PNG")
+
+
+def test_art_404_when_no_cache(client: TestClient, roms_dir: Path, tmp_path: Path, monkeypatch):
+    from retrokix import art
+    monkeypatch.setattr(art, "DEFAULT_ART_ROOT", tmp_path / "empty_cache")
+    rom = roms_dir / "Pokemon - Emerald Version (USA, Europe).gba"
+    r = client.get(f"/art?path={rom}&kind=snap")
+    assert r.status_code == 404
+
+
+def test_art_404_when_sentinel(client: TestClient, roms_dir: Path, tmp_path: Path, monkeypatch):
+    """A zero-byte sentinel file (known-upstream-404) still serves 404."""
+    from retrokix import art
+    cache = tmp_path / "art_cache"
+    monkeypatch.setattr(art, "DEFAULT_ART_ROOT", cache)
+    rom = roms_dir / "Pokemon - Emerald Version (USA, Europe).gba"
+    paths = art.art_paths_for_rom(rom)
+    paths["snap"].parent.mkdir(parents=True, exist_ok=True)
+    paths["snap"].write_bytes(b"")  # sentinel
+    r = client.get(f"/art?path={rom}&kind=snap")
+    assert r.status_code == 404
+
+
+def test_art_400_on_bad_kind(client: TestClient, roms_dir: Path):
+    rom = roms_dir / "Pokemon - Emerald Version (USA, Europe).gba"
+    r = client.get(f"/art?path={rom}&kind=poster")
+    assert r.status_code == 400
+
+
+def test_art_400_when_path_outside_roms_dir(client: TestClient, tmp_path: Path):
+    sneaky = tmp_path / "elsewhere.gba"
+    sneaky.write_bytes(b"")
+    r = client.get(f"/art?path={sneaky}&kind=snap")
+    assert r.status_code == 400
