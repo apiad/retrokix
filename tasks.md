@@ -9,7 +9,7 @@ _(nothing right now — pick the next from the menu below)_
 - [ ] **Pokémon Emerald plugin** (slice 6) — scene detection already empirically validated (u32-LE multi-address vote, 29/29). Wire the validated approach into `retrokix.plugins.emerald`. Closes the loop on the 2026-06-10 handoff. ~½ day. Refs: [[2026-06-10-gbax-plugin-design]], handoff report: `vault/+/agent_drafts/handoffs/report-2026-06-10-1254-retrokix-scene-detection.md`.
 - [ ] **Screenshot gallery** — reuse the framebuffer→PNG infra from the savestate-thumbnail work. `POST /screenshot` writes to `~/.retrokix/screenshots/<rom_sha1>/<ts>.png`; new `/screenshots` page in the hub renders the gallery. F12 / button in the play UI. ~2–3 hours.
 - [ ] **Box art / cover thumbnails in the hub library** — fetch from libretro-thumbnails (or similar public repo) per ROM, cache locally, show on library tiles. Visual upgrade matching the per-save thumbnail polish. ~3–4 hours.
-- [ ] **Per-ROM persistent settings** — speed multiplier, volume, last-loaded slot remembered per-`rom_sha1` across runs. Small JSON sidecar at `~/.retrokix/settings/<sha1>.json`. ~2 hours.
+- [ ] **Per-ROM volume** — volume slider in the web UI, persisted alongside speed/fullscreen/scale. Volume infra is new (SDL plays at full vol today); ~2-3 hours.
 - [ ] **User scripts** (slice 7, YAML) — declarative hooks for AI/scripted play. ~1 day. Spec: [[2026-06-09-gbax-design]].
 - [ ] **Recording/replay** (slice 8) — `recording/{initial.state, inputs.jsonl, divergence.jsonl}` + `retrokix replay`. ~1–2 days. Spec: [[2026-06-09-gbax-design]].
 
@@ -19,5 +19,6 @@ _(nothing right now — pick the next from the menu below)_
 
 ## Done
 
+- [x] **Per-ROM persistent settings** — 2026-06-19, commit `75d0749`. Speed multiplier, fullscreen state, window scale, last-used slot remembered per `rom_sha1` across launches via `~/.retrokix/settings/<sha1>.json` (atomic writes). `retrokix play` falls back to persisted values when `--scale` / `--fullscreen` aren't passed. New `GET/PATCH /settings` API; existing `POST /speed` and SDL F11 also persist now. Volume deferred — no playback-volume infra exists yet.
 - [x] **[Handoff 2026-06-10 12:23 — empirically validate scene detection for Pokémon Emerald (pHash + memory patterns)](../../vault/+/agent_drafts/handoffs/handoff-2026-06-10-1223-retrokix-scene-detection-experiments.md)** — done. Report: [report-2026-06-10-1254-retrokix-scene-detection](../../vault/+/agent_drafts/handoffs/report-2026-06-10-1254-retrokix-scene-detection.md). Memory-vote at u32-LE scores 29/29 (100%) across two sessions; pHash 85%. Recommendation: u32-LE multi-address majority vote with overworld-zero (display-buffer) filter as primary; pHash framebuffer-template fallback as secondary; plugin override for game-specific canonical bytes as tertiary.
 - [x] **PNG thumbnail sidecar for save states + web load thumbnails** — 2026-06-19, commit `55fdaa2`. Every save (slot/running/persist) writes a PNG of the current framebuffer next to the `.state`; `/savestate/list` exposes a `thumb` URL; new `GET /savestate/thumb` serves it; web saves panel renders thumbnails next to each entry.
