@@ -4,6 +4,28 @@ All notable changes to this project are documented here. Format: Keep a Changelo
 
 ## [Unreleased]
 
+## [v1.3.3] - 2026-06-19
+
+### Features
+- (settings): per-ROM persistent preferences. Each ROM's speed
+  multiplier, fullscreen state, window scale, and last-used save slot
+  now persist across launches via `~/.retrokix/settings/<sha1>.json`
+  (atomic writes). `retrokix play` falls back to persisted values when
+  `--scale` / `--fullscreen` aren't passed; F11 + slot save/load also
+  persist. New `GET /settings` + `PATCH /settings` endpoints. Volume
+  intentionally deferred — no playback-volume infra exists yet.
+- (hub): library statistics panel on the landing page. Shows per-
+  console (owned / catalog / famous) plus a grand total. Surfaces the
+  v1.3.0 + v1.3.2 expansion at a glance: ~11.5k distinct titles
+  across five consoles, ~2.7k with Wikipedia traffic.
+- (browse): `--console` flag to constrain the interactive TUI to a
+  single console, matching `retrokix download`'s ergonomics.
+
+### Internal
+- Test isolation: autouse conftest fixture redirects
+  `settings.DEFAULT_SETTINGS_DIR` to a per-test tmp dir so real
+  runtime tests can't pollute the developer's `~/.retrokix/`.
+
 ## [v1.3.2] - 2026-06-19
 
 ### Features
