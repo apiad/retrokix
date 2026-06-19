@@ -22,7 +22,7 @@ import urllib.parse
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from retrokix.hub.library_view import HubGroup
+    from retrokix.hub.library_view import ConsoleStat, HubGroup
 
 
 _HEAD = """<!doctype html>
@@ -115,6 +115,50 @@ _HEAD = """<!doctype html>
     max-width: 1400px;
     width: 100%;
     margin: 0 auto;
+  }
+  .stats {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+    margin: 0.5rem 0 1.4rem;
+    padding: 0.85rem 1rem;
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 0.78rem;
+  }
+  .stats__row {
+    display: grid;
+    grid-template-columns: minmax(11rem, 1.4fr) repeat(3, minmax(0, 1fr));
+    align-items: baseline;
+    gap: 0.6rem;
+  }
+  .stats__row--total {
+    margin-top: 0.35rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border-soft);
+    font-weight: 600;
+  }
+  .stats__console {
+    color: var(--text);
+    letter-spacing: 0.02em;
+  }
+  .stats__cell {
+    display: flex;
+    align-items: baseline;
+    gap: 0.45rem;
+    color: var(--text-soft);
+  }
+  .stats__cell b {
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+  .stats__cell--owned b { color: var(--emerald); }
+  .stats__cell--famous b { color: var(--accent-hot); }
+  .stats__unit {
+    font-size: 0.72rem;
+    color: var(--text-soft);
+    text-transform: lowercase;
   }
   .console-section {
     margin-bottom: 2.2rem;
@@ -606,8 +650,50 @@ def _section(console: str, groups: list["HubGroup"]) -> str:
     )
 
 
-def render_landing(groups: "list[HubGroup]", *, version: str) -> str:
-    """Render the hub landing — fame-ranked, console-grouped tile grid."""
+def _stats_panel(stats: "list[ConsoleStat]") -> str:
+    total_catalog = sum(s.catalog for s in stats)
+    total_owned = sum(s.owned for s in stats)
+    total_famous = sum(s.famous for s in stats)
+    rows = []
+    for s in stats:
+        rows.append(
+            '<div class="stats__row">'
+            f'<span class="stats__console">{html.escape(s.label)}</span>'
+            f'<span class="stats__cell stats__cell--owned" title="ROMs you own">'
+            f'<b>{s.owned:,}</b><span class="stats__unit">owned</span></span>'
+            f'<span class="stats__cell" title="distinct titles in the bundled No-Intro index">'
+            f'<b>{s.catalog:,}</b><span class="stats__unit">catalog</span></span>'
+            f'<span class="stats__cell stats__cell--famous" title="titles with Wikipedia pageview data (stars > 0)">'
+            f'<b>{s.famous:,}</b><span class="stats__unit">famous</span></span>'
+            '</div>'
+        )
+    grand = (
+        '<div class="stats__row stats__row--total">'
+        '<span class="stats__console">TOTAL</span>'
+        f'<span class="stats__cell stats__cell--owned"><b>{total_owned:,}</b><span class="stats__unit">owned</span></span>'
+        f'<span class="stats__cell"><b>{total_catalog:,}</b><span class="stats__unit">catalog</span></span>'
+        f'<span class="stats__cell stats__cell--famous"><b>{total_famous:,}</b><span class="stats__unit">famous</span></span>'
+        '</div>'
+    )
+    return (
+        '<section class="stats" aria-label="Library statistics">'
+        + "".join(rows) + grand +
+        '</section>'
+    )
+
+
+def render_landing(
+    groups: "list[HubGroup]",
+    *,
+    version: str,
+    stats: "list[ConsoleStat] | None" = None,
+) -> str:
+    """Render the hub landing — fame-ranked, console-grouped tile grid.
+
+    Optional `stats` panel sits between the header and the tile grid
+    so you can see at a glance how big each console's slice is and
+    what fraction you own.
+    """
     head = _HEAD
     header = (
         '<header>'
@@ -618,9 +704,12 @@ def render_landing(groups: "list[HubGroup]", *, version: str) -> str:
         '</header>'
     )
 
+    stats_html = _stats_panel(stats) if stats else ""
+
     if not groups:
         main = (
             '<main>'
+            f'{stats_html}'
             '<div class="empty">'
             'No ROMs in your library yet. '
             'Use <code>retrokix download &lt;query&gt;</code> to grab one, then refresh.'
@@ -644,6 +733,7 @@ def render_landing(groups: "list[HubGroup]", *, version: str) -> str:
     sections = "\n".join(_section(c, by_console[c]) for c in ordered)
     main = (
         '<main>'
+        f'{stats_html}'
         '<section id="search-results"></section>'
         f'{sections}'
         '</main>'

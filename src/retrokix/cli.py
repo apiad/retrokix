@@ -117,6 +117,7 @@ def download(
 @app.command()
 def browse(
     query: str = typer.Argument("", help="Optional initial filter — same fuzzy semantics as `retrokix search`."),
+    console: str | None = typer.Option(None, "--console", help="Constrain to one console (gba|nes|snes|gb|gbc). Default: every bundled console at once."),
     refresh: bool = typer.Option(False, "--refresh", help="Force-fetch the latest metadata from archive.org."),
 ) -> None:
     """Interactive ROM browser. Search-as-you-type, arrows to navigate,
@@ -124,9 +125,16 @@ def browse(
     import os
     import sys
     from retrokix.browse import run
-    from retrokix.library import RomLibrary
+    from retrokix.library import CONSOLES, RomLibrary
 
-    lib = RomLibrary(refresh=refresh)
+    if console is not None and console not in CONSOLES:
+        typer.echo(f"--console {console!r}: choices are {', '.join(sorted(CONSOLES))}", err=True)
+        raise typer.Exit(code=1)
+
+    kwargs: dict = {"refresh": refresh}
+    if console is not None:
+        kwargs["console"] = console
+    lib = RomLibrary(**kwargs)
     picked = run(lib=lib, initial_query=query)
     if picked is None:
         raise typer.Exit(code=0)

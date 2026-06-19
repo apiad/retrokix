@@ -7,12 +7,16 @@ who want to poke around without remembering exact No-Intro names.
 
 Design notes:
 - Filter runs synchronously on every keystroke against the in-memory
-  3,555-entry index. Plenty fast; no debounce needed.
+  cross-console No-Intro index (~18k entries across GBA + NES + SNES +
+  GB + GBC). Still plenty fast; no debounce needed.
 - Downloads run in a thread worker so the UI stays responsive. The
   existing `RomLibrary.download` is blocking; we wrap it.
 - We show all regional variants in the list so the user picks the
   exact one with arrow keys. That's the value over `retrokix download
   --region`.
+- The empty-query default is fame-ranked across whatever consoles are
+  loaded, so opening `retrokix browse` lands you on the top titles
+  regardless of which console you're after.
 """
 
 from __future__ import annotations

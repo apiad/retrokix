@@ -29,6 +29,7 @@ from retrokix.hub.library_view import (
     SEARCH_LIMIT,
     HubGroup,
     build_library_view,
+    console_stats,
     search_library,
     warm_search_index,
 )
@@ -91,7 +92,8 @@ def create_hub_app(
     @app.get("/", response_class=HTMLResponse)
     def landing() -> HTMLResponse:
         groups = build_library_view(roms_dir)
-        return HTMLResponse(render_landing(groups, version=__version__))
+        stats = console_stats(roms_dir)
+        return HTMLResponse(render_landing(groups, version=__version__, stats=stats))
 
     @app.get("/api/search")
     def search(q: str = "", limit: int = SEARCH_LIMIT) -> dict:

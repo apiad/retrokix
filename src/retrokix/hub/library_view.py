@@ -216,9 +216,48 @@ def build_library_view(
     return owned_list + unowned
 
 
+@dataclass
+class ConsoleStat:
+    """One row of the landing-page stats panel."""
+    slug: str
+    label: str
+    catalog: int   # # distinct title-keys in bundled metadata
+    owned: int     # # owned title-keys on disk
+    famous: int    # # title-keys with ≥1 Wikipedia view (Fame stars > 0)
+
+
+def console_stats(roms_dir: Path) -> list[ConsoleStat]:
+    """Per-console counters for the landing-page stats panel.
+
+    `catalog`/`famous` come from the bundled No-Intro + fame indexes
+    (constant across processes); `owned` walks `roms_dir`.
+    """
+    owned_by_console: dict[str, set[str]] = {}
+    for path in list_local_roms(roms_dir):
+        console = console_for_path(path) or "gba"
+        owned_by_console.setdefault(console, set()).add(title_key(path.name))
+
+    out: list[ConsoleStat] = []
+    for slug, info in CONSOLES.items():
+        by_title = _full_index().get(slug, [])
+        catalog = len(by_title)
+        famous = sum(1 for title, _ in by_title if fame_score(slug, title) > 0)
+        owned = len(owned_by_console.get(slug, set()))
+        out.append(ConsoleStat(
+            slug=slug,
+            label=info.label,
+            catalog=catalog,
+            owned=owned,
+            famous=famous,
+        ))
+    return out
+
+
 __all__ = [
+    "ConsoleStat",
     "HubGroup",
     "build_library_view",
+    "console_stats",
     "search_library",
     "warm_search_index",
     "SHOWCASE_PER_CONSOLE",

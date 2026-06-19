@@ -332,3 +332,32 @@ def test_art_400_when_path_outside_roms_dir(client: TestClient, tmp_path: Path):
     sneaky.write_bytes(b"")
     r = client.get(f"/art?path={sneaky}&kind=snap")
     assert r.status_code == 400
+
+
+def test_landing_includes_stats_panel(client: TestClient):
+    body = client.get("/").text
+    # Stats container + grand-total row.
+    assert 'class="stats"' in body
+    assert "stats__row--total" in body
+    # Per-console labels surface.
+    assert "Game Boy Advance" in body
+    assert "Nintendo Entertainment System" in body
+    # TOTAL row + the three column labels (lowercase via .stats__unit).
+    assert "TOTAL" in body
+    for unit in ("owned", "catalog", "famous"):
+        assert unit in body
+
+
+def test_landing_stats_count_owned(client: TestClient, roms_dir: Path):
+    """Owned column should reflect actual ROMs on disk in `roms_dir`."""
+    body = client.get("/").text
+    # The roms_dir fixture lays down one GBA + one NES ROM. Both
+    # consoles should report exactly 1 owned. Search the GBA row.
+    import re
+    gba_row = re.search(
+        r'Game Boy Advance.*?</div>', body, re.DOTALL
+    )
+    assert gba_row is not None
+    # The first <b>N</b> in the row is the owned count.
+    nums = re.findall(r"<b>([\d,]+)</b>", gba_row.group(0))
+    assert nums[0] == "1"
