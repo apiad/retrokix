@@ -92,7 +92,12 @@ class EmulatorRuntime:
         self._frame_count = 0
         self._buttons_held: set[Button] = set()
         self._mode = Mode(mode)
-        self._speed_multiplier = 1.0
+        # Per-ROM persistent settings (speed, fullscreen, scale, last_slot).
+        # Loaded once here; mutators on this class write back on change.
+        from retrokix import settings as _settings_mod
+        self._settings_mod = _settings_mod
+        self._settings = _settings_mod.load(self._rom_sha1)
+        self._speed_multiplier = float(self._settings.speed_multiplier)
         # In-memory save state slots: slot_id -> (blob, frame_count).
         # Hydrated from disk on init so slots persist across restarts of the same ROM.
         self._slots: dict[int, tuple[bytes, int]] = {}
@@ -335,6 +340,22 @@ class EmulatorRuntime:
         if v <= 0:
             raise ValueError(f"speed_multiplier must be > 0, got {v}")
         self._speed_multiplier = v
+        self._persist_setting(speed_multiplier=v)
+
+    @property
+    def settings(self):
+        """Current persisted settings snapshot (frozen RomSettings)."""
+        return self._settings
+
+    def _persist_setting(self, **changes) -> None:
+        """Update persisted settings best-effort. A write failure (full
+        disk, perms, etc.) must never derail an in-flight ROM session,
+        so the caller's update succeeds even if disk persistence fails.
+        """
+        try:
+            self._settings = self._settings_mod.update(self._rom_sha1, **changes)
+        except Exception:
+            pass
 
     # --- save state slots ---
 
@@ -350,6 +371,7 @@ class EmulatorRuntime:
             path.write_bytes(blob)
             path.with_suffix(".json").write_text(json.dumps({"frame_count": self._frame_count}))
         self._write_thumb_sidecar(path)
+        self._persist_setting(last_slot=slot)
         return blob
 
     def load_state_from_slot(self, slot: int) -> None:
@@ -361,6 +383,7 @@ class EmulatorRuntime:
             blob, frame_count = self._slots[slot]
             self._core.unserialize(blob)
             self._frame_count = frame_count
+        self._persist_setting(last_slot=slot)
 
     def export_state(self) -> bytes:
         with self._lock:

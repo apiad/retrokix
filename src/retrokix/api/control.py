@@ -16,6 +16,18 @@ class SpeedBody(BaseModel):
     multiplier: float = Field(..., gt=0)
 
 
+class SettingsPatch(BaseModel):
+    """Partial update — every field optional. Unknown keys 422 via
+    pydantic. Validated values are pushed through the runtime so any
+    side-effects (e.g. speed_multiplier setter) fire alongside the
+    persisted write.
+    """
+    speed_multiplier: float | None = Field(None, gt=0)
+    fullscreen: bool | None = None
+    window_scale: int | None = Field(None, ge=1, le=10)
+    last_slot: int | None = Field(None, ge=1, le=9)
+
+
 def build_router() -> APIRouter:
     router = APIRouter()
 
@@ -59,5 +71,26 @@ def build_router() -> APIRouter:
         except ValueError as exc:
             raise HTTPException(400, detail=str(exc)) from exc
         return {"multiplier": body.multiplier}
+
+    @router.get("/settings")
+    def get_settings(request: Request) -> dict:
+        rt = request.app.state.runtime
+        return rt.settings.to_dict()
+
+    @router.patch("/settings")
+    def patch_settings(body: SettingsPatch, request: Request) -> dict:
+        rt = request.app.state.runtime
+        # Route speed_multiplier through the runtime setter so the
+        # ticker picks up the new pace immediately; the setter already
+        # persists. Other fields just get persisted directly.
+        changes = body.model_dump(exclude_none=True)
+        if "speed_multiplier" in changes:
+            try:
+                rt.speed_multiplier = changes.pop("speed_multiplier")
+            except ValueError as exc:
+                raise HTTPException(400, detail=str(exc)) from exc
+        if changes:
+            rt._persist_setting(**changes)
+        return rt.settings.to_dict()
 
     return router

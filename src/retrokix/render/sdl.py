@@ -652,6 +652,7 @@ def play_loop(
                     if sym == sdl2.SDLK_F11:
                         is_fullscreen = not is_fullscreen
                         renderer.set_fullscreen(is_fullscreen)
+                        runtime._persist_setting(fullscreen=is_fullscreen)
                         continue
 
                     # F12 — screenshot

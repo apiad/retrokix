@@ -50,6 +50,24 @@ def fake_process_cls():
     return FakeProcess
 
 
+@pytest.fixture(autouse=True)
+def _isolate_settings_dir(tmp_path_factory, monkeypatch):
+    """Per-test isolation for retrokix.settings.
+
+    EmulatorRuntime reads/writes per-ROM settings from
+    DEFAULT_SETTINGS_DIR (~/.retrokix/settings/). Tests that construct
+    a real runtime against the bundled test.gba would otherwise read
+    or pollute the developer's actual settings directory. Redirect to
+    a fresh tmp dir per test so isolation is guaranteed.
+    """
+    from retrokix import settings
+    monkeypatch.setattr(
+        settings,
+        "DEFAULT_SETTINGS_DIR",
+        tmp_path_factory.mktemp("retrokix_settings"),
+    )
+
+
 @pytest.fixture
 def test_rom() -> Path:
     return FIXTURES / "test.gba"

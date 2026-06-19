@@ -396,8 +396,8 @@ def art(
 @app.command()
 def play(
     rom: str = typer.Argument(..., help="Path to a .gba, or a fuzzy query against ~/.retrokix/roms/."),
-    scale: int = typer.Option(3, "--scale", help="Window scale factor (windowed mode only)."),
-    fullscreen: bool = typer.Option(False, "--fullscreen", "-f", help="Start in borderless-desktop fullscreen. F11 toggles at runtime."),
+    scale: int | None = typer.Option(None, "--scale", help="Window scale factor (windowed mode only). Default: last-used scale for this ROM (3 if never set)."),
+    fullscreen: bool | None = typer.Option(None, "--fullscreen/--no-fullscreen", "-f", help="Start in borderless-desktop fullscreen. Default: last-used state for this ROM. F11 toggles at runtime."),
     watch_state: bool = typer.Option(False, "--watch-state", help="Show a live Rich panel with state values from compiled.json (if present)."),
     plugin_path: Path | None = typer.Option(None, "--plugin", help="Path to a Python plugin file (creates a retrokix.plugin() instance)."),
     renderer: str = typer.Option("sdl", "--renderer", help="Renderer backend: sdl (default) or wgpu (needs retrokix[gpu])."),
@@ -425,6 +425,15 @@ def play(
         raise typer.Exit(code=1) from exc
 
     runtime = EmulatorRuntime(rom_path, core_path=core_path, mode=Mode.FREE)
+    # Resolve per-ROM persisted defaults for scale / fullscreen when the
+    # user didn't pass an explicit flag. Persist whatever the user did
+    # pass so the next launch remembers it.
+    s = runtime.settings
+    if scale is None:
+        scale = s.window_scale
+    if fullscreen is None:
+        fullscreen = s.fullscreen
+    runtime._persist_setting(window_scale=scale, fullscreen=fullscreen)
     if load is not None:
         if not load.exists():
             typer.echo(f"--load: file not found at {load}", err=True)
