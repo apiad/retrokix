@@ -10,6 +10,16 @@ from fastapi.testclient import TestClient
 from retrokix.api.server import create_app
 
 
+_FAKE_PNG = (
+    b"\x89PNG\r\n\x1a\n"
+    b"\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01"
+    b"\x08\x02\x00\x00\x00\x90wS\xde"
+    b"\x00\x00\x00\x0cIDATx\x9cc\xf8\xcf\xc0\xc0\xc0\x00\x00\x00\x05\x00\x01"
+    b"^\xf3*:"
+    b"\x00\x00\x00\x00IEND\xaeB`\x82"
+)
+
+
 class _StubRuntime:
     """Minimal runtime: pretends to have a real ROM by exposing a fake
     sha1 + the two private-ish methods the savestate routes call
@@ -36,6 +46,7 @@ class _StubRuntime:
         path = self._slot_path(slot)
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(blob)
+        path.with_suffix(".png").write_bytes(_FAKE_PNG)
         self._slots[slot] = blob
         return blob
 
@@ -50,6 +61,7 @@ class _StubRuntime:
         path = self._running_dir() / f"running-{ts}.state"
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(b"running-%s" % ts.encode())
+        path.with_suffix(".png").write_bytes(_FAKE_PNG)
         return path
 
     def latest_running_save(self):
@@ -148,6 +160,68 @@ def test_load_without_slot_or_running_400(client: TestClient) -> None:
 
 def test_load_with_invalid_slot_number_400(client: TestClient) -> None:
     r = client.post("/savestate/load", json={"slot": 11})
+    assert r.status_code == 400
+
+
+def test_list_running_includes_thumb_url_when_png_exists(client: TestClient) -> None:
+    saved = client.post("/savestate/save").json()
+    body = client.get("/savestate/list").json()
+    assert body["running"][0]["thumb"] == f"/savestate/thumb?running={saved['name']}"
+
+
+def test_list_slot_includes_thumb_url_when_png_exists(
+    client: TestClient, rt: _StubRuntime
+) -> None:
+    rt.save_state_to_slot(4)
+    body = client.get("/savestate/list").json()
+    entry = next(s for s in body["slots"] if s["slot"] == 4)
+    assert entry["thumb"] == "/savestate/thumb?slot=4"
+
+
+def test_list_omits_thumb_when_png_missing(
+    client: TestClient, rt: _StubRuntime
+) -> None:
+    # Lay down a state with no PNG sidecar.
+    path = rt._slot_path(6)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(b"slot-6")
+    body = client.get("/savestate/list").json()
+    entry = next(s for s in body["slots"] if s["slot"] == 6)
+    assert "thumb" not in entry
+
+
+def test_thumb_returns_png_for_slot(client: TestClient, rt: _StubRuntime) -> None:
+    rt.save_state_to_slot(2)
+    r = client.get("/savestate/thumb?slot=2")
+    assert r.status_code == 200
+    assert r.headers["content-type"] == "image/png"
+    assert r.content.startswith(b"\x89PNG\r\n\x1a\n")
+
+
+def test_thumb_returns_png_for_running(client: TestClient) -> None:
+    saved = client.post("/savestate/save").json()
+    r = client.get(f"/savestate/thumb?running={saved['name']}")
+    assert r.status_code == 200
+    assert r.headers["content-type"] == "image/png"
+
+
+def test_thumb_404_when_missing(client: TestClient) -> None:
+    r = client.get("/savestate/thumb?slot=8")
+    assert r.status_code == 404
+
+
+def test_thumb_400_when_no_args(client: TestClient) -> None:
+    r = client.get("/savestate/thumb")
+    assert r.status_code == 400
+
+
+def test_thumb_400_when_slot_out_of_range(client: TestClient) -> None:
+    r = client.get("/savestate/thumb?slot=99")
+    assert r.status_code == 400
+
+
+def test_thumb_rejects_path_traversal(client: TestClient) -> None:
+    r = client.get("/savestate/thumb?running=../escape.state")
     assert r.status_code == 400
 
 

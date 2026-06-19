@@ -349,7 +349,8 @@ class EmulatorRuntime:
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(blob)
             path.with_suffix(".json").write_text(json.dumps({"frame_count": self._frame_count}))
-            return blob
+        self._write_thumb_sidecar(path)
+        return blob
 
     def load_state_from_slot(self, slot: int) -> None:
         if not 1 <= slot <= 9:
@@ -398,6 +399,7 @@ class EmulatorRuntime:
         path.with_suffix(".json").write_text(
             json.dumps({"frame_count": frame_count})
         )
+        self._write_thumb_sidecar(path)
         return path
 
     def latest_running_save(self) -> Path | None:
@@ -436,7 +438,24 @@ class EmulatorRuntime:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(blob)
         path.with_suffix(".json").write_text(json.dumps({"frame_count": frame_count}))
+        self._write_thumb_sidecar(path)
         return path
+
+    def _write_thumb_sidecar(self, state_path: Path) -> None:
+        """Write the current framebuffer as a PNG next to a save-state file.
+
+        Best-effort: a thumb failure must not break the save. Used by the
+        web load UI to render a visual pick instead of timestamps alone.
+        """
+        try:
+            from io import BytesIO
+            from PIL import Image
+            fb = self.framebuffer()
+            buf = BytesIO()
+            Image.fromarray(fb).save(buf, format="PNG")
+            state_path.with_suffix(".png").write_bytes(buf.getvalue())
+        except Exception:
+            pass
 
     def load_persistent_slot(self, slot: int) -> None:
         path = self._slot_path(slot)

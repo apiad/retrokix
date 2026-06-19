@@ -18,7 +18,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, Response
 from pydantic import BaseModel
 
 
@@ -49,24 +49,56 @@ def build_router() -> APIRouter:
             path = rt._slot_path(n)
             if path.exists():
                 st = path.stat()
-                slots.append({
+                entry = {
                     "slot": n,
                     "size": st.st_size,
                     "mtime": _ts_iso(st.st_mtime),
-                })
+                }
+                if path.with_suffix(".png").exists():
+                    entry["thumb"] = f"/savestate/thumb?slot={n}"
+                slots.append(entry)
 
         running: list[dict] = []
         running_dir = rt._running_dir()
         if running_dir.exists():
             for path in sorted(running_dir.glob("running-*.state"), reverse=True):
                 st = path.stat()
-                running.append({
+                entry = {
                     "name": path.name,
                     "size": st.st_size,
                     "mtime": _ts_iso(st.st_mtime),
-                })
+                }
+                if path.with_suffix(".png").exists():
+                    entry["thumb"] = f"/savestate/thumb?running={path.name}"
+                running.append(entry)
 
         return {"slots": slots, "running": running}
+
+    @router.get("/savestate/thumb")
+    def get_thumb(request: Request, slot: int | None = None, running: str | None = None) -> Response:
+        """Return the PNG screenshot captured at save time.
+
+        Accepts either `slot=N` or `running=<filename>`; filename matched
+        against the running directory only (no path traversal). 404 when
+        the sidecar is missing — the UI hides the <img> in that case.
+        """
+        rt = request.app.state.runtime
+
+        if slot is not None:
+            if not 1 <= slot <= 9:
+                raise HTTPException(400, detail="slot must be 1..9")
+            png_path = rt._slot_path(slot).with_suffix(".png")
+        elif running:
+            name = running
+            if "/" in name or "\\" in name or ".." in name or name.startswith("."):
+                raise HTTPException(400, detail="invalid running save name")
+            png_path = (rt._running_dir() / name).with_suffix(".png")
+        else:
+            raise HTTPException(400, detail="provide either `slot` or `running`")
+
+        if not png_path.exists() or not png_path.is_file():
+            raise HTTPException(404, detail="no thumbnail")
+        return Response(content=png_path.read_bytes(), media_type="image/png")
 
     @router.post("/savestate/save")
     def save_running(request: Request) -> dict:

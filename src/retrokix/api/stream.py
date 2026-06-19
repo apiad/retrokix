@@ -443,7 +443,7 @@ _VIEWER_HTML = """<!doctype html>
 
   .save-item, .cheat-item {
     display: grid;
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: auto auto 1fr auto;
     align-items: center;
     gap: 0.7rem;
     width: 100%;
@@ -458,6 +458,9 @@ _VIEWER_HTML = """<!doctype html>
     font: inherit;
     font-size: 0.84rem;
   }
+  .cheat-item {
+    grid-template-columns: auto 1fr auto;
+  }
   .save-item:hover, .cheat-item:hover {
     background: rgba(167,139,250,0.08);
     color: var(--text);
@@ -465,6 +468,22 @@ _VIEWER_HTML = """<!doctype html>
   .save-item__kind {
     width: 1.4em;
     text-align: center;
+  }
+  .save-item__thumb {
+    width: 64px;
+    height: 48px;
+    object-fit: contain;
+    background: #000;
+    border-radius: 4px;
+    image-rendering: pixelated;
+    display: block;
+  }
+  .save-item__thumb--missing {
+    width: 64px;
+    height: 48px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 4px;
+    display: block;
   }
   .save-item__name {
     font-family: var(--gx-mono, "JetBrains Mono", monospace);
@@ -1375,11 +1394,15 @@ _VIEWER_HTML = """<!doctype html>
     try {
       const data = await (await fetch('/savestate/list')).json();
       const lines = [];
+      const thumbHtml = (s) => s.thumb
+        ? `<img class="save-item__thumb" src="${s.thumb}" alt="" loading="lazy">`
+        : '<span class="save-item__thumb--missing" aria-hidden="true"></span>';
       if (data.running && data.running.length) {
         lines.push('<div class="panel__group-label">Running stream</div>');
         for (const s of data.running) {
           lines.push(`<button class="save-item" data-running="${s.name}">
             <span class="save-item__kind">📜</span>
+            ${thumbHtml(s)}
             <span class="save-item__name">${s.name.replace(/^running-/, '').replace(/\\.state$/, '')}</span>
             <span class="save-item__when">${relTime(s.mtime)}</span>
           </button>`);
@@ -1390,6 +1413,7 @@ _VIEWER_HTML = """<!doctype html>
         for (const s of data.slots) {
           lines.push(`<button class="save-item" data-slot="${s.slot}">
             <span class="save-item__kind">${s.slot}</span>
+            ${thumbHtml(s)}
             <span class="save-item__name">Slot ${s.slot}</span>
             <span class="save-item__when">${relTime(s.mtime)}</span>
           </button>`);
