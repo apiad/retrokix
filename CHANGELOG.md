@@ -4,6 +4,35 @@ All notable changes to this project are documented here. Format: Keep a Changelo
 
 ## [Unreleased]
 
+## [v1.3.2] - 2026-06-19
+
+### Features
+- (savestate): PNG thumbnail sidecar next to every save. Each `.state`
+  (slot, running, persist) writes a sibling `.png` from the current
+  framebuffer. `/savestate/list` exposes a `thumb` URL per entry; new
+  `GET /savestate/thumb?slot=N|running=<name>` serves the image. The
+  web saves panel now renders the thumbnail next to each save so
+  loading is a visual pick. Best-effort: a thumb failure never breaks
+  the save itself.
+- (art): per-ROM box / snap / title art fetched from
+  libretro-thumbnails. New `retrokix.art` module caches PNGs under
+  `~/.retrokix/art/<console>/<title>/`. Auto-fetched in the background
+  on every successful ROM download (never blocks or breaks the
+  download). New `retrokix art [--console X] [--force]` CLI backfills
+  ROMs already on disk. New `GET /art?path=<rom>&kind=snap|boxart|title`
+  in the hub; library tiles render the snap (with snap → boxart → title
+  fallback) when available. Each `ConsoleInfo` now carries a
+  `libretro_thumbnails_repo` field.
+
+### Data
+- (fame): completed Wikipedia-pageviews fame for Game Boy + Game Boy
+  Color — the last two consoles missing from the bundled snapshot. GB:
+  1427/1427 catalog groups, 388 articles resolved (Tetris, Pac-Man,
+  Street Fighter II, Zelda Link's Awakening, Lemmings at the top).
+  GBC: 1425/1425, 380 resolved (GTA, DKC, GTA2, Perfect Dark, Pokémon
+  Crystal at the top). All five consoles now ship with 100% catalog
+  coverage in `wikipedia_fame.json`.
+
 ## [v1.3.1] - 2026-06-17
 
 ### Fixes
