@@ -2,7 +2,7 @@
 
 ## In-flight
 
-- [ ] **Wire the play-time TUI into `retrokix play`** — the TUI subsystem (shell, tab API, core tab, Pokédex tab, play-time, status snapshot) is built, tested, and pushed (commits `ac20808`, `a69db15`, `81fcbeb`). Remaining: invert `play_loop` threading (Textual on main, emulator+SDL on a worker), publish the status snapshot each frame, read `app.state.ws_clients` into it, and mount loaded plugins' tabs. Needs a display + interactive terminal to verify — can't be smoke-tested headlessly. Spec: [[2026-06-22-retrokix-tui-shell-and-pokedex-design]]. Smoke after: `retrokix play <emerald> --plugin retrokix.plugins.pokemon.pokedex`.
+- [ ] **Smoke-test `retrokix play --tui`** — the companion TUI is wired in behind opt-in `--tui` (commit `e7848f1`): Textual on main thread, emulator+SDL on a worker, shared `StatusSnapshot`, `stop_event` shutdown coordination, per-frame status publish (incl. `ws_clients` + play-time persistence). Orchestration is unit-tested; the live SDL+TUI coexistence needs a manual run (no display/TTY in CI). Verify: `retrokix play <emerald> --tui --plugin retrokix.plugins.pokemon.pokedex` — game window + tabbed TUI, core tab status updates, Pokédex tab searches. If the SDL-on-worker-thread coexistence misbehaves, revert `e7848f1` (subsystem stays intact). Next after green: promote to default + port Ctrl+F/Ctrl+R flows to TUI modals; then the caught/seen overlay.
 
 ## Menu — low-cost / high-value
 

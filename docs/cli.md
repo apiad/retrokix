@@ -177,7 +177,8 @@ intentionally unbound — reserved for plugin hotkeys via the
 | `--cheats SLUGS` | none | comma-separated cheat slugs to enable at boot |
 | `--core PATH` | bundled | override the libretro core .so |
 | `--load PATH` | none | load this save state file at boot (after the ROM is mounted) |
-| `--headless` | off | skip the SDL window — runs headless, auto-opens `/stream?mode=controller` |
+| `--headless` | off | skip the SDL window and TUI — runs headless, auto-opens `/stream?mode=controller` |
+| `--tui` | off | show the native companion TUI in the terminal alongside the SDL window (core tab + plugin tabs); disables the Ctrl+F / Ctrl+R terminal prompts while active |
 | `--couch-room CODE` | `default` | couch room code (`retrokix couch room-code` to mint one) |
 
 
