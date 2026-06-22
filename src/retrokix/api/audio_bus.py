@@ -3,7 +3,7 @@ any number of WebSocket subscribers.
 
 The libretro core fires `_on_audio(bytes)` on whichever thread is
 currently stepping the runtime — the SDL main thread when SDL is
-running, a daemon play-loop thread when --no-sdl is on. WebSocket
+running, a daemon play-loop thread when --headless is on. WebSocket
 handlers live on the asyncio loop. Crossing that thread boundary is
 the only thing this module does.
 

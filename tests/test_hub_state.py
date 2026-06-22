@@ -1,4 +1,4 @@
-"""HubState tracks spawned child play --no-sdl processes.
+"""HubState tracks spawned child play --headless processes.
 
 We avoid touching real subprocesses by injecting a fake spawner — that
 keeps these tests fast and deterministic. Real-subprocess coverage lives
@@ -53,7 +53,7 @@ def test_spawn_records_process(tmp_path, fake_spawner_factory):
     assert len(calls) == 1
     cmd = calls[0]
     assert "play" in cmd
-    assert "--no-sdl" in cmd
+    assert "--headless" in cmd
     assert "--no-open-browser" in cmd
     assert "--listen-port" in cmd
     assert str(gp.port) in cmd

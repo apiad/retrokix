@@ -417,8 +417,8 @@ def play(
     core_path: Path | None = typer.Option(None, "--core", help="Path to libretro core .so."),
     cheats: str | None = typer.Option(None, "--cheats", help="Comma-separated cheat slugs to enable at boot."),
     couch_room: str | None = typer.Option(None, "--couch-room", help="Couch room code to join (default 'default'). Generate one with `retrokix couch room-code`."),
-    no_sdl: bool = typer.Option(False, "--no-sdl", help="Skip the SDL window — run headless and play in a browser tab. Implies --listen and auto-opens http://127.0.0.1:<port>/stream?mode=controller."),
-    open_browser: bool = typer.Option(True, "--open-browser/--no-open-browser", help="With --no-sdl, auto-open the viewer URL in the default browser. The hub spawns children with --no-open-browser; humans almost always want the default."),
+    headless: bool = typer.Option(False, "--headless", help="Skip both the SDL window and the terminal TUI — run headless and play in a browser tab. Implies --listen and auto-opens http://127.0.0.1:<port>/stream?mode=controller."),
+    open_browser: bool = typer.Option(True, "--open-browser/--no-open-browser", help="With --headless, auto-open the viewer URL in the default browser. The hub spawns children with --no-open-browser; humans almost always want the default."),
     load: Path | None = typer.Option(None, "--load", help="Load this save state file at boot (after the ROM is mounted). Use this for one-shot resumes; Ctrl+L during play always reloads the latest running save."),
 ) -> None:
     """Boot ROM in free-run mode with an SDL window."""
@@ -462,7 +462,7 @@ def play(
             except KeyError as exc:
                 typer.echo(f"warning: {exc}", err=True)
     try:
-        if no_sdl:
+        if headless:
             from retrokix.api.headless import run_headless
             run_headless(
                 runtime,
@@ -502,7 +502,7 @@ def serve(
     """Run the retrokix hub — landing page, fame-ranked game grid, per-game tabs.
 
     The hub itself is a small FastAPI app. Each launched game runs as its
-    own subprocess (`retrokix play --no-sdl`) on an allocated port; the
+    own subprocess (`retrokix play --headless`) on an allocated port; the
     hub redirects the new browser tab to that child's /stream endpoint.
     """
     import uvicorn

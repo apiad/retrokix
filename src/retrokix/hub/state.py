@@ -1,6 +1,6 @@
 """HubState — registry of spawned child play processes.
 
-Each child is `retrokix play <rom> --no-sdl --no-open-browser
+Each child is `retrokix play <rom> --headless --no-open-browser
 --listen-port N` running in its own process. The hub keeps a small
 record per child (id, port, rom path, console, pid) so it can build
 play URLs and reap on shutdown. Subprocess isolation means a libretro
@@ -86,7 +86,7 @@ class HubState:
             *self._cli_entry,
             "play",
             str(rom_path),
-            "--no-sdl",
+            "--headless",
             "--no-open-browser",
             "--listen-host", self.host,
             "--listen-port", str(port),

@@ -177,7 +177,7 @@ intentionally unbound — reserved for plugin hotkeys via the
 | `--cheats SLUGS` | none | comma-separated cheat slugs to enable at boot |
 | `--core PATH` | bundled | override the libretro core .so |
 | `--load PATH` | none | load this save state file at boot (after the ROM is mounted) |
-| `--no-sdl` | off | skip the SDL window — runs headless, auto-opens `/stream?mode=controller` |
+| `--headless` | off | skip the SDL window — runs headless, auto-opens `/stream?mode=controller` |
 | `--couch-room CODE` | `default` | couch room code (`retrokix couch room-code` to mint one) |
 
 
@@ -244,7 +244,7 @@ retrokix hub on http://127.0.0.1:8420
 ```
 
 The hub does NOT host emulator runtimes itself. Each launched game
-runs as its own subprocess — essentially `retrokix play --no-sdl` on
+runs as its own subprocess — essentially `retrokix play --headless` on
 a kernel-allocated port — so a libretro core crash kills one tab,
 not the hub.
 
@@ -283,12 +283,12 @@ Flags:
 
 `retrokix serve` used to take a ROM argument and boot a single-game
 FastAPI controller — but that mode added nothing over
-`retrokix play --no-sdl` (which already boots the same FastAPI app
+`retrokix play --headless` (which already boots the same FastAPI app
 *and* opens the browser tab). The flag was scrapped in favour of the
 hub. If you want the old per-game-API behaviour, use:
 
 ```
-$ retrokix play <rom> --no-sdl --no-open-browser
+$ retrokix play <rom> --headless --no-open-browser
 ```
 
 See [`api.md`](api.md) for the per-child endpoint surface (`/frame`,

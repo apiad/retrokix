@@ -1,6 +1,6 @@
 """Headless play loop — emulator + FastAPI, no SDL window/audio/keyboard.
 
-Used by `retrokix play --no-sdl`. A daemon thread steps the runtime at
+Used by `retrokix play --headless`. A daemon thread steps the runtime at
 60 Hz (or 8× when fast_forward is set via the browser TURBO button),
 the libretro core's audio callback fans PCM into the AudioBus that
 /stream/audio/ws subscribers read from, and the main thread runs
