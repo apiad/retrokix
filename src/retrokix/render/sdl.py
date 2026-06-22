@@ -13,7 +13,7 @@ from __future__ import annotations
 import queue
 import time
 from pathlib import Path
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 import numpy as np
 import sdl2
@@ -21,6 +21,11 @@ import sdl2.ext
 
 from retrokix.input import Button
 from retrokix.runtime import EmulatorRuntime
+
+if TYPE_CHECKING:
+    import threading
+
+    from retrokix.tui.status import StatusSnapshot
 
 
 DEFAULT_SCALE = 3
@@ -106,11 +111,21 @@ def play_loop(
     listen_host: str = "127.0.0.1",
     listen_port: int = 8420,
     couch_room: str | None = None,
+    status_snapshot: "StatusSnapshot | None" = None,
+    stop_event: "threading.Event | None" = None,
+    interactive: bool = True,
 ) -> None:
     """Run the emulator in a window until the user closes it.
 
     F11 toggles borderless-desktop fullscreen.
     F10 toggles the upscale filter between linear and nearest.
+
+    When ``status_snapshot`` is given (a ``retrokix.tui.status.StatusSnapshot``),
+    publish a per-frame status struct for the companion TUI to poll, and persist
+    play time on teardown. ``stop_event`` (a ``threading.Event``) lets the TUI
+    request shutdown. ``interactive=False`` disables the two terminal-``input()``
+    hotkey flows (Ctrl+F capture, Ctrl+R macro-bind) that can't share the
+    terminal with the TUI.
     """
     import os
 
@@ -334,6 +349,7 @@ def play_loop(
             for r in p_summary["routes"]:
                 print(f"  plugin route: {','.join(r['methods'])} {r['path']}")
 
+    session = None  # play-time tracker; created once the loop starts, flushed in finally
     sdl2.ext.init()
     sdl2.SDL_InitSubSystem(sdl2.SDL_INIT_AUDIO)
     sdl2.SDL_InitSubSystem(sdl2.SDL_INIT_GAMECONTROLLER)
@@ -444,7 +460,16 @@ def play_loop(
         event = sdl2.SDL_Event()
         last_frame = time.monotonic()
 
-        while running:
+        # Companion-TUI status: a play-time session + a rolling fps window,
+        # republished each frame into the snapshot the TUI polls.
+        if status_snapshot is not None:
+            from retrokix.tui.playtime import PlayTime
+
+            session = PlayTime(runtime.rom_sha1)
+            session.start()
+        _fps_win = [time.monotonic(), 0, 0.0]  # [window_start, frames, fps]
+
+        while running and (stop_event is None or not stop_event.is_set()):
             while sdl2.SDL_PollEvent(event) != 0:
                 if event.type == sdl2.SDL_QUIT:
                     running = False
@@ -486,6 +511,9 @@ def play_loop(
 
                     # Ctrl+F — capture labeled state snapshot
                     if sym == sdl2.SDLK_f and (mod & sdl2.KMOD_CTRL):
+                        if not interactive:
+                            print("Ctrl+F capture needs the terminal; disabled under --tui.")
+                            continue
                         try:
                             label_input = input(
                                 "capturing state — type labels (key=value, comma-separated): "
@@ -519,6 +547,9 @@ def play_loop(
 
                     # Ctrl+R — toggle macro recording
                     if sym == sdl2.SDLK_r and (mod & sdl2.KMOD_CTRL):
+                        if not interactive:
+                            print("Ctrl+R macro-bind needs the terminal; disabled under --tui.")
+                            continue
                         if runtime.is_recording_macro():
                             macro = runtime.stop_recording_macro()
                             if macro is None or macro.total_frames == 0:
@@ -773,10 +804,34 @@ def play_loop(
                     time.sleep(sleep)
             last_frame = time.monotonic()
 
+            if status_snapshot is not None:
+                _fps_win[1] += 1
+                _now = time.monotonic()
+                if _now - _fps_win[0] >= 0.5:
+                    _fps_win[2] = _fps_win[1] / (_now - _fps_win[0])
+                    _fps_win[0] = _now
+                    _fps_win[1] = 0
+                status_snapshot.publish(
+                    title=runtime.rom_path.name,
+                    console=str(getattr(runtime, "console", "") or ""),
+                    sha1=runtime.rom_sha1,
+                    fps=_fps_win[2],
+                    speed=float(FAST_FORWARD_MULTIPLIER) if _ff else 1.0,
+                    frame_count=runtime.frame_count,
+                    session_seconds=session.session_seconds if session else 0.0,
+                    total_seconds=session.total_seconds if session else 0.0,
+                    api_endpoint=(f"{listen_host}:{listen_port}" if listen else None),
+                    client_count=(
+                        int(getattr(app.state, "ws_clients", 0)) if app is not None else 0
+                    ),
+                )
+
         renderer.close()
         if audio_dev:
             sdl2.SDL_CloseAudioDevice(audio_dev)
     finally:
+        if session is not None:
+            session.flush()
         if http_server_thread is not None:
             http_server.should_exit = True
         if loaded_plugin is not None and plugin_ctx is not None:

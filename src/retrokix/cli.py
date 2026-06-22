@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+from typing import Any
 
 import typer
 
@@ -401,6 +402,59 @@ def art(
     typer.echo(f"\nDone. {summary}.")
 
 
+def _run_with_tui(loop_kwargs: dict, runtime, plugin_path, rom_path) -> None:
+    """Run play_loop on a worker thread with the Textual companion TUI on the
+    main thread. The two share only a StatusSnapshot; a stop_event coordinates
+    shutdown in either direction (window close → TUI exit; TUI quit → loop stop).
+    """
+    import threading
+
+    from retrokix.plugin import load_plugin
+    from retrokix.render import play_loop
+    from retrokix.tui.app import RetrokixTUI, TabContext
+    from retrokix.tui.status import StatusSnapshot
+
+    snapshot = StatusSnapshot()
+    tab_specs: list = []
+    if plugin_path is not None:
+        try:
+            tab_specs = load_plugin(plugin_path).tabs
+        except Exception as exc:
+            typer.echo(f"warning: could not load plugin tabs: {exc}", err=True)
+    tab_context = TabContext(
+        title=rom_path.name,
+        console=str(getattr(runtime, "console", "") or ""),
+        sha1=runtime.rom_sha1,
+        rom_path=str(rom_path),
+        runtime=runtime,
+    )
+    tui_app = RetrokixTUI(snapshot, tab_specs, tab_context)
+    stop_event = threading.Event()
+
+    def _worker() -> None:
+        try:
+            play_loop(
+                status_snapshot=snapshot,
+                stop_event=stop_event,
+                interactive=False,
+                **loop_kwargs,
+            )
+        finally:
+            # Game window closed (or the loop errored) → close the TUI.
+            try:
+                tui_app.call_from_thread(tui_app.exit)
+            except Exception:
+                pass
+
+    worker = threading.Thread(target=_worker, name="retrokix-play", daemon=True)
+    worker.start()
+    try:
+        tui_app.run()
+    finally:
+        stop_event.set()  # TUI quit → ask the loop to stop
+        worker.join(timeout=5.0)
+
+
 @app.command()
 def play(
     rom: str = typer.Argument(..., help="Path to a .gba, or a fuzzy query against ~/.retrokix/roms/."),
@@ -418,6 +472,7 @@ def play(
     cheats: str | None = typer.Option(None, "--cheats", help="Comma-separated cheat slugs to enable at boot."),
     couch_room: str | None = typer.Option(None, "--couch-room", help="Couch room code to join (default 'default'). Generate one with `retrokix couch room-code`."),
     headless: bool = typer.Option(False, "--headless", help="Skip both the SDL window and the terminal TUI — run headless and play in a browser tab. Implies --listen and auto-opens http://127.0.0.1:<port>/stream?mode=controller."),
+    tui: bool = typer.Option(False, "--tui", help="Show the native companion TUI in the terminal alongside the SDL window (core tab + plugin tabs). Disables the Ctrl+F / Ctrl+R terminal prompts while active."),
     open_browser: bool = typer.Option(True, "--open-browser/--no-open-browser", help="With --headless, auto-open the viewer URL in the default browser. The hub spawns children with --no-open-browser; humans almost always want the default."),
     load: Path | None = typer.Option(None, "--load", help="Load this save state file at boot (after the ROM is mounted). Use this for one-shot resumes; Ctrl+L during play always reloads the latest running save."),
 ) -> None:
@@ -474,8 +529,8 @@ def play(
 
         # --listen-host / --listen-port imply --listen.
         listen_enabled = listen or listen_host != "127.0.0.1" or listen_port != 8420
-        play_loop(
-            runtime,
+        loop_kwargs: dict[str, Any] = dict(
+            runtime=runtime,
             scale=scale,
             fullscreen=fullscreen,
             watch_state=watch_state,
@@ -488,6 +543,10 @@ def play(
             listen_port=listen_port,
             couch_room=couch_room,
         )
+        if tui:
+            _run_with_tui(loop_kwargs, runtime, plugin_path, rom_path)
+        else:
+            play_loop(**loop_kwargs)
     finally:
         runtime.close()
 
