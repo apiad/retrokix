@@ -79,6 +79,11 @@ def test_detail_abilities_filters_none():
     assert M.assemble_detail(6)["abilities"] == ["Blaze"]
 
 
+def test_detail_monotype_is_not_duplicated():
+    # Charmander is pure Fire; gen-3 stores both type slots as FIRE.
+    assert M.assemble_detail(4)["types"] == ["Fire"]
+
+
 def test_detail_extra_fields():
     d = M.assemble_detail(6)
     assert d["egg_groups"] == ["Monster", "Dragon"]

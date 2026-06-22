@@ -174,7 +174,7 @@ def assemble_detail(species_id: int) -> dict | None:
     return {
         "id": species_id,
         "name": species_name(species_id),
-        "types": [_pretty(t) for t in info.get("types", [])],
+        "types": [_pretty(t) for t in dict.fromkeys(info.get("types", []))],
         "stats": stats,
         "total": total,
         "abilities": [_pretty(a) for a in info.get("abilities", []) if a != "NONE"],
