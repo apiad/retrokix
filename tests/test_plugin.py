@@ -328,3 +328,42 @@ def test_load_plugin_by_module_name():
     assert isinstance(plugin, Plugin)
     # Should have @p.route entries we registered.
     assert any(r[0] == "/party" for r in plugin.http_routes)
+
+
+# ---- Tab contribution API ----
+
+
+def test_tab_registers_title_and_factory():
+    p = Plugin()
+
+    @p.tab("Pokédex")
+    def make(ctx):
+        return ("widget", ctx)
+
+    assert len(p.tabs) == 1
+    title, factory = p.tabs[0]
+    assert title == "Pokédex"
+    assert factory("CTX") == ("widget", "CTX")
+
+
+def test_tab_preserves_registration_order():
+    p = Plugin()
+
+    @p.tab("First")
+    def a(ctx):
+        return None
+
+    @p.tab("Second")
+    def b(ctx):
+        return None
+
+    assert [t[0] for t in p.tabs] == ["First", "Second"]
+
+
+def test_tab_rejects_empty_title():
+    p = Plugin()
+
+    with pytest.raises(ValueError):
+        @p.tab("")
+        def make(ctx):
+            return None

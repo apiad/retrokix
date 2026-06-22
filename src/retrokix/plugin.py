@@ -31,6 +31,9 @@ class Plugin:
         # name string OR None to fall through. Invoked as Strategy A (highest
         # priority) by the StateReader before memory-vote / pHash.
         self.scene_resolvers: list[Callable] = []
+        # tabs: list of (title, factory). The factory takes a TabContext and
+        # returns a Textual widget mounted as a tab in the play-time TUI shell.
+        self.tabs: list[tuple[str, Callable]] = []
         # Couch — peer-to-peer plugin events. See retrokix.couch.
         # `couch_emits` — every event type this plugin may send. Calls to
         # `ctx.couch.send(event=…)` whose event is not in this set are
@@ -91,6 +94,22 @@ class Plugin:
 
         def decorator(fn: Callable) -> Callable:
             self.http_routes.append((path, method_list, fn))
+            return fn
+
+        return decorator
+
+    def tab(self, title: str) -> Callable:
+        """Register a TUI tab mounted in the play-time shell.
+
+        Usable as ``@p.tab("Pokédex")``. The decorated factory takes a
+        ``TabContext`` and returns a Textual widget. Tabs appear in the tab
+        bar in registration order, after the always-present core tab.
+        """
+        if not isinstance(title, str) or not title:
+            raise ValueError(f"tab title must be a non-empty string: {title!r}")
+
+        def decorator(fn: Callable) -> Callable:
+            self.tabs.append((title, fn))
             return fn
 
         return decorator
