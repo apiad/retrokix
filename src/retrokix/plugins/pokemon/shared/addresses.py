@@ -59,11 +59,14 @@ BMON_OFF_MAX_HP = 0x2C
 # gEnemyParty[0] — opponent's full party, same 100-byte encrypted format as
 # gPlayerParty (immediately after it). Used by the Battle panel to plan ahead.
 GENEMY_PARTY = 0x02024744
-# A battle-only ROM function pointer in IWRAM: holds a ROM address (0x08xxxxxx)
-# while a battle is running, a non-pointer otherwise. Empirically validated
-# across battle + overworld savestates (reliable where gBattleTypeFlags is stale).
-BATTLE_ACTIVE_PTR = 0x03001728
-BATTLE_TYPE_DOUBLE = 0x0001  # bit in gBattleTypeFlags
+# In-battle flag bit in IWRAM. Set for the whole battle, clear in the overworld.
+# Empirically validated against 54 savestates classified by their framebuffer
+# (FIGHT/BAG menu = battle): this bit is set for exactly the 9 real battles and
+# clear in every overworld/menu state — unlike gBattleTypeFlags, which goes stale
+# after a battle, and unlike a battle callback pointer (also set in menus).
+BATTLE_IN_BATTLE_ADDR = 0x0300774A
+BATTLE_IN_BATTLE_BIT = 1
+BATTLE_TYPE_DOUBLE = 0x0001  # bit in gBattleTypeFlags (valid only while in battle)
 
 # --- Battle phase byte (interim; replaced by gMain.callback2 in slice 2) ---
 # Empirically discovered. gBattleCommunication[MULTIUSE_STATE] — a generic

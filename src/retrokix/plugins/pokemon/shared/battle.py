@@ -9,10 +9,11 @@ from __future__ import annotations
 import struct
 
 from retrokix.plugins.pokemon.shared.addresses import (
-    BATTLE_ACTIVE_PTR, BATTLE_MON_SIZE, BATTLE_TYPE_DOUBLE, BMON_OFF_HP,
-    BMON_OFF_LEVEL, BMON_OFF_MAX_HP, BMON_OFF_MOVES, BMON_OFF_PP,
-    BMON_OFF_SPECIES, BMON_OFF_TYPES, BMON_PLAYER_SLOT, GBATTLE_MONS_BASE,
-    GBATTLE_TYPE_FLAGS, GENEMY_PARTY, OPP_SINGLES_SLOT,
+    BATTLE_IN_BATTLE_ADDR, BATTLE_IN_BATTLE_BIT, BATTLE_MON_SIZE,
+    BATTLE_TYPE_DOUBLE, BMON_OFF_HP, BMON_OFF_LEVEL, BMON_OFF_MAX_HP,
+    BMON_OFF_MOVES, BMON_OFF_PP, BMON_OFF_SPECIES, BMON_OFF_TYPES,
+    BMON_PLAYER_SLOT, GBATTLE_MONS_BASE, GBATTLE_TYPE_FLAGS, GENEMY_PARTY,
+    OPP_SINGLES_SLOT,
 )
 from retrokix.plugins.pokemon.shared.party import SPECIES_NAMES, read_slot
 from retrokix.plugins.pokemon.shared.scene import in_battle
@@ -22,11 +23,11 @@ _OPPONENT_SLOTS = (1, 3)
 
 
 def is_in_battle(runtime) -> bool:
-    """Robust in-battle check: a battle-only ROM pointer at BATTLE_ACTIVE_PTR.
-    Reliable where gBattleTypeFlags is stale after a battle."""
+    """In-battle check via the IWRAM in-battle flag bit. Reliable where
+    gBattleTypeFlags is stale after a battle (validated against 54 savestates)."""
     try:
-        v = struct.unpack("<I", runtime.read_memory(BATTLE_ACTIVE_PTR, 4))[0]
-        return 0x08000000 <= v < 0x08800000
+        byte = runtime.read_memory(BATTLE_IN_BATTLE_ADDR, 1)[0]
+        return bool((byte >> BATTLE_IN_BATTLE_BIT) & 1)
     except Exception:
         return False
 

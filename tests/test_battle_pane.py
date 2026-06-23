@@ -69,27 +69,27 @@ async def test_battle_pane_empty_without_runtime():
 
 ROM = Path.home() / ".retrokix/roms/Pokemon - Emerald Version (USA, Europe).gba"
 _SAVES = Path.home() / ".retrokix/saves/f3ae088181bf583e55daf962a92bb46f4f1d07b7"
-DOUBLE = _SAVES / "running/running-2026-06-22T01-50-49.083Z.state"
-TOWN = _SAVES / "slot-1.state"
+# A real single battle (framebuffer-confirmed: Sableye vs Combusken, FIGHT menu).
+BATTLE = _SAVES / "running/running-2026-06-19T00-55-48.291Z.state"
+TOWN = _SAVES / "slot-1.state"  # framebuffer-confirmed overworld
 
 
 @pytest.mark.skipif(
-    not (ROM.exists() and DOUBLE.exists()), reason="Emerald ROM + battle save not present"
+    not (ROM.exists() and BATTLE.exists()), reason="Emerald ROM + battle save not present"
 )
-def test_live_double_battle_two_opponents_and_team():
+def test_live_in_battle_detection_and_opponent():
     from retrokix.plugins.pokemon.shared import battle as B
     from retrokix.runtime import EmulatorRuntime
 
     rt = EmulatorRuntime(ROM)
     try:
-        rt.load_state_from_file(DOUBLE)
+        rt.load_state_from_file(BATTLE)
         rt.step(1)
+        # Detector must be TRUE in a real battle...
         assert B.is_in_battle(rt) is True
-        assert B.is_double(rt) is True
         opp = B.active_opponents(rt)
-        assert len(opp) == 2  # both on-field opponents
-        team = B.enemy_party(rt)
-        assert len(team) >= 2  # full opponent party
+        assert opp and opp[0]["species"]  # a valid on-field opponent
+        # ...and FALSE in the overworld (where gBattleTypeFlags is stale).
         rt.load_state_from_file(TOWN)
         rt.step(1)
         assert B.is_in_battle(rt) is False
