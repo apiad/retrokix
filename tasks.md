@@ -6,7 +6,7 @@ _(nothing right now — pick the next from the menu below)_
 
 ## Menu — low-cost / high-value
 
-- [ ] **Emerald helper — Route panel** (umbrella panel 3) — current area → wild-encounter table (`encounters.py` + `emerald_wild_encounters.json`) → catch odds vs my balls/levels; `@p.tab("Route")`. Builds on the Trainer panel's location. Umbrella spec above.
+- [ ] **Emerald helper — friendly location names** (Route/Trainer polish) — resolve current map (mapGroup/mapNum) → mapsec name via `gMapHeader.regionMapSectionId` (RAM) + `emerald_mapsec.json`; replace the raw `(group, num)` header with "Route 102" etc. Small, validate against the saves. ~1–2 hours.
 - [ ] **Emerald helper — Battle panel** (umbrella panel 4, *later*) — opponent + weaknesses + best-move ranking via `matchup.py` (done) + `battle.py`; `@p.tab("Battle")`.
 - [ ] **Emerald helper — Hints panel** (umbrella panel 5, last) — cross-cutting suggestions from party + location + dex (`hints.py`).
 
@@ -23,6 +23,7 @@ _(nothing right now — pick the next from the menu below)_
 
 ## Done
 
+- [x] **Emerald helper — Route panel (umbrella panel 3)** — 2026-06-23, commit `1720c51`. `@p.tab("Route")`: current map's wild encounters (land/surf/fish, species + level + rate%) + per-species catch odds vs the best owned ball, read live from `gWildMonHeaders` (ROM 0x08552D48). New `shared/catch` (gen-3 catch math + best_ball), filled `encounters.py`. Validated against Route 101/102. Location name (mapsec) deferred — header shows raw (group,num). Spec: [[2026-06-23-retrokix-emerald-route-panel-design]].
 - [x] **Emerald helper — Trainer panel (umbrella panel 2)** — 2026-06-23, commit `12ffbf3`. `@p.tab("Trainer")`: trainer identity, money (XOR-decoded), badges, play time, full bag. New `shared/saveblock` (SaveBlock deref + encryption key), `shared/text` (gen-3 charmap), filled `world.py` + `bag.py`. All addresses + key empirically validated against slot-1 (ALEX, ₽8920, 1/8, 16h40m, Poké-Ball ×3). emerald plugin: Party · Trainer · Pokédex. Spec: [[2026-06-23-retrokix-emerald-trainer-panel-design]]. (Note: TM/HM item names absent from emerald_items.json → show `#id`; minor data gap.)
 - [x] **Emerald helper — Party panel (umbrella panel 1)** — 2026-06-23, commit `e2d9ec5`. `PartyPane` live 6-slot table (#/species/Lv/HP-band/XP%/status/next move/next evo) via `read_slot` on a 1s poll; pure `format_party_row`. The `emerald` plugin now contributes Party + Pokédex tabs (one plugin, many tabs). Validated live against slot-1 save. Umbrella: [[2026-06-23-retrokix-emerald-helper-panels-design]].
 - [x] **Pokédex live caught/seen overlay + national-dex re-key (slice 5)** — 2026-06-23, commit `f801b03`. Pokédex re-keyed to national dex (bundled `emerald_national_dex.json` from the ROM's `gSpeciesToNationalPokedexNum`); `shared/pokedex.py` decodes `owned`/`seen` from SaveBlock2 (`gSaveBlock2Ptr` 0x03005D90, +0x28/+0x5C); tab marks ✓ caught / · seen + `Caught N/386` header. All addresses + the species→national map **empirically validated** against the bundled Emerald ROM + slot-1 save (14/386, 25 seen). Live regression test (skipif). Spec: [[2026-06-23-retrokix-pokedex-caught-overlay-design]].
