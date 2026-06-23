@@ -6,6 +6,8 @@ _(nothing right now — pick the next from the menu below)_
 
 ## Menu — low-cost / high-value
 
+- [ ] **Validate Battle doubles path against a real double battle** — `is_in_battle` is now correct (0x0300774A bit 1, validated vs 54 saves), and single battles are confirmed. But no real *double*-battle savestate exists in `~/.retrokix` to validate `active_opponents` reading slots 1+3 / `is_double`. Capture one (Ctrl+S during a real Hoenn double, e.g. vs Tate&Liza or a multi tag battle) and confirm the Battle tab shows both opponents. ~15 min once a save exists.
+
 
 - [ ] **Pokémon Emerald plugin** (slice 6) — scene detection already empirically validated (u32-LE multi-address vote, 29/29). Wire the validated approach into `retrokix.plugins.emerald`. Closes the loop on the 2026-06-10 handoff. ~½ day. Refs: [[2026-06-10-gbax-plugin-design]], handoff report: `vault/+/agent_drafts/handoffs/report-2026-06-10-1254-retrokix-scene-detection.md`.
 - [ ] **Screenshot gallery** — reuse the framebuffer→PNG infra from the savestate-thumbnail work. `POST /screenshot` writes to `~/.retrokix/screenshots/<rom_sha1>/<ts>.png`; new `/screenshots` page in the hub renders the gallery. F12 / button in the play UI. ~2–3 hours.
