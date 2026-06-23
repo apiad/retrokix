@@ -53,6 +53,13 @@ def route_tab(ctx):
     return RoutePane(ctx)
 
 
+@p.tab("Battle")
+def battle_tab(ctx):
+    from retrokix.tui.battle_widget import BattlePane
+
+    return BattlePane(ctx)
+
+
 @p.tab("Pokédex")
 def pokedex_tab(ctx):
     from retrokix.tui.pokedex_widget import PokedexPane

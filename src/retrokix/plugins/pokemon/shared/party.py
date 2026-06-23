@@ -204,10 +204,13 @@ def next_evolution_for(species: int, level: int) -> dict | None:
     return {"target_name": evo["target_name"], "trigger": evo["trigger"], "param": evo["param"]}
 
 
-def read_slot(runtime, slot_idx: int):
+def read_slot(runtime, slot_idx: int, party_base: int = PARTY_BASE):
     """Return a dict for the slot, or None if the slot is empty. Decodes
-    all 4 substructures + the Pokémon trailer (status + computed stats)."""
-    base = PARTY_BASE + slot_idx * SLOT_SIZE
+    all 4 substructures + the Pokémon trailer (status + computed stats).
+
+    ``party_base`` selects which party array to read — defaults to gPlayerParty;
+    pass ``GENEMY_PARTY`` to decode the opponent's team."""
+    base = party_base + slot_idx * SLOT_SIZE
     personality = _u32(runtime, base + OFF_PERSONALITY)
     if personality == 0:
         return None
