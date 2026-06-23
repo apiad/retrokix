@@ -61,12 +61,11 @@ def build_context(runtime) -> dict:
             ctx["gym_plan"] = _gyms.gym_plan(gym["type_id"], ctx["party"])
 
     if _battle.is_in_battle(runtime):
+        opponents = _battle.active_opponents(runtime)
         ctx["battle"] = {
             "double": _battle.is_double(runtime),
-            "opponents": [
-                {"name": o["species_name"], "level": o["level"]}
-                for o in _battle.active_opponents(runtime)
-            ],
+            "opponents": [{"name": o["species_name"], "level": o["level"]} for o in opponents],
+            "opponent_species": [o["species"] for o in opponents],
             "enemy_team": [s["species_name"] for s in _battle.enemy_party(runtime)],
         }
     return ctx
@@ -121,6 +120,59 @@ def context_prompt(ctx: dict) -> str:
         kind = "double" if bt["double"] else "single"
         lines.append(f"IN BATTLE ({kind}) vs {opp}; full enemy team: {', '.join(bt['enemy_team'])}")
     return "\n".join(lines)
+
+
+def relevant_species(ctx: dict, question: str) -> list[int]:
+    """Internal species ids worth injecting for a free-form question: the party,
+    the current battle opponents, and any species named in the question."""
+    from retrokix.plugins.pokemon.shared import pokedex_model as _pm
+
+    ids: list[int] = [p["species"] for p in ctx.get("party", []) if p.get("species")]
+    bt = ctx.get("battle") or {}
+    ids += bt.get("opponent_species", [])
+    q = (question or "").lower()
+    if q:
+        ids += [sid for sid in _pm.species_ids() if _pm.species_name(sid).lower() in q]
+
+    seen: list[int] = []
+    for i in ids:
+        if i and i not in seen:
+            seen.append(i)
+    return seen[:8]
+
+
+def pokedex_brief(species_id: int) -> str:
+    """A compact one-line Pokédex summary (plain text) for the LLM."""
+    from retrokix.plugins.pokemon.shared import pokedex_model as _pm
+
+    d = _pm.assemble_detail(species_id)
+    if not d:
+        return ""
+    m = d["matchups"]
+    weak = [f"{t} x4" for t in m["weak_x4"]] + [f"{t} x2" for t in m["weak_x2"]]
+    bits = [
+        f"{d['name']} (#{d['national']} {'/'.join(d['types'])}, BST {d['total']})",
+        f"abilities {', '.join(d['abilities']) or '—'}",
+    ]
+    if weak:
+        bits.append("weak: " + ", ".join(weak))
+    if d["evolves_into"]:
+        bits.append("evolves into " + ", ".join(f"{e['name']} ({e['method']})" for e in d["evolves_into"]))
+    elif d["evolves_from"]:
+        bits.append(f"evolves from {d['evolves_from']['name']}")
+    return "; ".join(bits)
+
+
+def build_ask_prompt(ctx: dict, question: str) -> str:
+    """The user message for the Ask panel: state + relevant Pokédex + question."""
+    parts = [context_prompt(ctx)]
+    species = relevant_species(ctx, question)
+    briefs = [b for b in (pokedex_brief(s) for s in species) if b]
+    if briefs:
+        parts.append("\nRelevant Pokédex data:")
+        parts.extend("  - " + b for b in briefs)
+    parts.append(f"\nPlayer's question: {question}")
+    return "\n".join(parts)
 
 
 def salient_signature(ctx: dict) -> tuple:

@@ -27,6 +27,15 @@ SYSTEM_PROMPT = (
 )
 
 
+ASK_SYSTEM_PROMPT = (
+    "You are an expert Pokémon Emerald assistant. Answer the player's question "
+    "using the game state and Pokédex data provided below. Be accurate and "
+    "specific; rely on the provided data and do not invent facts — especially "
+    "type matchups, base stats, or evolutions. If the data doesn't cover it, say "
+    "so briefly. Keep the answer to 2-5 sentences, no headers or lists."
+)
+
+
 def load_config(path: Path = DEFAULT_CONFIG_PATH) -> dict:
     """Merge env vars over the JSON config file. Returns base_url/api_key/model
     (api_key may be None for local servers)."""

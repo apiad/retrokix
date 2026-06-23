@@ -67,6 +67,13 @@ def hints_tab(ctx):
     return HintsPane(ctx)
 
 
+@p.tab("Ask")
+def ask_tab(ctx):
+    from retrokix.tui.ask_widget import AskPane
+
+    return AskPane(ctx)
+
+
 @p.tab("Pokédex")
 def pokedex_tab(ctx):
     from retrokix.tui.pokedex_widget import PokedexPane
