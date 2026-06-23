@@ -9,7 +9,23 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from retrokix.cli import _run_with_tui
+from retrokix.cli import _run_with_tui, _should_use_tui
+
+
+# ---- TUI default decision ----
+
+
+def test_should_use_tui_on_when_flag_and_tty():
+    assert _should_use_tui(True, True) is True
+
+
+def test_should_use_tui_off_without_tty():
+    assert _should_use_tui(True, False) is False
+
+
+def test_should_use_tui_off_when_flag_disabled():
+    assert _should_use_tui(False, True) is False
+    assert _should_use_tui(False, False) is False
 
 
 class _FakeApp:
@@ -37,7 +53,7 @@ class _FakeRuntime:
     console = "GBA"
 
 
-def test_run_with_tui_passes_snapshot_and_disables_interactive(monkeypatch):
+def test_run_with_tui_passes_snapshot_and_prompt(monkeypatch):
     captured = {}
 
     def fake_play_loop(**kwargs):
@@ -49,7 +65,7 @@ def test_run_with_tui_passes_snapshot_and_disables_interactive(monkeypatch):
     loop_kwargs = {"runtime": _FakeRuntime(), "scale": 3}
     _run_with_tui(loop_kwargs, _FakeRuntime(), None, Path("/roms/game.gba"))
 
-    assert captured["interactive"] is False
+    assert callable(captured["prompt"])  # TUI modal bridge injected
     assert captured["status_snapshot"] is not None
     assert captured["stop_event"] is not None
     assert captured["scale"] == 3

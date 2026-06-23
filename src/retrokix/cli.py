@@ -402,16 +402,25 @@ def art(
     typer.echo(f"\nDone. {summary}.")
 
 
+def _should_use_tui(flag: bool, isatty: bool) -> bool:
+    """The TUI is shown only when requested *and* on an interactive terminal
+    (so piped runs, hub --headless children, and CI fall back to the plain loop)."""
+    return flag and isatty
+
+
 def _run_with_tui(loop_kwargs: dict, runtime, plugin_path, rom_path) -> None:
     """Run play_loop on a worker thread with the Textual companion TUI on the
     main thread. The two share only a StatusSnapshot; a stop_event coordinates
     shutdown in either direction (window close → TUI exit; TUI quit → loop stop).
+    Ctrl+F / Ctrl+R text entry is routed to the TUI via the prompt-modal bridge.
     """
     import threading
+    from functools import partial
 
     from retrokix.plugin import load_plugin
     from retrokix.render import play_loop
     from retrokix.tui.app import RetrokixTUI, TabContext
+    from retrokix.tui.prompt import prompt_via_app
     from retrokix.tui.status import StatusSnapshot
 
     snapshot = StatusSnapshot()
@@ -436,7 +445,7 @@ def _run_with_tui(loop_kwargs: dict, runtime, plugin_path, rom_path) -> None:
             play_loop(
                 status_snapshot=snapshot,
                 stop_event=stop_event,
-                interactive=False,
+                prompt=partial(prompt_via_app, tui_app),
                 **loop_kwargs,
             )
         finally:
@@ -472,7 +481,7 @@ def play(
     cheats: str | None = typer.Option(None, "--cheats", help="Comma-separated cheat slugs to enable at boot."),
     couch_room: str | None = typer.Option(None, "--couch-room", help="Couch room code to join (default 'default'). Generate one with `retrokix couch room-code`."),
     headless: bool = typer.Option(False, "--headless", help="Skip both the SDL window and the terminal TUI — run headless and play in a browser tab. Implies --listen and auto-opens http://127.0.0.1:<port>/stream?mode=controller."),
-    tui: bool = typer.Option(False, "--tui", help="Show the native companion TUI in the terminal alongside the SDL window (core tab + plugin tabs). Disables the Ctrl+F / Ctrl+R terminal prompts while active."),
+    tui: bool = typer.Option(True, "--tui/--no-tui", help="Show the native companion TUI in the terminal alongside the SDL window (core tab + plugin tabs); Ctrl+F / Ctrl+R prompt via TUI modals. On by default; falls back off when not an interactive terminal. Use --no-tui for the classic terminal-prompt behavior."),
     open_browser: bool = typer.Option(True, "--open-browser/--no-open-browser", help="With --headless, auto-open the viewer URL in the default browser. The hub spawns children with --no-open-browser; humans almost always want the default."),
     load: Path | None = typer.Option(None, "--load", help="Load this save state file at boot (after the ROM is mounted). Use this for one-shot resumes; Ctrl+L during play always reloads the latest running save."),
 ) -> None:
@@ -543,7 +552,8 @@ def play(
             listen_port=listen_port,
             couch_room=couch_room,
         )
-        if tui:
+        use_tui = _should_use_tui(tui, sys.stdin.isatty() and sys.stdout.isatty())
+        if use_tui:
             _run_with_tui(loop_kwargs, runtime, plugin_path, rom_path)
         else:
             play_loop(**loop_kwargs)

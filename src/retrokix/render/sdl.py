@@ -13,7 +13,7 @@ from __future__ import annotations
 import queue
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Callable, Optional
 
 import numpy as np
 import sdl2
@@ -97,6 +97,103 @@ def _screenshots_dir() -> Path:
     return out
 
 
+def _ask_one(prompt, title: str, field: str, terminal_prompt: str) -> str:
+    """Collect one text value via the TUI modal bridge (``prompt``) or, when
+    ``prompt`` is None, via terminal ``input()``. Returns "" on cancel/EOF."""
+    if prompt is not None:
+        res = prompt(title, [field])
+        return str(res.get(field, "")).strip() if res else ""
+    try:
+        return input(terminal_prompt).strip()
+    except EOFError:
+        return ""
+
+
+def _capture_with_labels(runtime, prompt) -> None:
+    """Ctrl+F flow: record the time-sensitive frames + framebuffer first, then
+    collect labels (modal or terminal) and save the capture."""
+    from datetime import datetime, timezone
+
+    from retrokix.state.capture import save_capture, sparse_capture
+    from retrokix.state.storage import parse_labels
+
+    print("recording 30 frames…")
+    sparse = sparse_capture(runtime, n_frames=30)
+    fb = runtime.framebuffer()
+    label_input = _ask_one(
+        prompt,
+        "Capture labels (key=value, comma-separated)",
+        "labels",
+        "capturing state — type labels (key=value, comma-separated): ",
+    )
+    if not label_input:
+        print("no labels provided; discarded.")
+        return
+    try:
+        labels = parse_labels(label_input)
+    except ValueError as exc:
+        print(f"label parse error: {exc}; discarded.")
+        return
+    if not labels:
+        print("no labels provided; discarded.")
+        return
+    ts = datetime.now(timezone.utc)
+    path = save_capture(runtime.rom_sha1, sparse, labels, ts, framebuffer=fb)
+    print(f"captured. ({len(sparse)} stable bytes + framebuffer) → {path}")
+
+
+def _bind_macro(macro, keymap, prompt) -> None:
+    """Ctrl+R stop flow: collect slot (+ optional name) and save the macro,
+    refusing GBA-mapped and reserved slots. Modal asks both fields at once;
+    the terminal path asks slot first, validates, then name."""
+    from retrokix.macros import normalize_slot
+    from retrokix.macros import save as _save_macro
+
+    if prompt is not None:
+        res = prompt("Bind macro — slot + optional name", ["slot", "name"])
+        if not res:
+            print("discarded.")
+            return
+        slot_input = str(res.get("slot", "")).strip()
+        name_input: str | None = str(res.get("name", "")).strip()
+    else:
+        slot_input = _ask_one(
+            None,
+            "",
+            "slot",
+            "bind to which key? [A-Z, 0-9, F1-F9, SPACE, RETURN, BACKSPACE; or Enter to discard]: ",
+        )
+        name_input = None  # terminal path asks name after the slot validates
+
+    if not slot_input:
+        print("discarded.")
+        return
+    norm = normalize_slot(slot_input)
+    if norm is None:
+        print(
+            f"invalid slot {slot_input!r}; must be A-Z, 0-9, F1-F9, SPACE, "
+            "RETURN, or BACKSPACE. discarded."
+        )
+        return
+    gba_slots = _gba_mapped_slots(keymap)
+    if norm in gba_slots:
+        print(f"error: {norm} is mapped to GBA {gba_slots[norm]}; pick another. discarded.")
+        return
+    if norm in RESERVED_HOTKEYS:
+        print(f"error: {norm} is reserved for {RESERVED_HOTKEYS[norm]}; pick another. discarded.")
+        return
+
+    if name_input is None:
+        try:
+            name_input = input("name (optional): ").strip()
+        except EOFError:
+            name_input = ""
+    macro.slot = norm
+    macro.name = name_input
+    _save_macro(macro)
+    print(f"bound {norm} → {name_input or '(unnamed)'}")
+
+
 def play_loop(
     runtime: EmulatorRuntime,
     scale: int = DEFAULT_SCALE,
@@ -113,7 +210,7 @@ def play_loop(
     couch_room: str | None = None,
     status_snapshot: "StatusSnapshot | None" = None,
     stop_event: "threading.Event | None" = None,
-    interactive: bool = True,
+    prompt: "Callable[[str, list[str]], dict | None] | None" = None,
 ) -> None:
     """Run the emulator in a window until the user closes it.
 
@@ -123,9 +220,10 @@ def play_loop(
     When ``status_snapshot`` is given (a ``retrokix.tui.status.StatusSnapshot``),
     publish a per-frame status struct for the companion TUI to poll, and persist
     play time on teardown. ``stop_event`` (a ``threading.Event``) lets the TUI
-    request shutdown. ``interactive=False`` disables the two terminal-``input()``
-    hotkey flows (Ctrl+F capture, Ctrl+R macro-bind) that can't share the
-    terminal with the TUI.
+    request shutdown. ``prompt`` is how the Ctrl+F / Ctrl+R flows collect text:
+    when given (``prompt(title, fields) -> dict | None``, e.g. the TUI modal
+    bridge) it's used instead of terminal ``input()``; ``None`` keeps the
+    terminal prompts (the non-TUI path).
     """
     import os
 
@@ -511,92 +609,18 @@ def play_loop(
 
                     # Ctrl+F — capture labeled state snapshot
                     if sym == sdl2.SDLK_f and (mod & sdl2.KMOD_CTRL):
-                        if not interactive:
-                            print("Ctrl+F capture needs the terminal; disabled under --tui.")
-                            continue
-                        try:
-                            label_input = input(
-                                "capturing state — type labels (key=value, comma-separated): "
-                            ).strip()
-                        except EOFError:
-                            label_input = ""
-                        if not label_input:
-                            print("no labels provided; discarded.")
-                            continue
-                        from retrokix.state.storage import parse_labels
-                        try:
-                            labels = parse_labels(label_input)
-                        except ValueError as exc:
-                            print(f"label parse error: {exc}; discarded.")
-                            continue
-                        if not labels:
-                            print("no labels provided; discarded.")
-                            continue
-                        from datetime import datetime, timezone
-                        from retrokix.state.capture import save_capture, sparse_capture
-                        print("recording 30 frames…")
-                        sparse = sparse_capture(runtime, n_frames=30)
-                        fb = runtime.framebuffer()
-                        ts = datetime.now(timezone.utc)
-                        path = save_capture(
-                            runtime.rom_sha1, sparse, labels, ts,
-                            framebuffer=fb,
-                        )
-                        print(f"captured. ({len(sparse)} stable bytes + framebuffer) → {path}")
+                        _capture_with_labels(runtime, prompt)
                         continue
 
                     # Ctrl+R — toggle macro recording
                     if sym == sdl2.SDLK_r and (mod & sdl2.KMOD_CTRL):
-                        if not interactive:
-                            print("Ctrl+R macro-bind needs the terminal; disabled under --tui.")
-                            continue
                         if runtime.is_recording_macro():
                             macro = runtime.stop_recording_macro()
                             if macro is None or macro.total_frames == 0:
                                 print("record stopped (empty recording, discarded)")
                                 continue
                             print(f"record stopped ({macro.total_frames} frames).")
-                            try:
-                                slot_input = input(
-                                    "bind to which key? [A-Z, 0-9, F1-F9, SPACE, "
-                                    "RETURN, BACKSPACE; or Enter to discard]: "
-                                ).strip()
-                            except EOFError:
-                                slot_input = ""
-                            if not slot_input:
-                                print("discarded.")
-                                continue
-                            from retrokix.macros import normalize_slot
-                            norm = normalize_slot(slot_input)
-                            if norm is None:
-                                print(
-                                    f"invalid slot {slot_input!r}; "
-                                    "must be A-Z, 0-9, F1-F9, SPACE, RETURN, "
-                                    "or BACKSPACE. discarded."
-                                )
-                                continue
-                            gba_slots = _gba_mapped_slots(keymap)
-                            if norm in gba_slots:
-                                print(
-                                    f"error: {norm} is mapped to GBA "
-                                    f"{gba_slots[norm]}; pick another. discarded."
-                                )
-                                continue
-                            if norm in RESERVED_HOTKEYS:
-                                print(
-                                    f"error: {norm} is reserved for "
-                                    f"{RESERVED_HOTKEYS[norm]}; pick another. discarded."
-                                )
-                                continue
-                            try:
-                                name_input = input("name (optional): ").strip()
-                            except EOFError:
-                                name_input = ""
-                            macro.slot = norm
-                            macro.name = name_input
-                            from retrokix.macros import save as _save_macro
-                            _save_macro(macro)
-                            print(f"bound {norm} → {name_input or '(unnamed)'}")
+                            _bind_macro(macro, keymap, prompt)
                         else:
                             runtime.start_recording_macro()
                             print("recording... (Ctrl+R to stop)")
