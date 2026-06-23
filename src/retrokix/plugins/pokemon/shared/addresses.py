@@ -94,6 +94,13 @@ BAG_POCKETS = {
     "Berries": (0x0790, 46),
 }
 
+# --- Wild encounters (Route panel) ---
+# gWildMonHeaders in ROM (Emerald US). Array of 20-byte WildPokemonHeader; each
+# {u8 mapGroup, u8 mapNum, u16 pad, u32 land/water/rock/fishing MonsInfo ptrs}.
+# Validated: map(0,16)=Route 101 (Wurmple/Poochyena/Zigzagoon). See route design.
+GWILD_MON_HEADERS = 0x08552D48
+LOCATION_OFF = 0x04  # in SaveBlock1: mapGroup (u8) then mapNum (u8); pos x/y at 0x00
+
 # --- Driver timing constants ---
 SETTLE_FRAMES = 150
 NAV_GAP_FRAMES = 8

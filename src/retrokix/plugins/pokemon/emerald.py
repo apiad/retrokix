@@ -46,6 +46,13 @@ def trainer_tab(ctx):
     return TrainerPane(ctx)
 
 
+@p.tab("Route")
+def route_tab(ctx):
+    from retrokix.tui.route_widget import RoutePane
+
+    return RoutePane(ctx)
+
+
 @p.tab("Pokédex")
 def pokedex_tab(ctx):
     from retrokix.tui.pokedex_widget import PokedexPane
