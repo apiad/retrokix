@@ -13,8 +13,21 @@ from retrokix.plugins.pokemon.shared.data import load_items
 from retrokix.plugins.pokemon.shared.saveblock import encryption_key, sb1
 
 
+# TMs/HMs aren't in emerald_items.json; ids are contiguous (ITEM_TM01 = 289 ..
+# TM50 = 338, HM01 = 339 .. HM08 = 346). The game shows them as "TM39" etc.
+_TM_FIRST, _TM_LAST = 289, 338
+_HM_FIRST, _HM_LAST = 339, 346
+
+
 def _item_name(item_id: int) -> str:
-    return (load_items().get(str(item_id)) or {}).get("name", f"#{item_id}")
+    entry = load_items().get(str(item_id))
+    if entry:
+        return entry["name"]
+    if _TM_FIRST <= item_id <= _TM_LAST:
+        return f"TM{item_id - _TM_FIRST + 1:02d}"
+    if _HM_FIRST <= item_id <= _HM_LAST:
+        return f"HM{item_id - _HM_FIRST + 1:02d}"
+    return f"#{item_id}"
 
 
 def decode_pocket(raw: bytes, key16: int, count: int) -> list[dict]:

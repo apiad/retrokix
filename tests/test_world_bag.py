@@ -43,3 +43,12 @@ def test_decode_pocket_unknown_id_falls_back():
     raw = struct.pack("<HH", 60000, 1)
     pocket = B.decode_pocket(raw, key16, 1)
     assert pocket[0]["name"] == "#60000"
+
+
+def test_tm_hm_item_names():
+    # TMs/HMs aren't in emerald_items.json; computed from id (289=TM01, 339=HM01).
+    assert B._item_name(289) == "TM01"
+    assert B._item_name(327) == "TM39"  # Roxanne's Rock Tomb
+    assert B._item_name(338) == "TM50"
+    assert B._item_name(339) == "HM01"
+    assert B._item_name(346) == "HM08"
