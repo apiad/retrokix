@@ -44,10 +44,23 @@ def build_context(runtime) -> dict:
         {
             "name": t["species_name"], "species": t["species"], "level": t["level"],
             "hp": t["hp"], "max_hp": t["max_hp"],
+            "next_evolution": t.get("next_evolution"),
+            "next_move": t.get("next_move"),
         }
         for t in party
         if t
     ]
+
+    # Catchable on the current map but not yet in the dex (encounters × dex).
+    if dex and enc:
+        from retrokix.plugins.pokemon.shared import pokedex_model as _pm
+
+        caught_nat = dex["caught"]
+        wild = {r["species"] for m in ("land", "water", "fishing") for r in enc[m]}
+        uncaught = [
+            _pm.species_name(sp) for sp in wild if _pm.national_of(sp) not in caught_nat
+        ]
+        ctx["catchable_here"] = sorted(set(uncaught))
 
     ctx["location_name"] = _world.location_name(runtime)
 
@@ -93,6 +106,24 @@ def context_prompt(ctx: dict) -> str:
         lines.append("Party:")
         for p in party:
             lines.append(f"  - {p['name']} Lv{p['level']} ({p['hp']}/{p['max_hp']} HP)")
+
+    evos = []
+    learns = []
+    for p in party:
+        ev = p.get("next_evolution")
+        if ev and ev.get("trigger") == "LEVEL" and ev.get("in") is not None:
+            evos.append(f"{p['name']} → {ev['target_name']} in {ev['in']} lvl (L{ev['at_level']})")
+        nm = p.get("next_move")
+        if nm and nm.get("in") is not None and nm["in"] <= 5:
+            learns.append(f"{p['name']} learns {nm['move_name']} at L{nm['level']}")
+    if evos:
+        lines.append("Evolving soon: " + "; ".join(evos))
+    if learns:
+        lines.append("Learning a move soon: " + "; ".join(learns))
+
+    ch = ctx.get("catchable_here") or []
+    if ch:
+        lines.append("Catchable on this map, not yet in your dex: " + ", ".join(ch))
     balls = ctx.get("balls") or []
     lines.append("Balls: " + (", ".join(f"{i['name']} x{i['qty']}" for i in balls) or "none"))
     keys = ctx.get("key_items") or []

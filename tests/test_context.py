@@ -47,6 +47,22 @@ def test_salient_signature_stable_on_hp_or_level_change():
     assert a == b
 
 
+def test_context_prompt_renders_diverse_hint_facts():
+    ctx = {
+        **_CTX,
+        "party": [{
+            "name": "Combusken", "species": 281, "level": 18, "hp": 55, "max_hp": 55,
+            "next_evolution": {"trigger": "LEVEL", "target_name": "Blaziken", "at_level": 36, "in": 18},
+            "next_move": {"move_name": "Double Kick", "level": 21, "in": 3},
+        }],
+        "catchable_here": ["Numel", "Marill"],
+    }
+    p = C.context_prompt(ctx)
+    assert "Evolving soon" in p and "Blaziken" in p
+    assert "Learning a move soon" in p and "Double Kick" in p
+    assert "Catchable on this map" in p and "Numel" in p
+
+
 def test_context_prompt_renders_grounded_gym_facts():
     ctx = {
         **_CTX,
