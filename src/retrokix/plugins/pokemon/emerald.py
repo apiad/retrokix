@@ -60,6 +60,13 @@ def battle_tab(ctx):
     return BattlePane(ctx)
 
 
+@p.tab("Hints")
+def hints_tab(ctx):
+    from retrokix.tui.hints_widget import HintsPane
+
+    return HintsPane(ctx)
+
+
 @p.tab("Pokédex")
 def pokedex_tab(ctx):
     from retrokix.tui.pokedex_widget import PokedexPane
