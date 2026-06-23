@@ -39,6 +39,13 @@ def party_tab(ctx):
     return PartyPane(ctx)
 
 
+@p.tab("Trainer")
+def trainer_tab(ctx):
+    from retrokix.tui.trainer_widget import TrainerPane
+
+    return TrainerPane(ctx)
+
+
 @p.tab("Pokédex")
 def pokedex_tab(ctx):
     from retrokix.tui.pokedex_widget import PokedexPane

@@ -73,6 +73,27 @@ DEX_OWNED_OFF = 0x28
 DEX_SEEN_OFF = 0x5C
 DEX_FLAGS_BYTES = 52
 
+# --- Trainer / SaveBlock1 (money, badges, play time, bag) ---
+# Empirically validated against the bundled ROM + slot-1 save (ALEX, ID 31742,
+# ₽8920, 1/8 badges, 16h40m, Poké-Ball ×3). See emerald-trainer-panel design.
+GSAVEBLOCK1_PTR = 0x03005D8C
+ENCRYPTION_KEY_OFF = 0x01F4  # in SaveBlock2; XORs money + bag quantities
+MONEY_OFF = 0x0490  # in SaveBlock1; u32 ^ key
+FLAGS_OFF = 0x1270  # in SaveBlock1; flag bitfield base
+FLAG_BADGE01 = 0x867  # FLAG_BADGE01_GET .. +7 = the eight gym badges
+PLAYTIME_HOURS_OFF = 0x0E  # in SaveBlock2 (u16); +0x10 minutes (u8), +0x11 seconds (u8)
+TRAINER_NAME_OFF = 0x00  # in SaveBlock2 (8 bytes, gen-3 charmap)
+TRAINER_GENDER_OFF = 0x08  # in SaveBlock2 (u8; 0 male, 1 female)
+TRAINER_ID_OFF = 0x0A  # in SaveBlock2 (u16 public id)
+# Bag pockets in SaveBlock1: (offset, slot_count). Slot = {u16 id, u16 qty^key16}.
+BAG_POCKETS = {
+    "Items": (0x0560, 30),
+    "Key": (0x05D8, 30),
+    "Balls": (0x0650, 16),
+    "TMs": (0x0690, 64),
+    "Berries": (0x0790, 46),
+}
+
 # --- Driver timing constants ---
 SETTLE_FRAMES = 150
 NAV_GAP_FRAMES = 8
