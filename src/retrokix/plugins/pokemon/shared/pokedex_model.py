@@ -20,6 +20,7 @@ from retrokix.plugins.pokemon.shared.data import (
     load_evolutions,
     load_levelup,
     load_moves,
+    load_national_dex,
     load_species_info,
     load_types,
 )
@@ -50,9 +51,29 @@ def _pretty(token: str) -> str:
 
 
 @cache
+def _national_map() -> dict[int, int]:
+    """internal species id → national dex number (falls back to identity)."""
+    return {int(k): int(v) for k, v in load_national_dex().items()}
+
+
+def national_of(species_id: int) -> int:
+    """National dex number for an internal species id (identity if unmapped)."""
+    return _national_map().get(species_id, species_id)
+
+
+@cache
+def species_of_national(national: int) -> int | None:
+    """Internal species id for a national dex number, or None."""
+    for sid, nat in _national_map().items():
+        if nat == national:
+            return sid
+    return None
+
+
+@cache
 def species_ids() -> list[int]:
-    """All species ids with base-stat data, ascending (386 species)."""
-    return sorted(int(k) for k in load_species_info())
+    """All species ids with base-stat data, in national-dex order (386 species)."""
+    return sorted((int(k) for k in load_species_info()), key=national_of)
 
 
 @cache
@@ -125,7 +146,7 @@ def search(query: str) -> list[int]:
             result = [i for i in result if wanted in _types_lower(i)]
         elif _as_number(token) is not None:
             n = _as_number(token)
-            result = [i for i in result if i == n]
+            result = [i for i in result if national_of(i) == n]
         else:
             result = [i for i in result if lower in species_name(i).lower()]
     return result
@@ -173,6 +194,7 @@ def assemble_detail(species_id: int) -> dict | None:
 
     return {
         "id": species_id,
+        "national": national_of(species_id),
         "name": species_name(species_id),
         "types": [_pretty(t) for t in dict.fromkeys(info.get("types", []))],
         "stats": stats,
@@ -201,7 +223,8 @@ def format_detail(detail: dict | None) -> str:
 
     d = detail
     types = " / ".join(d["types"])
-    lines = [f"[b]#{d['id']:03d}  {d['name']}[/b]   [cyan]{types}[/cyan]", ""]
+    num = d.get("national", d["id"])
+    lines = [f"[b]#{num:03d}  {d['name']}[/b]   [cyan]{types}[/cyan]", ""]
 
     for label, value in d["stats"]:
         lines.append(f"{label:>3} {value:>3}  {_stat_bar(value)}")

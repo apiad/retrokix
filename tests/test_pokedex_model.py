@@ -12,12 +12,31 @@ from retrokix.plugins.pokemon.shared import pokedex_model as M
 # ---- species set ----
 
 
-def test_species_ids_covers_all_386_sorted():
+def test_species_ids_covers_all_386_in_national_order():
     ids = M.species_ids()
     assert len(ids) == 386
-    assert ids == sorted(ids)
-    assert ids[0] == 1
+    # Ordered by national dex number, not internal species id.
+    assert ids == sorted(ids, key=M.national_of)
+    assert ids[0] == 1  # Bulbasaur (national 1)
     assert 6 in ids
+
+
+def test_national_of_and_reverse():
+    assert M.national_of(277) == 252  # Treecko: internal 277 → national 252
+    assert M.national_of(1) == 1  # Bulbasaur: national == internal
+    assert M.species_of_national(252) == 277
+    assert M.species_of_national(1) == 1
+
+
+def test_search_by_national_number():
+    # "#252" is Treecko's national number → its internal species id 277.
+    assert M.search("#252") == [277]
+    assert M.search("252") == [277]
+
+
+def test_detail_exposes_national_number():
+    assert M.assemble_detail(277)["national"] == 252
+    assert M.assemble_detail(6)["national"] == 6
 
 
 def test_species_name_lookup():

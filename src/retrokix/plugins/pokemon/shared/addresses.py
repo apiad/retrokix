@@ -63,6 +63,16 @@ BMON_OFF_MAX_HP = 0x2C
 # slice 2 replaces this with gMain.callback2 for unambiguous screen identity.
 BATTLE_PHASE_ADDR = 0x02024332
 
+# --- Pokédex (SaveBlock2) ---
+# gSaveBlock2Ptr (Emerald US v1.0) → SaveBlock2 in EWRAM. The Pokédex struct's
+# owned/seen bitfields sit at the offsets below; bit index = national dex no - 1,
+# 52 bytes each. Empirically validated against the bundled ROM + savestates
+# (party species' national bits ⊆ owned ⊆ seen). See pokedex-caught-overlay design.
+GSAVEBLOCK2_PTR = 0x03005D90
+DEX_OWNED_OFF = 0x28
+DEX_SEEN_OFF = 0x5C
+DEX_FLAGS_BYTES = 52
+
 # --- Driver timing constants ---
 SETTLE_FRAMES = 150
 NAV_GAP_FRAMES = 8

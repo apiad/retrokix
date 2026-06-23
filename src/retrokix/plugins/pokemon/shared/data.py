@@ -75,3 +75,9 @@ def load_natures() -> dict:
 @cache
 def load_mapsec() -> dict:
     return _load("emerald_mapsec.json")
+
+
+@cache
+def load_national_dex() -> dict:
+    """Internal species-id-string → national dex number (1..386)."""
+    return _load("emerald_national_dex.json")
