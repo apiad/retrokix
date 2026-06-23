@@ -29,6 +29,23 @@ from retrokix.plugins.pokemon.shared.scene import battle_phase
 p = retrokix.plugin()
 
 
+# --- TUI tabs (the Emerald helper: one plugin, many tabs) ---
+
+
+@p.tab("Party")
+def party_tab(ctx):
+    from retrokix.tui.party_widget import PartyPane
+
+    return PartyPane(ctx)
+
+
+@p.tab("Pokédex")
+def pokedex_tab(ctx):
+    from retrokix.tui.pokedex_widget import PokedexPane
+
+    return PokedexPane(ctx)
+
+
 # --- Opponent tag (manual or auto-detected; informational only) ---
 
 _opponent: dict | None = None
