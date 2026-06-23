@@ -11,6 +11,7 @@ from retrokix.plugins.pokemon.shared.bag import read_bag
 from retrokix.plugins.pokemon.shared.catch import best_ball, catch_chance
 from retrokix.plugins.pokemon.shared.data import load_species_info
 from retrokix.plugins.pokemon.shared.encounters import read_encounters
+from retrokix.plugins.pokemon.shared.world import location_name
 
 _METHODS = (("land", "Land"), ("water", "Surf"), ("fishing", "Fish"))
 
@@ -80,6 +81,7 @@ class RoutePane(Static):
         header.display = body.display = True
         empty.display = False
         g, n = enc["location"]
-        header.update(f"[b]Current map[/b]  ({g}, {n})")
+        name = location_name(runtime) or f"map ({g}, {n})"
+        header.update(f"[b]{name}[/b]")
         ball = best_ball(read_bag(runtime) or {})
         body.update(format_encounters(enc, ball))
