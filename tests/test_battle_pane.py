@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 from textual.app import App, ComposeResult
 
-from retrokix.tui.battle_widget import BattlePane, format_battle, format_weaknesses
+from retrokix.tui.battle_widget import BattlePane, best_counter, format_battle, format_weaknesses
 
 # Magnemite = Electric(13)/Steel(8) → weak to Fire(10), Fighting(1), Ground(4) ×2.
 _MAGNEMITE = {"species_name": "Magnemite", "level": 17, "hp": 20, "max_hp": 37, "types": [13, 8]}
@@ -22,6 +22,24 @@ def test_weaknesses_dedupes_mono_type():
     # Volbeat is mono-Bug stored as [6, 6]; weaknesses must not be squared.
     s = format_weaknesses([6, 6])
     assert "×4" not in s  # mono-type can't have a ×4 weakness
+
+
+def test_best_counter_picks_super_effective_move():
+    # A party mon with a Flying move (Peck) vs a Fighting opponent (type 1).
+    party = [{"species_name": "Combusken", "moves": [
+        {"name": "Scratch", "type": "NORMAL", "power": 40},
+        {"name": "Peck", "type": "FLYING", "power": 35},
+    ]}]
+    bc = best_counter(party, [1])  # Fighting
+    assert bc is not None
+    assert bc["pokemon"] == "Combusken"
+    assert bc["move"] == "Peck"
+    assert bc["mul"] == 2.0
+
+
+def test_best_counter_none_when_no_advantage():
+    party = [{"species_name": "X", "moves": [{"name": "Tackle", "type": "NORMAL", "power": 40}]}]
+    assert best_counter(party, [1]) is None  # Normal not SE vs Fighting
 
 
 def test_format_battle_lists_active_and_team():
