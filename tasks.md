@@ -6,7 +6,6 @@ _(nothing right now — pick the next from the menu below)_
 
 ## Menu — low-cost / high-value
 
-- [ ] **Emerald helper — Battle panel: best-counter from my party** (Battle polish) — extend the Battle tab to also show, per opponent, the best move across *my* party (super-effective ranking via `matchup.evaluate_move`). The panel already shows opponents + weaknesses + full enemy team; this adds the "what should I use" line. ~2–3 hours.
 
 - [ ] **Pokémon Emerald plugin** (slice 6) — scene detection already empirically validated (u32-LE multi-address vote, 29/29). Wire the validated approach into `retrokix.plugins.emerald`. Closes the loop on the 2026-06-10 handoff. ~½ day. Refs: [[2026-06-10-gbax-plugin-design]], handoff report: `vault/+/agent_drafts/handoffs/report-2026-06-10-1254-retrokix-scene-detection.md`.
 - [ ] **Screenshot gallery** — reuse the framebuffer→PNG infra from the savestate-thumbnail work. `POST /screenshot` writes to `~/.retrokix/screenshots/<rom_sha1>/<ts>.png`; new `/screenshots` page in the hub renders the gallery. F12 / button in the play UI. ~2–3 hours.
@@ -21,6 +20,7 @@ _(nothing right now — pick the next from the menu below)_
 
 ## Done
 
+- [x] **Emerald helper — polish: TM/HM names + Battle best-counter** — 2026-06-23, commits `1394fa8` / `5683efe`. Bag now names TM/HM items (TM01../HM01.., computed from id since they're absent from emerald_items.json). Battle tab shows the best super-effective move from my party per opponent ("Best: Swellow — Wing-Attack ×2"), using the real type engine.
 - [x] **Emerald helper — Ask panel (free-form LLM Q&A)** — 2026-06-23, commit `0aa4314`. `@p.tab("Ask")`: textbox to ask the assistant anything; stateless (current state + relevant Pokédex data + question, no history). New `context.relevant_species`/`pokedex_brief`/`build_ask_prompt`; reuses the grounded LLM client. Live-validated (evolve Marill→Azumarill; Wingull/Abra counter Brawly). emerald: Party · Trainer · Route · Battle · Hints · Ask · Pokédex.
 - [x] **Emerald helper — Route panel shows real map names** — 2026-06-23, commit `50c074e`. `RoutePane` header now uses `world.location_name` (e.g. "ROUTE 112", "DEWFORD TOWN") instead of raw `(group, num)`, coords fallback.
 - [x] **Emerald helper — Hints grounding (v2)** — 2026-06-23, commit `23afce2`. Fixed the cheap model fabricating type matchups (it had suggested catching Machop for a Fighting gym). New `shared/gyms.py` (Hoenn gym table + `gym_plan` computing real counters via the type engine) + `world.location_name` (map name via gMapHeader). `build_context` now feeds authoritative next-gym + counter + location facts; sharpened system prompt. Result: correct advice (catch Flying/Psychic, train Abra/Wingull, evolve Nincada) + correct location (Dewford). Spec: [[2026-06-23-retrokix-emerald-hints-llm-design]].
