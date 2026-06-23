@@ -45,3 +45,38 @@ def test_salient_signature_stable_on_hp_or_level_change():
     a = C.salient_signature(_CTX)
     b = C.salient_signature({**_CTX, "party": [{"name": "Combusken", "level": 19, "hp": 1, "max_hp": 60}]})
     assert a == b
+
+
+def test_context_prompt_renders_grounded_gym_facts():
+    ctx = {
+        **_CTX,
+        "location_name": "DEWFORD TOWN",
+        "next_gym": {"leader": "Brawly", "town": "Dewford Town", "type": "Fighting", "ace_level": 19},
+        "gym_plan": {"se_types": ["Flying", "Psychic"], "resist": ["Abra (×0.5)"], "weak": [], "neutral": []},
+    }
+    p = C.context_prompt(ctx)
+    assert "DEWFORD TOWN" in p
+    assert "Brawly" in p and "Fighting" in p
+    assert "Flying" in p and "Psychic" in p
+    assert "[authoritative]" in p
+
+
+def test_location_name_live():
+    from pathlib import Path
+
+    import pytest
+
+    rom = Path.home() / ".retrokix/roms/Pokemon - Emerald Version (USA, Europe).gba"
+    st = Path.home() / ".retrokix/saves/f3ae088181bf583e55daf962a92bb46f4f1d07b7/slot-1.state"
+    if not (rom.exists() and st.exists()):
+        pytest.skip("Emerald ROM/save not present")
+    from retrokix.plugins.pokemon.shared.world import location_name
+    from retrokix.runtime import EmulatorRuntime
+
+    rt = EmulatorRuntime(rom)
+    try:
+        rt.load_state_from_file(st)
+        rt.step(2)
+        assert location_name(rt) == "DEWFORD TOWN"
+    finally:
+        rt.close()

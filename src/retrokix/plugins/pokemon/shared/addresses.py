@@ -103,6 +103,12 @@ BAG_POCKETS = {
     "Berries": (0x0790, 46),
 }
 
+# --- Current map name (gMapHeader.regionMapSectionId) ---
+# Validated: slot-1 → Dewford Town, an overworld save → Route 112. The byte
+# indexes emerald_mapsec.json (mapsec-id order).
+GMAPHEADER = 0x02037318
+REGION_MAPSEC_OFF = 0x14
+
 # --- Wild encounters (Route panel) ---
 # gWildMonHeaders in ROM (Emerald US). Array of 20-byte WildPokemonHeader; each
 # {u8 mapGroup, u8 mapNum, u16 pad, u32 land/water/rock/fishing MonsInfo ptrs}.

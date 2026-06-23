@@ -11,14 +11,27 @@ import struct
 from retrokix.plugins.pokemon.shared.addresses import (
     FLAG_BADGE01,
     FLAGS_OFF,
+    GMAPHEADER,
     MONEY_OFF,
     PLAYTIME_HOURS_OFF,
+    REGION_MAPSEC_OFF,
     TRAINER_GENDER_OFF,
     TRAINER_ID_OFF,
     TRAINER_NAME_OFF,
 )
+from retrokix.plugins.pokemon.shared.data import load_mapsec
 from retrokix.plugins.pokemon.shared.saveblock import encryption_key, sb1, sb2
 from retrokix.plugins.pokemon.shared.text import decode_name
+
+
+def location_name(runtime) -> str | None:
+    """Current map's region name (e.g. 'DEWFORD TOWN') via gMapHeader, or None."""
+    try:
+        sec = runtime.read_memory(GMAPHEADER + REGION_MAPSEC_OFF, 1)[0]
+        names = list(load_mapsec().values())
+        return names[sec] if 0 <= sec < len(names) else None
+    except Exception:
+        return None
 
 
 def decode_money(raw: int, key: int) -> int:

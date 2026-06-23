@@ -9,6 +9,7 @@ from __future__ import annotations
 from retrokix.plugins.pokemon.shared import bag as _bag
 from retrokix.plugins.pokemon.shared import battle as _battle
 from retrokix.plugins.pokemon.shared import encounters as _enc
+from retrokix.plugins.pokemon.shared import gyms as _gyms
 from retrokix.plugins.pokemon.shared import pokedex as _dex
 from retrokix.plugins.pokemon.shared import world as _world
 from retrokix.plugins.pokemon.shared.party import SLOT_COUNT, read_slot
@@ -40,10 +41,24 @@ def build_context(runtime) -> dict:
 
     party = [read_slot(runtime, i) for i in range(SLOT_COUNT)]
     ctx["party"] = [
-        {"name": t["species_name"], "level": t["level"], "hp": t["hp"], "max_hp": t["max_hp"]}
+        {
+            "name": t["species_name"], "species": t["species"], "level": t["level"],
+            "hp": t["hp"], "max_hp": t["max_hp"],
+        }
         for t in party
         if t
     ]
+
+    ctx["location_name"] = _world.location_name(runtime)
+
+    # Grounded gym facts: the next gym (by badge count) + a computed type plan so
+    # the LLM never invents matchups.
+    badges = ctx.get("badges")
+    if badges is not None:
+        gym = _gyms.next_gym(badges)
+        if gym:
+            ctx["next_gym"] = gym
+            ctx["gym_plan"] = _gyms.gym_plan(gym["type_id"], ctx["party"])
 
     if _battle.is_in_battle(runtime):
         ctx["battle"] = {
@@ -70,10 +85,10 @@ def context_prompt(ctx: dict) -> str:
     d = ctx.get("dex")
     if d:
         lines.append(f"Pokedex: {d['caught']} caught / {d['seen']} seen / {d['total']}")
-    if "location" in ctx:
+    if ctx.get("location_name"):
         wl = ctx.get("wild_land") or []
-        here = f"; wild grass here: {', '.join(wl)}" if wl else "; no wild encounters here"
-        lines.append(f"Current map id: {ctx['location']}{here}")
+        here = f"; wild grass here: {', '.join(wl)}" if wl else "; no wild encounters on this map"
+        lines.append(f"Location: {ctx['location_name']}{here}")
     party = ctx.get("party") or []
     if party:
         lines.append("Party:")
@@ -83,6 +98,23 @@ def context_prompt(ctx: dict) -> str:
     lines.append("Balls: " + (", ".join(f"{i['name']} x{i['qty']}" for i in balls) or "none"))
     keys = ctx.get("key_items") or []
     lines.append("Key items: " + (", ".join(i["name"] for i in keys) or "none"))
+    ng = ctx.get("next_gym")
+    if ng:
+        gp = ctx.get("gym_plan") or {}
+        lines.append(
+            f"NEXT GYM: {ng['leader']} in {ng['town']} — {ng['type']}-type "
+            f"(ace ~Lv{ng['ace_level']})"
+        )
+        if gp.get("se_types"):
+            lines.append(
+                f"  [authoritative] Super-effective vs {ng['type']}: "
+                f"{', '.join(gp['se_types'])} — catch/use these types"
+            )
+        if gp.get("resist"):
+            lines.append(f"  [authoritative] Your mons that resist {ng['type']}: {', '.join(gp['resist'])}")
+        if gp.get("weak"):
+            lines.append(f"  [authoritative] Your mons WEAK to {ng['type']}: {', '.join(gp['weak'])}")
+
     bt = ctx.get("battle")
     if bt:
         opp = ", ".join(f"{o['name']} Lv{o['level']}" for o in bt["opponents"])
